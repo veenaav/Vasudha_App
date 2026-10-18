@@ -29,7 +29,7 @@ interface ObservationCardProps {
   onDelete?: (id: number) => void
 }
 
-function ObservationCard({ observation }: ObservationCardProps) {
+function ObservationCard({ observation, onDelete }: ObservationCardProps) {
   // Extract photo blobs from props (supports both modern array and legacy single photo)
   const photoBlobs = useMemo(() => {
     const raw = observation.photos?.length ? observation.photos : observation.photo ? [observation.photo] : []
@@ -55,12 +55,14 @@ function ObservationCard({ observation }: ObservationCardProps) {
 
   return (
     <div className="rounded-lg border p-4">
-      {/* Verification status badge */}
-      {statusStyle && (
-        <div className="mb-2">
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyle}`}>
-            {observation.identificationStatus}
-          </span>
+      {/* Header row: verification status badge and delete button */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div>
+          {statusStyle && (
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyle}`}>
+              {observation.identificationStatus}
+            </span>
+          )}
         </div>
 
         {onDelete && observation.id !== undefined && (
@@ -80,31 +82,45 @@ function ObservationCard({ observation }: ObservationCardProps) {
         )}
       </div>
 
+
       {/* Common species name (displays 'Unknown species' fallback when unidentified) */}
-      {observation.identificationStatus === 'Unknown' ? (
-        <p>
-          <strong>Species:</strong> Unknown species
-        </p>
-      ) : observation.speciesName?.trim() ? (
-        <p>
-          <strong>Species:</strong> {observation.speciesName}
-        </p>
-      ) : null}
+      {
+        observation.identificationStatus === 'Unknown' ? (
+          <p>
+            <strong>Species:</strong> Unknown species
+          </p>
+        ) : observation.speciesName?.trim() ? (
+          <p>
+            <strong>Species:</strong> {observation.speciesName}
+          </p>
+        ) : null
+      }
 
       {/* Scientific name if provided */}
-      {observation.scientificName?.trim() && (
+      {
+        observation.scientificName?.trim() && (
+          <p className="text-sm text-gray-600">
+            <strong>Scientific Name:</strong>{' '}
+            <span className="italic">{observation.scientificName}</span>
+          </p>
+        )
+      }
+
+      {/* Species group if provided */}
+      {displaySpeciesGroup?.trim() && (
         <p className="text-sm text-gray-600">
-          <strong>Scientific Name:</strong>{' '}
-          <span className="italic">{observation.scientificName}</span>
+          <strong>Species Group:</strong> {displaySpeciesGroup}
         </p>
       )}
 
       {/* Field notes if provided */}
-      {observation.notes?.trim() && (
-        <p>
-          <strong>Notes:</strong> {observation.notes}
-        </p>
-      )}
+      {
+        observation.notes?.trim() && (
+          <p>
+            <strong>Notes:</strong> {observation.notes}
+          </p>
+        )
+      }
 
       {/* Observation timestamps and GPS location */}
       <p>
@@ -121,28 +137,30 @@ function ObservationCard({ observation }: ObservationCardProps) {
       </p>
 
       {/* Photo attachments (single photo full-width or multi-photo grid) */}
-      {photoUrls.length > 0 && (
-        <div className="mt-4">
-          {photoUrls.length === 1 ? (
-            <img
-              src={photoUrls[0]}
-              alt="Observation"
-              className="w-full rounded-lg object-cover"
-            />
-          ) : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {photoUrls.map((url, idx) => (
-                <img
-                  key={idx}
-                  src={url}
-                  alt={`Observation ${idx + 1}`}
-                  className="aspect-square w-full rounded-lg object-cover"
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {
+        photoUrls.length > 0 && (
+          <div className="mt-4">
+            {photoUrls.length === 1 ? (
+              <img
+                src={photoUrls[0]}
+                alt="Observation"
+                className="w-full rounded-lg object-cover"
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {photoUrls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Observation ${idx + 1}`}
+                    className="aspect-square w-full rounded-lg object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      }
     </div>
   )
 }

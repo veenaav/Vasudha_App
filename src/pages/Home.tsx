@@ -138,6 +138,16 @@ function Home() {
     })
   }
 
+  // Delete an observation by ID from IndexedDB and local state
+  const handleDeleteObservation = async (id: number) => {
+    try {
+      await db.observations.delete(id)
+      setObservations((current) => current.filter((obs) => obs.id !== id))
+    } catch (error) {
+      alert(`Failed to delete observation: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   // Validate form fields, timestamps, coordinates, and persist record to IndexedDB
   const handleSaveObservation = async () => {
     if (saved || isSaving) return
@@ -189,13 +199,25 @@ function Home() {
       return
     }
 
+    if (speciesGroups === 'Other' && !otherSpeciesGroup.trim()) {
+      alert('Please specify the other species group.')
+      return
+    }
+
     setIsSaving(true)
+
+    const finalOtherSpeciesGroup =
+      speciesGroups === 'Other' && otherSpeciesGroup.trim()
+        ? otherSpeciesGroup.trim()
+        : undefined
 
     // Save to IndexedDB database and prepend to active list
     try {
       const newObservation: Omit<Observation, 'id'> = {
         speciesName,
         scientificName,
+        speciesGroups: speciesGroups || undefined,
+        otherSpeciesGroup: finalOtherSpeciesGroup,
         identificationStatus,
         notes,
         observationAt,
@@ -256,8 +278,58 @@ function Home() {
             />
           </div>
 
+          {/* Species Groups dropdown */}
+          <div className="mt-5">
+            <label htmlFor="speciesGroups" className="mb-1 block text-sm font-medium">
+              Species Group
+            </label>
+            <select
+              id="speciesGroups"
+              value={speciesGroups}
+              disabled={saved}
+              onChange={(e) => {
+                setSpeciesGroups(e.target.value)
+                if (e.target.value !== 'Other') {
+                  setOtherSpeciesGroup('')
+                }
+              }}
+              className={`mt-2 w-full rounded-lg border px-3 py-2.5 outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 ${
+                !speciesGroups ? 'text-gray-500' : 'text-gray-900'
+              }`}
+            >
+              <option value="" disabled>
+                Select Species Group...
+              </option>
+              {SPECIES_GROUPS.map((group) => (
+                <option key={group} value={group} className="text-gray-900">
+                  {group}
+                </option>
+              ))}
+            </select>
+
+            {speciesGroups === 'Other' && (
+              <div className="mt-3">
+                <label
+                  htmlFor="otherSpeciesGroup"
+                  className="text-sm font-medium"
+                >
+                  Specify Other Group
+                </label>
+                <input
+                  id="otherSpeciesGroup"
+                  type="text"
+                  value={otherSpeciesGroup}
+                  disabled={saved}
+                  onChange={(event) => setOtherSpeciesGroup(event.target.value)}
+                  placeholder="e.g. Lichens, Bryophytes, Bacteria"
+                  className="mt-2 w-full rounded-lg border px-3 py-2.5 outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                />
+              </div>
+            )}
+          </div>
+
           {/* Identification Status selector */}
-          <div>
+          <div className="mt-5">
             <label htmlFor="identificationStatus" className="mb-1 block text-sm font-medium">
               Identification Status
             </label>
