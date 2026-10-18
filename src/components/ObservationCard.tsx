@@ -1,39 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import type { Observation, IdentificationStatus } from '@/db/database'
+
+// Format ISO timestamp into Indian English localized string
 const formatDateTime = (value?: string | null) => {
   if (!value) return 'Not recorded'
   const date = new Date(value)
-  if (isNaN(date.getTime())) return 'Invalid date'
-  return date.toLocaleString('en-IN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  return Number.isNaN(date.getTime())
+    ? 'Invalid date'
+    : date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+// Format coordinates to 5 decimal places with graceful fallback
 const formatCoordinate = (value?: number | string | null) => {
-  if (value === null || value === undefined || value === '') {
-    return 'Not recorded'
-  }
-  const num = typeof value === 'number' ? value : Number(value)
-  if (Number.isNaN(num)) {
-    return 'Not recorded'
-  }
-  return num.toFixed(5)
+  if (value === null || value === undefined || value === '') return 'Not recorded'
+  const num = Number(value)
+  return Number.isNaN(num) ? 'Not recorded' : num.toFixed(5)
 }
 
-interface Observation {
-  id?: number
-  speciesName?: string
-  scientificName?: string
-  speciesGroups?: string
-  otherSpeciesGroup?: string
-  identificationStatus?: 'Identified' | 'Unknown' | 'Needs verification'
-  notes?: string
-  observationAt?: string
-  recordedAt?: string
-  latitude?: number | null
-  longitude?: number | null
-  photo?: Blob | null
-  photos?: Blob[]
+// Visual style mapping for identification verification pills
+const STATUS_STYLES: Record<IdentificationStatus, string> = {
+  Identified: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  Unknown: 'border-gray-200 bg-gray-100 text-gray-700',
+  'Needs verification': 'border-amber-200 bg-amber-50 text-amber-800',
 }
 
 interface ObservationCardProps {
@@ -41,31 +29,24 @@ interface ObservationCardProps {
   onDelete?: (id: number) => void
 }
 
-function ObservationCard({ observation, onDelete }: ObservationCardProps) {
-  const [photoUrls, setPhotoUrls] = useState<string[]>([])
-
-  useEffect(() => {
-    const blobs: Blob[] = []
-    if (Array.isArray(observation.photos) && observation.photos.length > 0) {
-      for (const p of observation.photos) {
-        if (p instanceof Blob) blobs.push(p)
-      }
-    } else if (observation.photo instanceof Blob) {
-      blobs.push(observation.photo)
-    }
-
-    if (blobs.length === 0) {
-      setPhotoUrls([])
-      return
-    }
-
-    const urls = blobs.map((blob) => URL.createObjectURL(blob))
-    setPhotoUrls(urls)
-
-    return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url))
-    }
+function ObservationCard({ observation }: ObservationCardProps) {
+  // Extract photo blobs from props (supports both modern array and legacy single photo)
+  const photoBlobs = useMemo(() => {
+    const raw = observation.photos?.length ? observation.photos : observation.photo ? [observation.photo] : []
+    return raw.filter((item): item is Blob => item instanceof Blob)
   }, [observation.photos, observation.photo])
+
+  // Derive object URLs synchronously from photo blobs
+  const photoUrls = useMemo(() => photoBlobs.map((blob) => URL.createObjectURL(blob)), [photoBlobs])
+
+  // Clean up object URLs from memory when blobs change or on component unmount
+  useEffect(() => {
+    return () => {
+      photoUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [photoUrls])
+
+  const statusStyle = observation.identificationStatus ? STATUS_STYLES[observation.identificationStatus] : null
 
   const displaySpeciesGroup =
     observation.speciesGroups === 'Other' && observation.otherSpeciesGroup?.trim()
@@ -74,23 +55,12 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
   return (
     <div className="rounded-lg border p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {observation.identificationStatus === 'Identified' && (
-            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
-              Identified
-            </span>
-          )}
-          {observation.identificationStatus === 'Unknown' && (
-            <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-700">
-              Unknown
-            </span>
-          )}
-          {observation.identificationStatus === 'Needs verification' && (
-            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
-              Needs verification
-            </span>
-          )}
+      {/* Verification status badge */}
+      {statusStyle && (
+        <div className="mb-2">
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyle}`}>
+            {observation.identificationStatus}
+          </span>
         </div>
 
         {onDelete && observation.id !== undefined && (
@@ -110,6 +80,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         )}
       </div>
 
+      {/* Common species name (displays 'Unknown species' fallback when unidentified) */}
       {observation.identificationStatus === 'Unknown' ? (
         <p>
           <strong>Species:</strong> Unknown species
@@ -120,7 +91,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         </p>
       ) : null}
 
-
+      {/* Scientific name if provided */}
       {observation.scientificName?.trim() && (
         <p className="text-sm text-gray-600">
           <strong>Scientific Name:</strong>{' '}
@@ -128,35 +99,28 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         </p>
       )}
 
-      {displaySpeciesGroup?.trim() && (
-        <p className="text-sm text-gray-600">
-          <strong>Species Group:</strong> {displaySpeciesGroup}
-        </p>
-      )}
-
-
+      {/* Field notes if provided */}
       {observation.notes?.trim() && (
         <p>
           <strong>Notes:</strong> {observation.notes}
         </p>
       )}
 
-
+      {/* Observation timestamps and GPS location */}
       <p>
         <strong>Observed:</strong> {formatDateTime(observation.observationAt)}
       </p>
-
       <p>
         <strong>Recorded:</strong> {formatDateTime(observation.recordedAt)}
       </p>
       <p>
         <strong>Latitude:</strong> {formatCoordinate(observation.latitude)}
       </p>
-
       <p>
         <strong>Longitude:</strong> {formatCoordinate(observation.longitude)}
       </p>
 
+      {/* Photo attachments (single photo full-width or multi-photo grid) */}
       {photoUrls.length > 0 && (
         <div className="mt-4">
           {photoUrls.length === 1 ? (

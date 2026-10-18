@@ -1,12 +1,12 @@
 import Dexie, { type Table } from 'dexie'
 
+export type IdentificationStatus = 'Identified' | 'Unknown' | 'Needs verification'
+
 export interface Observation {
   id?: number
   speciesName: string
   scientificName: string
-  speciesGroups?: string
-  otherSpeciesGroup?: string
-  identificationStatus?: 'Identified' | 'Unknown' | 'Needs verification'
+  identificationStatus?: IdentificationStatus
   notes: string
   observationAt: string
   recordedAt: string
