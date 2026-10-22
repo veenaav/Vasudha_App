@@ -54,7 +54,7 @@ export default function ObservationsPage() {
             Biodiversity Archive
           </span>
           <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4]">
-            Saved Observations
+            My Records
           </h1>
           <p className="text-xs text-[#C5D1BD]">
             {observations.length} {observations.length === 1 ? 'record' : 'records'} stored locally on device

@@ -4,6 +4,7 @@ import HomePage from '@/pages/HomePage'
 import Home from '@/pages/Home'
 import ObservationsPage from '@/pages/ObservationsPage'
 import ProjectsPage from '@/pages/ProjectsPage'
+import MyProjects from '@/pages/MyProjects'
 import WardsPage from '@/pages/WardsPage'
 import SurveysPage from '@/pages/SurveysPage'
 
@@ -29,6 +30,7 @@ function App() {
 
           {/* Projects, Wards & Surveys Workflows */}
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/my-projects" element={<MyProjects />} />
           <Route path="/projects/:projectId/wards" element={<WardsPage />} />
           <Route path="/projects/:projectId/wards/:wardId/surveys" element={<SurveysPage />} />
 

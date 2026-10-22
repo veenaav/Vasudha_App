@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { db, type Ward, type Project } from '@/db/database'
-import { Plus, ArrowRight, Trash2, ArrowLeft, MapPin, Landmark, Layers } from 'lucide-react'
+import { db, type Ward, type Project, type Observation } from '@/db/database'
+import { Plus, ArrowRight, Trash2, ArrowLeft, MapPin, Landmark, Layers, Leaf, Calendar } from 'lucide-react'
 
 function WardsPage() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -10,6 +10,7 @@ function WardsPage() {
 
   const [project, setProject] = useState<Project | null>(null)
   const [wards, setWards] = useState<Ward[]>([])
+  const [projectObservations, setProjectObservations] = useState<Observation[]>([])
   const [surveyCounts, setSurveyCounts] = useState<Record<string, number>>({})
   const [showAddForm, setShowAddForm] = useState(false)
 
@@ -42,6 +43,15 @@ function WardsPage() {
       counts[w.id] = count
     }
     setSurveyCounts(counts)
+
+    // Load observations associated with this project
+    const obsList = await db.observations.where('projectId').equals(projectId).toArray()
+    const sortedObs = [...obsList].sort((a, b) => {
+      const tA = new Date(b.createdAt || b.recordedAt || 0).getTime() || 0
+      const tB = new Date(a.createdAt || a.recordedAt || 0).getTime() || 0
+      return tA - tB
+    })
+    setProjectObservations(sortedObs)
   }
 
   useEffect(() => {
@@ -335,6 +345,84 @@ function WardsPage() {
             >
               + Add First Ward
             </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Project Observations Section */}
+      <div className="mt-8 border-t border-white/15 pt-6">
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2">
+            <Leaf className="h-4.5 w-4.5 text-[#C5D1BD]" />
+            <h2 className="font-heading text-lg sm:text-xl font-normal text-[#F5F0E4]">
+              Project Observations
+            </h2>
+          </div>
+          <span className="text-xs text-[#C5D1BD]">
+            {projectObservations.length} {projectObservations.length === 1 ? 'record' : 'records'}
+          </span>
+        </div>
+
+        {projectObservations.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-xs text-[#C5D1BD]">
+            <p>No observations recorded in this project yet.</p>
+            <p className="mt-1 text-[11px] text-[#C5D1BD]/80">
+              Open a ward above, start a field visit, and log species to see them here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {projectObservations.map((obs) => {
+              const photoBlob = obs.photos?.[0] || obs.photo
+              const hasPhoto = photoBlob instanceof Blob
+              const previewUrl = hasPhoto ? URL.createObjectURL(photoBlob) : null
+
+              return (
+                <div
+                  key={obs.id}
+                  className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-3.5 flex items-center gap-3 text-[#F5F0E4] shadow-md"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-black/30 shadow-inner">
+                    {previewUrl ? (
+                      <img
+                        src={previewUrl}
+                        alt={obs.speciesName || 'Species'}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Leaf className="h-5 w-5 text-[#C5D1BD]/60" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-[#263D2B] px-2 py-0.5 text-[10px] font-semibold text-[#C5D1BD] border border-[#C5D1BD]/30 uppercase">
+                        {obs.identificationStatus || 'Record'}
+                      </span>
+                      {obs.speciesGroup && (
+                        <span className="text-xs text-[#C5D1BD]/80 truncate">
+                          • {obs.speciesGroup}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-heading text-base font-normal truncate mt-0.5">
+                      {obs.speciesName}
+                    </h3>
+                    {obs.localName && (
+                      <p className="text-xs text-[#C5D1BD] truncate">{obs.localName}</p>
+                    )}
+                  </div>
+                  <div className="text-right text-xs text-[#C5D1BD]/80 shrink-0">
+                    <span className="flex items-center gap-1 font-medium">
+                      <Calendar className="h-3 w-3 text-[#C5D1BD]" />
+                      {new Date(obs.recordedAt || obs.createdAt || Date.now()).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

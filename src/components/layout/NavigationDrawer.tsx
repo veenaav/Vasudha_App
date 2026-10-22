@@ -118,7 +118,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           >
             <div className="flex items-center gap-3">
               <Leaf className="h-5 w-5 text-[#C5D1BD]" />
-              <span>Saved Observations</span>
+              <span>My Records</span>
             </div>
             <ChevronRight className="h-4 w-4 text-[#C5D1BD]/60" />
           </NavLink>

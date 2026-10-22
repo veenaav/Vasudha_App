@@ -283,8 +283,10 @@ function Home() {
 
       const newObservation: Observation = {
         id: crypto.randomUUID(),
-        // Link to parent Survey session if active
+        // Link to parent Project / Ward / Survey session if active, undefined for standalone
         surveyId: surveyId || undefined,
+        wardId: wardId || undefined,
+        projectId: projectId || undefined,
 
         // Core Taxonomy & Identification
         speciesName: speciesName.trim(),
