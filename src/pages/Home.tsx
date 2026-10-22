@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
   db,
@@ -46,11 +46,16 @@ export const SPECIES_GROUPS = [
 
 function Home() {
   // Route params for hierarchical navigation: Project -> Ward -> Survey -> Observation
-  const { projectId, wardId, surveyId } = useParams<{
+  const { projectId, wardId, surveyId, id } = useParams<{
     projectId?: string
     wardId?: string
     surveyId?: string
+    id?: string
   }>()
+  const navigate = useNavigate()
+  const isEditMode = Boolean(id)
+  const [existingRecord, setExistingRecord] = useState<Observation | null>(null)
+  const [isLoadingExisting, setIsLoadingExisting] = useState(Boolean(id))
 
   // Context state for active survey session
   const [activeProject, setActiveProject] = useState<Project | null>(null)
@@ -104,6 +109,67 @@ function Home() {
       db.projects.get(projectId).then((p) => p && setActiveProject(p))
     }
   }, [projectId, wardId, surveyId])
+
+  // Load existing observation if in edit mode
+  useEffect(() => {
+    if (!id) return
+    let isMounted = true
+    setIsLoadingExisting(true)
+    db.observations
+      .get(id)
+      .then((existing) => {
+        if (!isMounted) return
+        if (!existing) {
+          alert('Observation record not found.')
+          navigate('/observations', { replace: true })
+          return
+        }
+        setExistingRecord(existing)
+        setSpeciesName(existing.speciesName || '')
+        setLocalName(existing.localName || '')
+        setScientificName(existing.scientificName || '')
+        const group = existing.speciesGroup || existing.speciesGroups || ''
+        setSpeciesGroup(group)
+        setOtherSpeciesGroup(existing.otherSpeciesGroup || '')
+        setIdentificationStatus(existing.identificationStatus || '')
+        setNotes(existing.notes || '')
+        setIndividualCount(existing.individualCount ?? 1)
+        setLifeStage(existing.lifeStage || '')
+        setMicroHabitat(existing.microHabitat || '')
+        setOtherMicroHabitat(existing.otherMicroHabitat || '')
+        setHasTraditionalKnowledge(existing.hasTraditionalKnowledge || '')
+        setTraditionalKnowledgeSource(existing.traditionalKnowledgeSource || '')
+        setOtherTraditionalKnowledgeSource(existing.otherTraditionalKnowledgeSource || '')
+        if (
+          existing.latitude !== null &&
+          existing.longitude !== null &&
+          existing.latitude !== undefined &&
+          existing.longitude !== undefined
+        ) {
+          setLocation({ latitude: existing.latitude, longitude: existing.longitude })
+          setLocationAccuracy(existing.accuracyMeters ?? null)
+        }
+        const attached = existing.photos?.length
+          ? existing.photos
+          : existing.photo
+          ? [existing.photo]
+          : []
+        setPhotos(attached)
+        setPhotoCapturedAt(existing.observationAt || null)
+      })
+      .catch((err) => {
+        console.error('Failed to load observation for editing:', err)
+        alert('Could not load observation record.')
+        navigate('/observations', { replace: true })
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingExisting(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [id, navigate])
 
   // Derive photo preview URLs synchronously from attached blobs
   const photoPreviews = useMemo(() => photos.map((blob) => URL.createObjectURL(blob)), [photos])
@@ -281,50 +347,97 @@ function Home() {
         ? otherTraditionalKnowledgeSource.trim()
         : undefined
 
-      const newObservation: Observation = {
-        id: crypto.randomUUID(),
-        // Link to parent Project / Ward / Survey session if active, undefined for standalone
-        surveyId: surveyId || undefined,
-        wardId: wardId || undefined,
-        projectId: projectId || undefined,
+      if (isEditMode && existingRecord && id) {
+        // Update existing record: preserve original ID, createdAt, and recordedAt
+        const updatedObservation: Observation = {
+          ...existingRecord,
+          id: existingRecord.id,
+          surveyId: existingRecord.surveyId,
+          wardId: existingRecord.wardId,
+          projectId: existingRecord.projectId,
 
-        // Core Taxonomy & Identification
-        speciesName: speciesName.trim(),
-        localName: localName.trim() || undefined,
-        scientificName: scientificName.trim() || undefined,
-        speciesGroup: speciesGroup || undefined,
-        speciesGroups: speciesGroup || undefined,
-        otherSpeciesGroup: finalOtherGroup,
-        identificationStatus: identificationStatus as IdentificationStatus,
-        notes: notes.trim(),
+          speciesName: speciesName.trim(),
+          localName: localName.trim() || undefined,
+          scientificName: scientificName.trim() || undefined,
+          speciesGroup: speciesGroup || undefined,
+          speciesGroups: speciesGroup || undefined,
+          otherSpeciesGroup: finalOtherGroup,
+          identificationStatus: identificationStatus as IdentificationStatus,
+          notes: notes.trim(),
 
-        // Ecological metadata
-        individualCount: parsedCount,
-        lifeStage: lifeStage || undefined,
-        microHabitat: microHabitat || undefined,
-        otherMicroHabitat: finalOtherMicroHabitat,
+          individualCount: parsedCount,
+          lifeStage: lifeStage || undefined,
+          microHabitat: microHabitat || undefined,
+          otherMicroHabitat: finalOtherMicroHabitat,
 
-        // Traditional Knowledge documentation
-        hasTraditionalKnowledge: hasTraditionalKnowledge || undefined,
-        traditionalKnowledgeSource: hasTraditionalKnowledge === 'Yes' ? traditionalKnowledgeSource : undefined,
-        otherTraditionalKnowledgeSource: finalOtherTKSource,
+          hasTraditionalKnowledge: hasTraditionalKnowledge || undefined,
+          traditionalKnowledgeSource: hasTraditionalKnowledge === 'Yes' ? traditionalKnowledgeSource : undefined,
+          otherTraditionalKnowledgeSource: finalOtherTKSource,
 
-        observationAt,
-        recordedAt,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        accuracyMeters: locationAccuracy !== null ? locationAccuracy : null,
-        photo: photos[0] ?? null,
-        photos,
+          observationAt,
+          recordedAt: existingRecord.recordedAt, // Preserve original recording timestamp
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracyMeters: locationAccuracy !== null ? locationAccuracy : null,
+          photo: photos[0] ?? null,
+          photos,
 
-        verificationStatus: 'Unreviewed',
-        syncStatus: 'pending',
-        createdAt: nowTimestamp,
-        updatedAt: nowTimestamp,
+          verificationStatus: existingRecord.verificationStatus || 'Unreviewed',
+          verifiedBy: existingRecord.verifiedBy,
+          verificationNotes: existingRecord.verificationNotes,
+          syncStatus: 'pending',
+          createdAt: existingRecord.createdAt || existingRecord.recordedAt, // Preserve original creation timestamp
+          updatedAt: nowTimestamp,
+        }
+
+        await db.observations.put(updatedObservation)
+        setSaved(true)
+      } else {
+        const newObservation: Observation = {
+          id: crypto.randomUUID(),
+          // Link to parent Project / Ward / Survey session if active, undefined for standalone
+          surveyId: surveyId || undefined,
+          wardId: wardId || undefined,
+          projectId: projectId || undefined,
+
+          // Core Taxonomy & Identification
+          speciesName: speciesName.trim(),
+          localName: localName.trim() || undefined,
+          scientificName: scientificName.trim() || undefined,
+          speciesGroup: speciesGroup || undefined,
+          speciesGroups: speciesGroup || undefined,
+          otherSpeciesGroup: finalOtherGroup,
+          identificationStatus: identificationStatus as IdentificationStatus,
+          notes: notes.trim(),
+
+          // Ecological metadata
+          individualCount: parsedCount,
+          lifeStage: lifeStage || undefined,
+          microHabitat: microHabitat || undefined,
+          otherMicroHabitat: finalOtherMicroHabitat,
+
+          // Traditional Knowledge documentation
+          hasTraditionalKnowledge: hasTraditionalKnowledge || undefined,
+          traditionalKnowledgeSource: hasTraditionalKnowledge === 'Yes' ? traditionalKnowledgeSource : undefined,
+          otherTraditionalKnowledgeSource: finalOtherTKSource,
+
+          observationAt,
+          recordedAt,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracyMeters: locationAccuracy !== null ? locationAccuracy : null,
+          photo: photos[0] ?? null,
+          photos,
+
+          verificationStatus: 'Unreviewed',
+          syncStatus: 'pending',
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+        }
+
+        await db.observations.add(newObservation)
+        setSaved(true)
       }
-
-      await db.observations.add(newObservation)
-      setSaved(true)
     } catch (error) {
       alert(`Failed to save observation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
@@ -338,6 +451,15 @@ function Home() {
   const displayObservationTime = photoCapturedAt
     ? new Date(photoCapturedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
     : new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+
+  if (isLoadingExisting) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-[#C5D1BD]">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#C5D1BD]" />
+        <p className="mt-3 text-sm">Loading observation record...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-lg px-4 py-5 sm:px-6">
@@ -375,19 +497,34 @@ function Home() {
         <div className="mb-6 flex items-center justify-between border-b border-white/15 pb-4">
           <div>
             <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
-              Field Recording
+              {isEditMode ? 'Update Observation' : 'Field Recording'}
             </span>
             <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4]">
-              New Observation
+              {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
           </div>
-          <Link
-            to="/observations"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#F5F0E4] hover:bg-white/20 transition-colors"
-          >
-            <List className="h-3.5 w-3.5 text-[#C5D1BD]" />
-            <span>Saved Records</span>
-          </Link>
+          {isEditMode ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Discard unsaved changes and return to records?')) {
+                  navigate('/observations')
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span>Cancel</span>
+            </button>
+          ) : (
+            <Link
+              to="/observations"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#F5F0E4] hover:bg-white/20 transition-colors"
+            >
+              <List className="h-3.5 w-3.5 text-[#C5D1BD]" />
+              <span>Saved Records</span>
+            </Link>
+          )}
         </div>
       )}
 
@@ -846,12 +983,12 @@ function Home() {
             {isSaving ? (
               <>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#C5D1BD]" />
-                <span>Saving Record...</span>
+                <span>{isEditMode ? 'Updating Record...' : 'Saving Record...'}</span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                <span>Save Observation</span>
+                <span>{isEditMode ? 'Save Changes' : 'Save Observation'}</span>
               </>
             )}
           </Button>
@@ -863,29 +1000,41 @@ function Home() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <p className="text-base font-semibold text-[#263D2B]">
-                Observation saved to local database!
+                {isEditMode ? 'Observation updated successfully!' : 'Observation saved to local database!'}
               </p>
               <p className="text-xs text-[#414B32] mt-0.5">
                 Stored offline in IndexedDB on this device.
               </p>
               <div className="mt-4 flex gap-2.5">
-                <Button
-                  type="button"
-                  className="flex-1 min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
-                  onClick={resetForm}
-                >
-                  <RotateCcw className="h-4 w-4 mr-1.5 text-[#C5D1BD]" />
-                  <span>+ Record Next</span>
-                </Button>
-                <Link to="/observations" className="flex-1">
+                {isEditMode ? (
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full min-h-[46px] border-[#263D2B] text-[#263D2B] bg-white hover:bg-[#FAF7F0] text-sm font-medium tracking-wider uppercase rounded-xl transition-all"
+                    className="flex-1 min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
+                    onClick={() => navigate('/observations')}
                   >
-                    <span>View All</span>
+                    <span>Back to Records</span>
                   </Button>
-                </Link>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      className="flex-1 min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
+                      onClick={resetForm}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1.5 text-[#C5D1BD]" />
+                      <span>+ Record Next</span>
+                    </Button>
+                    <Link to="/observations" className="flex-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full min-h-[46px] border-[#263D2B] text-[#263D2B] bg-white hover:bg-[#FAF7F0] text-sm font-medium tracking-wider uppercase rounded-xl transition-all"
+                      >
+                        <span>View All</span>
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}

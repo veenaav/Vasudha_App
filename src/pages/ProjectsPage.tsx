@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { db, type Project } from '@/db/database'
-import { Plus, ArrowRight, Trash2, FolderPlus, MapPin, Building2, FolderGit2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
-import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
+import { Plus, ArrowRight, FolderPlus, MapPin, Building2, FolderGit2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import { getJoinedProjectIds } from './MyProjects'
 
 function ProjectsPage() {
   const navigate = useNavigate()
@@ -23,6 +23,7 @@ function ProjectsPage() {
 
   // Load projects from IndexedDB
   const loadProjects = async () => {
+    setJoinedIds(getJoinedProjectIds())
     const list = await db.projects.toArray()
     setProjects(list.reverse())
 
@@ -112,19 +113,6 @@ function ProjectsPage() {
     })
 
     await loadProjects()
-  }
-
-  // Delete project
-  const handleDeleteProject = async (id: string, projName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${projName}"? Associated wards and survey references will remain until cleaned.`)) {
-      await db.projects.delete(id)
-      await loadProjects()
-    }
-  }
-
-  const handleToggleJoin = (projId: string) => {
-    const updated = toggleJoinedProject(projId)
-    setJoinedIds(updated)
   }
 
   const displayedProjects =
@@ -282,7 +270,16 @@ function ProjectsPage() {
             return (
               <div
                 key={proj.id}
-                className="group rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all hover:border-white/30 text-[#F5F0E4]"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/projects/${proj.id}/wards`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    navigate(`/projects/${proj.id}/wards`)
+                  }
+                }}
+                className="group cursor-pointer rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all hover:border-white/40 hover:bg-white/[0.13] text-[#F5F0E4] focus:outline-none focus:ring-2 focus:ring-[#C5D1BD]/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -321,7 +318,13 @@ function ProjectsPage() {
                         {proj.description.length > 80 && (
                           <button
                             type="button"
-                            onClick={() => setExpandedProjectId(isExpanded ? null : proj.id)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setExpandedProjectId(isExpanded ? null : proj.id)
+                            }}
+                            onKeyDown={(e) => {
+                              e.stopPropagation()
+                            }}
                             className="mt-1 inline-flex items-center gap-0.5 text-[11px] text-[#C5D1BD] hover:text-[#F5F0E4] underline underline-offset-2"
                           >
                             <span>{isExpanded ? 'Show less' : 'Details'}</span>
@@ -331,53 +334,19 @@ function ProjectsPage() {
                       </div>
                     )}
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteProject(proj.id, proj.name)}
-                    className="rounded-lg p-2 text-[#B87555] hover:bg-[#B87555]/20 hover:text-[#E8A585] transition-colors"
-                    title="Delete project"
-                    aria-label="Delete project"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
 
-                {/* Action row */}
-                <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3 flex-wrap gap-2">
+                {/* Card Footer */}
+                <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
                   <span className="text-xs text-[#C5D1BD]">
                     <strong className="text-[#F5F0E4] font-semibold">{wardCounts[proj.id] ?? 0}</strong>{' '}
                     {wardCounts[proj.id] === 1 ? 'ward' : 'wards'}
                   </span>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleJoin(proj.id)}
-                      className={`inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-medium transition-all active:scale-95 ${
-                        isJoined
-                          ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 hover:bg-[#344F3A]'
-                          : 'bg-white/10 text-[#F5F0E4] border border-white/20 hover:bg-white/20'
-                      }`}
-                    >
-                      {isJoined ? (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 text-[#C5D1BD]" />
-                          <span>Joined</span>
-                        </>
-                      ) : (
-                        <span>+ Join Project</span>
-                      )}
-                    </button>
-
-                    <Button
-                      onClick={() => navigate(`/projects/${proj.id}/wards`)}
-                      className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-xs font-medium px-3.5 shadow-sm transition-all active:scale-95"
-                    >
-                      <span>Open</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-[#C5D1BD]" />
-                    </Button>
-                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs text-[#C5D1BD] group-hover:text-[#F5F0E4] transition-colors">
+                    <span>View project</span>
+                    <ArrowRight className="h-3.5 w-3.5 text-[#C5D1BD] group-hover:translate-x-0.5 transition-transform" />
+                  </span>
                 </div>
               </div>
             )
@@ -387,7 +356,7 @@ function ProjectsPage() {
             <FolderGit2 className="mx-auto h-12 w-12 text-[#C5D1BD]/70" />
             <h3 className="mt-2 font-heading text-xl font-normal text-[#F5F0E4]">No joined projects</h3>
             <p className="mt-1 text-xs text-[#C5D1BD] max-w-sm mx-auto">
-              You haven&apos;t joined any projects yet. Click &ldquo;+ Join Project&rdquo; on any project in All Projects to add it here.
+              You haven&apos;t joined any projects yet. Open any project to view details and join.
             </p>
             <Button
               onClick={() => setActiveTab('all')}

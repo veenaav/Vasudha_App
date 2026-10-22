@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { db, type Ward, type Project, type Observation } from '@/db/database'
-import { Plus, ArrowRight, Trash2, ArrowLeft, MapPin, Landmark, Layers, Leaf, Calendar } from 'lucide-react'
+import { Plus, ArrowRight, Trash2, ArrowLeft, MapPin, Landmark, Layers, Leaf, Calendar, Building2, CheckCircle2 } from 'lucide-react'
+import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
 
 function WardsPage() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -13,6 +14,17 @@ function WardsPage() {
   const [projectObservations, setProjectObservations] = useState<Observation[]>([])
   const [surveyCounts, setSurveyCounts] = useState<Record<string, number>>({})
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // Temporary mock role state for testing frontend permissions
+  const [userRole, setUserRole] = useState<'admin' | 'project_expert' | 'field_worker'>(() => {
+    const saved = localStorage.getItem('shrishti_mock_user_role')
+    if (saved === 'admin' || saved === 'project_expert' || saved === 'field_worker') {
+      return saved
+    }
+    return 'field_worker'
+  })
+  const canManageWards = userRole === 'admin' || userRole === 'project_expert'
+  const [isJoined, setIsJoined] = useState(false)
 
   // Form state
   const [wardNumber, setWardNumber] = useState('')
@@ -25,6 +37,8 @@ function WardsPage() {
 
   const loadData = async () => {
     if (!projectId) return
+    setIsJoined(getJoinedProjectIds().includes(projectId))
+
     const proj = await db.projects.get(projectId)
     if (proj) {
       setProject(proj)
@@ -57,6 +71,30 @@ function WardsPage() {
   useEffect(() => {
     loadData()
   }, [projectId])
+
+  const handleToggleJoin = () => {
+    if (!projectId) return
+    const updated = toggleJoinedProject(projectId)
+    setIsJoined(updated.includes(projectId))
+  }
+
+  const handleDeleteProject = async () => {
+    if (!project) return
+    const confirmed = window.confirm("Are you sure you want to delete this entire project and all its data?")
+    if (!confirmed) return
+
+    try {
+      await db.projects.delete(project.id)
+      await db.wards.where('projectId').equals(project.id).delete()
+      const currentJoined = getJoinedProjectIds()
+      if (currentJoined.includes(project.id)) {
+        toggleJoinedProject(project.id)
+      }
+      navigate('/projects')
+    } catch (err) {
+      alert(`Failed to delete project: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
 
   const handleCreateWard = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,6 +155,39 @@ function WardsPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-5 sm:px-6">
+      {/* Temporary Developer Testing: Role Switcher */}
+      <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs text-[#F5F0E4] backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="text-[11px] font-medium text-amber-200/90 tracking-wide">
+            🛠️ Dev Mode • Mock Role:
+          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {(
+              [
+                { id: 'admin', label: 'Admin' },
+                { id: 'project_expert', label: 'Project Expert' },
+                { id: 'field_worker', label: 'Field Worker' },
+              ] as const
+            ).map((role) => (
+              <button
+                key={role.id}
+                type="button"
+                onClick={() => {
+                  setUserRole(role.id)
+                  localStorage.setItem('shrishti_mock_user_role', role.id)
+                }}
+                className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${userRole === role.id
+                    ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-xs'
+                    : 'bg-white/5 text-[#C5D1BD] border border-white/10 hover:bg-white/10'
+                  }`}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Breadcrumb Navigation */}
       <nav className="mb-4 flex items-center gap-1.5 text-sm text-[#C5D1BD] flex-wrap">
         <Link to="/projects" className="inline-flex items-center gap-1 text-[#F5F0E4] font-medium hover:underline">
@@ -133,30 +204,100 @@ function WardsPage() {
 
       {/* Project Context Header */}
       <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-[#263D2B]/90 border border-[#C5D1BD]/40 px-2.5 py-0.5 text-xs font-semibold text-[#C5D1BD]">
-                Municipal Division
-              </span>
+        {/* Top Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="rounded-md bg-[#263D2B]/90 border border-[#C5D1BD]/40 px-2.5 py-0.5 text-xs font-semibold text-[#C5D1BD]">
+            Municipal Division
+          </span>
+          {isJoined && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#263D2B] border border-[#C5D1BD]/40 px-2.5 py-0.5 text-[10px] font-semibold text-[#C5D1BD] uppercase">
+              <CheckCircle2 className="h-3 w-3 text-[#C5D1BD]" />
+              Joined
+            </span>
+          )}
+        </div>
+
+        {/* Project Title & Metadata (Full Width) */}
+        <div className="mt-2.5 w-full">
+          <h1 className="font-heading text-xl sm:text-2xl font-normal text-[#F5F0E4] leading-snug">
+            {project?.name}
+          </h1>
+
+          {project?.organization && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-[#C5D1BD]">
+              <Building2 className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+              <span>{project.organization}</span>
+            </p>
+          )}
+
+          {project?.targetRegion && (
+            <p className="mt-1 flex items-center gap-1.5 text-xs sm:text-sm text-[#C5D1BD]">
+              <MapPin className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+              <span>{project.targetRegion}</span>
+            </p>
+          )}
+
+          {project?.description && (
+            <div className="mt-3.5 rounded-xl bg-black/25 border border-white/10 p-3.5 text-xs sm:text-sm text-[#C5D1BD]/90 leading-relaxed">
+              <p className="font-semibold text-[11px] text-[#F5F0E4] uppercase tracking-wider mb-1">
+                Project Scope & Guidelines:
+              </p>
+              <p className="whitespace-pre-line">{project.description}</p>
             </div>
-            <h1 className="mt-1 font-heading text-xl sm:text-2xl font-normal text-[#F5F0E4]">{project?.name}</h1>
-            {project?.organization && (
-              <p className="mt-0.5 text-xs text-[#C5D1BD]">{project.organization}</p>
+          )}
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className="mt-4 pt-3.5 border-t border-white/15 flex items-center justify-between gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Join Project button (accessible to all roles) */}
+            <button
+              type="button"
+              onClick={handleToggleJoin}
+              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition-all active:scale-95 shadow-sm ${isJoined
+                  ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 hover:bg-[#344F3A]'
+                  : 'bg-[#C5D1BD] text-[#263D2B] hover:bg-[#d8e2d1] font-semibold'
+                }`}
+            >
+              {isJoined ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-[#C5D1BD]" />
+                  <span>Joined</span>
+                </>
+              ) : (
+                <span>+ Join Project</span>
+              )}
+            </button>
+
+            {/* Add Ward button (admin & project_expert only) */}
+            {canManageWards && (
+              <Button
+                onClick={() => setShowAddForm((prev) => !prev)}
+                className="inline-flex min-h-[40px] items-center gap-1.5 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] font-medium text-xs sm:text-sm shadow-sm rounded-xl active:scale-95 transition-all"
+              >
+                <Plus className="h-4 w-4 text-[#C5D1BD]" />
+                <span>{showAddForm ? 'Cancel' : 'Add Ward'}</span>
+              </Button>
             )}
           </div>
-          <Button
-            onClick={() => setShowAddForm((prev) => !prev)}
-            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] font-medium text-base shadow-sm rounded-xl active:scale-95 transition-all"
-          >
-            <Plus className="h-4 w-4 text-[#C5D1BD]" />
-            <span>{showAddForm ? 'Cancel' : 'Add Ward'}</span>
-          </Button>
+
+          {/* Delete Project button (admin & project_expert only) */}
+          {canManageWards && (
+            <button
+              type="button"
+              onClick={handleDeleteProject}
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-red-950/40 text-red-200 border border-red-500/40 hover:bg-red-900/50 hover:border-red-400 px-3.5 py-2 text-xs sm:text-sm font-medium transition-all active:scale-95 ml-auto sm:ml-0"
+              title="Delete Project"
+            >
+              <Trash2 className="h-4 w-4 text-red-300" />
+              <span>Delete Project</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Add Ward Form (Collapsible) - MOYA Warm Cream Style */}
-      {showAddForm && (
+      {canManageWards && showAddForm && (
         <form onSubmit={handleCreateWard} className="mb-6 rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
           <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-2">
             Add Municipal Ward / Local Site
@@ -304,15 +445,17 @@ function WardsPage() {
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDeleteWard(ward.id, `Ward ${ward.wardNumber} - ${ward.wardName}`)}
-                  className="rounded-lg p-2 text-[#B87555] hover:bg-[#B87555]/20 hover:text-[#E8A585] transition-colors"
-                  title="Delete ward"
-                  aria-label="Delete ward"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {canManageWards && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteWard(ward.id, `Ward ${ward.wardNumber} - ${ward.wardName}`)}
+                    className="rounded-lg p-2 text-[#B87555] hover:bg-[#B87555]/20 hover:text-[#E8A585] transition-colors"
+                    title="Delete ward"
+                    aria-label="Delete ward"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
 
               {/* Action row */}
@@ -339,12 +482,14 @@ function WardsPage() {
             <p className="mt-1 text-sm text-[#C5D1BD] max-w-sm mx-auto">
               Add a municipal ward or local site to begin conducting biodiversity field visits.
             </p>
-            <Button
-              onClick={() => setShowAddForm(true)}
-              className="mt-5 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-base font-medium min-h-[48px] rounded-xl px-5 active:scale-95 shadow-sm"
-            >
-              + Add First Ward
-            </Button>
+            {canManageWards && (
+              <Button
+                onClick={() => setShowAddForm(true)}
+                className="mt-5 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-base font-medium min-h-[48px] rounded-xl px-5 active:scale-95 shadow-sm"
+              >
+                + Add First Ward
+              </Button>
+            )}
           </div>
         )}
       </div>

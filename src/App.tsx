@@ -22,6 +22,10 @@ function App() {
           {/* 3. Saved Observations List Screen */}
           <Route path="/observations" element={<ObservationsPage />} />
 
+          {/* 4. Edit Observation Screen */}
+          <Route path="/observations/:id/edit" element={<Home />} />
+          <Route path="/edit-observation/:id" element={<Home />} />
+
           {/* Active Field Survey Observation screen (hierarchical session link) */}
           <Route
             path="/projects/:projectId/wards/:wardId/surveys/:surveyId/observations"
