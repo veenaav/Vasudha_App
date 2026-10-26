@@ -37,7 +37,7 @@ const formatCoordinate = (value?: number | string | null) => {
   return Number.isNaN(num) ? null : num.toFixed(5)
 }
 
-// Visual style mapping for identification verification pills matching Shrishti palette
+// Visual style mapping for identification verification pills matching B LIFFE palette
 const STATUS_STYLES: Record<IdentificationStatus, { bg: string; text: string; border: string }> = {
   Identified: {
     bg: 'bg-[#263D2B]/95',

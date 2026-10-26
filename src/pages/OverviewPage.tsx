@@ -114,10 +114,10 @@ export default function OverviewPage() {
               </span>
             </div>
             <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Shrishti Field Data Platform
+              B LIFFE Field Data Platform
             </h1>
             <p className="max-w-xl text-xs text-[#DCE8D9]/90 sm:text-sm">
-              Document flora, fauna, and local ecological knowledge directly from municipal wards with offline GPS precision.
+              Document flora, fauna, and local ecological knowledge with offline GPS precision.
             </p>
           </div>
 

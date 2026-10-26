@@ -20,18 +20,21 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content layer */}
       <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Top Application Bar */}
-        <TopBar onOpenDrawer={() => setIsDrawerOpen(true)} />
+        {/* Top Application Bar with B LIFFE branding & Home icon */}
+        <TopBar />
 
-        {/* Main Viewport Content Area with padding for bottom nav on mobile */}
-        <main className="flex-1 pb-24 md:pb-12">
+        {/* Main Viewport Content Area with ample padding for bottom nav on mobile */}
+        <main className="flex-1 pb-28 sm:pb-20">
           {children}
         </main>
 
-        {/* Sticky Bottom Navigation for Mobile */}
-        <BottomNav />
+        {/* Sticky Bottom Navigation (3 items: New Observation, Records, Menu) */}
+        <BottomNav
+          onOpenMenu={() => setIsDrawerOpen(true)}
+          isMenuOpen={isDrawerOpen}
+        />
 
-        {/* Slide-out Navigation Drawer */}
+        {/* Slide-out Menu Drawer / Bottom Sheet */}
         <NavigationDrawer
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}

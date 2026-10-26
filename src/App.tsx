@@ -7,6 +7,11 @@ import ProjectsPage from '@/pages/ProjectsPage'
 import MyProjects from '@/pages/MyProjects'
 import WardsPage from '@/pages/WardsPage'
 import SurveysPage from '@/pages/SurveysPage'
+import SettingsPage from '@/pages/SettingsPage'
+import AboutPage from '@/pages/AboutPage'
+import FAQPage from '@/pages/FAQPage'
+import OfflineSyncPage from '@/pages/OfflineSyncPage'
+import PrivacyPage from '@/pages/PrivacyPage'
 
 function App() {
   return (
@@ -39,6 +44,13 @@ function App() {
           <Route path="/projects/:projectId/overview" element={<WardsPage />} />
           <Route path="/projects/:projectId/wards" element={<WardsPage />} />
           <Route path="/projects/:projectId/wards/:wardId/surveys" element={<SurveysPage />} />
+
+          {/* Informational & Configuration Pages */}
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/offline-sync" element={<OfflineSyncPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
 
           {/* Catch-all fallback to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />

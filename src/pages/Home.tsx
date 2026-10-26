@@ -22,7 +22,6 @@ import {
   RotateCcw,
   Loader2,
   X,
-  List,
   Clock,
   AlertCircle,
   Compass,
@@ -572,7 +571,7 @@ function Home() {
               {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
           </div>
-          {isEditMode ? (
+          {isEditMode && (
             <button
               type="button"
               onClick={() => {
@@ -585,14 +584,6 @@ function Home() {
               <X className="h-3.5 w-3.5" />
               <span>Cancel</span>
             </button>
-          ) : (
-            <Link
-              to="/observations"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#F5F0E4] hover:bg-white/20 transition-colors"
-            >
-              <List className="h-3.5 w-3.5 text-[#C5D1BD]" />
-              <span>Saved Records</span>
-            </Link>
           )}
         </div>
       )}
@@ -1172,25 +1163,14 @@ function Home() {
                     <span>Back to Records</span>
                   </Button>
                 ) : (
-                  <>
-                    <Button
-                      type="button"
-                      className="flex-1 min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
-                      onClick={resetForm}
-                    >
-                      <RotateCcw className="h-4 w-4 mr-1.5 text-[#C5D1BD]" />
-                      <span>+ Record Next</span>
-                    </Button>
-                    <Link to="/observations" className="flex-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full min-h-[46px] border-[#263D2B] text-[#263D2B] bg-white hover:bg-[#FAF7F0] text-sm font-medium tracking-wider uppercase rounded-xl transition-all"
-                      >
-                        <span>View All</span>
-                      </Button>
-                    </Link>
-                  </>
+                  <Button
+                    type="button"
+                    className="w-full min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
+                    onClick={resetForm}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1.5 text-[#C5D1BD]" />
+                    <span>+ Record Next Observation</span>
+                  </Button>
                 )}
               </div>
             </div>

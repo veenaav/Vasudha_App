@@ -348,7 +348,7 @@ function WardsPage() {
                   <div className="text-right text-xs text-[#C5D1BD]/80 shrink-0">
                     <span className="flex items-center gap-1 font-medium">
                       <Calendar className="h-3 w-3 text-[#C5D1BD]" />
-                      {new Date(obs.recordedAt || obs.createdAt || Date.now()).toLocaleDateString('en-IN', {
+                      {new Date(obs.recordedAt || obs.createdAt || 0).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
                       })}

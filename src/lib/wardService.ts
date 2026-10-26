@@ -1,5 +1,5 @@
 /**
- * Ward Identification Service for Shrishti
+ * Ward Identification Service for B LIFFE
  *
  * Architectural preparation for Thiruvananthapuram Corporation GIS boundary integration.
  * In the future, this module will match GPS coordinates (latitude, longitude)
