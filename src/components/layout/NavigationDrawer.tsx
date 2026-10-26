@@ -91,7 +91,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
 
       {/* Drawer Surface: Side panel on desktop, comfortable drawer/sheet on mobile */}
       <aside
-        className="relative ml-auto flex h-full w-full max-w-md flex-col border-l border-white/15 bg-[#142217]/98 backdrop-blur-2xl text-[#F5F0E4] shadow-2xl overflow-hidden"
+        className="relative ml-auto flex h-full w-full max-w-md flex-col border-l border-slate-200 bg-white/98 backdrop-blur-2xl text-slate-800 shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-label="Application Menu"
@@ -131,16 +131,22 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           /* Main Menu View */
           <>
             {/* Header */}
-            <div className="relative z-10 flex items-center justify-between border-b border-white/15 bg-white/5 px-4 py-3.5 sm:px-5">
+            <div className="relative z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3.5 sm:px-5">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#263D2B] border border-[#C5D1BD]/30 text-[#F5F0E4]">
-                  <Leaf className="h-4.5 w-4.5 text-[#C5D1BD]" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200/80 p-0.5 shadow-xs overflow-hidden">
+                  <img src="/logo.png" alt="B-liffe" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-heading text-lg font-normal tracking-[0.18em] uppercase text-[#F5F0E4] truncate leading-tight">
-                    B LIFFE
-                  </h2>
-                  <p className="text-[9px] tracking-wider uppercase text-[#C5D1BD]/85 truncate">
+                  <div className="flex items-baseline font-sans font-extrabold text-lg tracking-normal leading-none">
+                    <span style={{ color: '#39A935' }}>B</span>
+                    <span style={{ color: '#39A935' }}>-</span>
+                    <span style={{ color: '#39A935' }}>l</span>
+                    <span style={{ color: '#39A935' }}>i</span>
+                    <span style={{ color: '#F28C28' }}>f</span>
+                    <span style={{ color: '#39A935' }}>f</span>
+                    <span style={{ color: '#39A935' }}>e</span>
+                  </div>
+                  <p className="text-[10px] tracking-wider uppercase font-semibold text-slate-500 truncate mt-0.5">
                     Menu & Information
                   </p>
                 </div>
@@ -149,7 +155,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-[#F5F0E4] hover:bg-white/20 transition-all active:scale-95 focus:outline-none"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95 focus:outline-none"
                 aria-label="Close menu"
               >
                 <X className="h-4.5 w-4.5" />
@@ -163,25 +169,24 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
                 to="/projects"
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${
-                    isActive
-                      ? 'bg-[#263D2B] border border-[#C5D1BD]/40 text-[#F5F0E4]'
-                      : 'text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent'
+                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
+                    ? 'bg-emerald-50 border border-emerald-200 text-[#165B33]'
+                    : 'text-slate-800 hover:bg-slate-50 border border-transparent'
                   }`
                 }
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-[#165B33]">
                     <FolderGit2 className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">Projects & Field Hub</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">Projects & Field Hub</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Explore and join biodiversity projects.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </NavLink>
 
               {/* 2. My Joined Projects */}
@@ -189,139 +194,146 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
                 to="/my-projects"
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${
-                    isActive
-                      ? 'bg-[#263D2B] border border-[#C5D1BD]/40 text-[#F5F0E4]'
-                      : 'text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent'
+                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
+                    ? 'bg-orange-50 border border-orange-200 text-[#EA580C]'
+                    : 'text-slate-800 hover:bg-slate-50 border border-transparent'
                   }`
                 }
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-orange-50 border border-orange-100 text-[#EA580C]">
                     <BookmarkCheck className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">My Joined Projects</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">My Joined Projects</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Access your project activities.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </NavLink>
 
               {/* 3. Field Guide & Help */}
               <button
                 type="button"
                 onClick={() => setSubView('faq')}
-                className="w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent"
+                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-slate-800 hover:bg-slate-50 border border-transparent"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 border border-blue-100 text-[#2563EB]">
                     <BookOpen className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">Field Guide & Help</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">Field Guide & Help</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Recording instructions and FAQs.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </button>
 
-              {/* 4. About B LIFFE */}
+              {/* 4. About B-LIFFE */}
               <button
                 type="button"
                 onClick={() => setSubView('about')}
-                className="w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent"
+                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-slate-800 hover:bg-slate-50 border border-transparent"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-[#16A34A]">
                     <Leaf className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">About B LIFFE</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">About B-LIFFE</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Mission, features and conservation goals.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </button>
 
               {/* 5. Settings */}
               <button
                 type="button"
                 onClick={() => setSubView('settings')}
-                className="w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent"
+                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-slate-800 hover:bg-slate-50 border border-transparent"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 border border-amber-100 text-[#D97706]">
                     <Sliders className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">Settings</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">Settings</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Preferences and appearance.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </button>
 
               {/* 6. Offline Data & Sync */}
               <button
                 type="button"
                 onClick={() => setSubView('sync')}
-                className="w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent"
+                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-slate-800 hover:bg-slate-50 border border-transparent"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-teal-50 border border-teal-100 text-[#0D9488]">
                     <Database className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="block text-sm font-medium leading-snug">Offline Data & Sync</span>
+                      <span className="block text-sm font-semibold leading-snug">Offline Data & Sync</span>
                       {localObservationCount !== null && (
-                        <span className="rounded-full bg-[#263D2B] px-2 py-0.2 text-[10px] font-medium text-[#C5D1BD] border border-[#C5D1BD]/30">
+                        <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-[#0D9488] border border-teal-200">
                           {localObservationCount} on device
                         </span>
                       )}
                     </div>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Saved data and synchronisation status.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </button>
 
               {/* 7. Privacy & Data Sharing */}
               <button
                 type="button"
                 onClick={() => setSubView('privacy')}
-                className="w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F5F0E4]/90 hover:bg-white/10 border border-transparent"
+                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-slate-800 hover:bg-slate-50 border border-transparent"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100 text-[#4F46E5]">
                     <ShieldCheck className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-medium leading-snug">Privacy & Data Sharing</span>
-                    <span className="block text-[11px] text-[#C5D1BD]/75 truncate">
+                    <span className="block text-sm font-semibold leading-snug">Privacy & Data Sharing</span>
+                    <span className="block text-[11px] text-slate-500 truncate">
                       Understand how observation data is handled.
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#C5D1BD]/60 ml-2" />
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-slate-600 ml-2" />
               </button>
             </div>
 
             {/* Drawer Footer */}
-            <div className="border-t border-white/15 bg-white/5 px-4 py-3 text-center text-xs text-[#C5D1BD]/80">
-              <p className="font-medium text-[#F5F0E4]">B LIFFE</p>
-              <p className="text-[10px] text-[#C5D1BD]/70">
+            <div className="border-t border-slate-200 bg-slate-50/80 px-4 py-3 text-center text-xs text-slate-600">
+              <div className="flex items-baseline justify-center font-sans font-extrabold text-base tracking-normal leading-none">
+                <span style={{ color: '#39A935' }}>B</span>
+                <span style={{ color: '#39A935' }}>-</span>
+                <span style={{ color: '#39A935' }}>l</span>
+                <span style={{ color: '#39A935' }}>i</span>
+                <span style={{ color: '#F28C28' }}>f</span>
+                <span style={{ color: '#39A935' }}>f</span>
+                <span style={{ color: '#39A935' }}>e</span>
+              </div>
+              <p className="text-[10px] text-slate-500 font-normal mt-0.5">
                 Bharat Local Informatics for Flora, Fauna, and Ecosystems
               </p>
             </div>

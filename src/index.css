@@ -5,25 +5,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: 'Playfair Display', Georgia, serif;
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    /* Shrishti Nature-focused Refined Palette */
-    --color-forest: #263D2B;
-    --color-forest-dark: #1A2B1E;
-    --color-forest-light: #344F3A;
-    --color-olive: #414B32;
-    --color-olive-dark: #2F3724;
-    --color-olive-light: #536041;
-    --color-cream: #F5F0E4;
-    --color-cream-light: #FAF7F0;
-    --color-cream-dark: #E6DFCD;
-    --color-sage: #C5D1BD;
-    --color-sage-light: #DEE7D7;
-    --color-sage-dark: #A9BCA0;
-    --color-terracotta: #B87555;
-    --color-terracotta-dark: #9F5F41;
-    --color-terracotta-light: #CF8B6D;
+    /* B-LIFFE Living Biodiversity Palette (Based on Official Logo) */
+    --color-forest: #165B33;
+    --color-forest-dark: #104426;
+    --color-forest-light: #1E7E46;
+    --color-saffron: #EA580C;
+    --color-saffron-dark: #C2410C;
+    --color-saffron-light: #FB923C;
+    --color-amber: #D97706;
+    --color-amber-light: #FBBF24;
+    --color-sky: #2563EB;
+    --color-sky-light: #60A5FA;
+    --color-emerald: #16A34A;
+    --color-cream: #FAF7F0;
+    --color-olive: #3D5A40;
+    --color-sage: #E2EBE2;
+    --color-terracotta: #EA580C;
 
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -61,34 +61,34 @@
 }
 
 :root {
-    --background: #18261B;
-    --foreground: #F5F0E4;
-    --card: #263D2B;
-    --card-foreground: #F5F0E4;
-    --popover: #263D2B;
-    --popover-foreground: #F5F0E4;
-    --primary: #263D2B;
-    --primary-foreground: #F5F0E4;
-    --secondary: #414B32;
-    --secondary-foreground: #F5F0E4;
-    --muted: #2F3E30;
-    --muted-foreground: #C5D1BD;
-    --accent: #414B32;
-    --accent-foreground: #F5F0E4;
-    --terracotta: #B87555;
-    --destructive: #B87555;
-    --border: rgba(197, 209, 189, 0.25);
-    --input: rgba(197, 209, 189, 0.3);
-    --ring: #C5D1BD;
+    --background: #F8FAF7;
+    --foreground: #1E293B;
+    --card: #FFFFFF;
+    --card-foreground: #1E293B;
+    --popover: #FFFFFF;
+    --popover-foreground: #1E293B;
+    --primary: #165B33;
+    --primary-foreground: #FFFFFF;
+    --secondary: #EFF6FF;
+    --secondary-foreground: #1E293B;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #EA580C;
+    --accent-foreground: #FFFFFF;
+    --terracotta: #EA580C;
+    --destructive: #DC2626;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #165B33;
     --radius: 1rem;
-    --sidebar: #1E2E21;
-    --sidebar-foreground: #F5F0E4;
-    --sidebar-primary: #263D2B;
-    --sidebar-primary-foreground: #F5F0E4;
-    --sidebar-accent: #2F3E30;
-    --sidebar-accent-foreground: #F5F0E4;
-    --sidebar-border: rgba(197, 209, 189, 0.25);
-    --sidebar-ring: #C5D1BD;
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #1E293B;
+    --sidebar-primary: #165B33;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #F1F5F9;
+    --sidebar-accent-foreground: #1E293B;
+    --sidebar-border: #E2E8F0;
+    --sidebar-ring: #165B33;
 }
 
 @layer base {
@@ -96,8 +96,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    background-color: #18261B;
-    color: #F5F0E4;
+    background-color: #F8FAF7;
+    color: #1E293B;
     font-family: var(--font-sans);
     min-height: 100vh;
     font-size: 16px;

@@ -41,8 +41,8 @@ const FAQ_ITEMS: FAQItem[] = [
     answer:
       'B LIFFE provides a clean, uncluttered interface tailored for handheld field recording.',
     bulletPoints: [
-      'Top Header: Tap the Home icon on the left of the header at any time to return directly to the main dashboard.',
-      'Bottom Navigation Bar: Always accessible at the bottom of the screen with three primary actions: "New Observation" (create new record), "Records" (browse saved observations), and "Menu" (open settings, guides, and project tools).',
+      'Bottom Navigation Bar: Always accessible at the bottom of the screen with four primary actions: "Home" (return to dashboard), "New Observation" (create new record), "Records" (browse saved observations), and "Menu" (open settings, guides, and project tools).',
+      'Branding Header: Displays the B-liffe logo and full subtitle, aligned to the left of the screen.',
       'Breadcrumbs: When inside specific projects or survey visits, breadcrumbs at the top of the screen allow you to step back to the project overview.',
     ],
   },
@@ -167,17 +167,17 @@ export default function FAQPage({ onBack }: FAQPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F5F0E4]">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-slate-800">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/15 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
             Fieldwork Guidance & FAQ
           </span>
-          <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4] mt-0.5">
+          <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900 mt-0.5">
             Field Guide & Help
           </h1>
-          <p className="text-xs text-[#C5D1BD]/85 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Recording instructions and FAQs
           </p>
         </div>
@@ -186,7 +186,7 @@ export default function FAQPage({ onBack }: FAQPageProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
@@ -194,7 +194,7 @@ export default function FAQPage({ onBack }: FAQPageProps) {
         ) : (
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Dashboard</span>
@@ -202,8 +202,8 @@ export default function FAQPage({ onBack }: FAQPageProps) {
         )}
       </div>
 
-      <p className="text-xs text-[#C5D1BD] leading-relaxed">
-        Step-by-step guidance for field workers and researchers using B LIFFE. Features currently
+      <p className="text-xs text-slate-600 leading-relaxed">
+        Step-by-step guidance for field workers and researchers using B-LIFFE. Features currently
         operational on this device are clearly marked alongside planned capabilities.
       </p>
 
@@ -216,56 +216,56 @@ export default function FAQPage({ onBack }: FAQPageProps) {
           return (
             <div
               key={item.id}
-              className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md overflow-hidden transition-all shadow-md"
+              className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden transition-all shadow-xs"
             >
               <button
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                className="w-full flex items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-white/5 focus:outline-none"
+                className="w-full flex items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-slate-50 focus:outline-none"
                 aria-expanded={isOpen}
               >
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#263D2B] border border-[#C5D1BD]/30 text-[#C5D1BD]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-[#165B33]">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-semibold text-[#C5D1BD]/80 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                         Guide {item.number}
                       </span>
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold border ${
                           item.status === 'working'
-                            ? 'bg-[#263D2B] text-[#C5D1BD] border-[#C5D1BD]/40'
-                            : 'bg-amber-500/20 text-amber-200 border-amber-400/30'
+                            ? 'bg-emerald-50 text-[#165B33] border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
                         }`}
                       >
                         {item.status === 'working' ? (
-                          <CheckCircle2 className="h-2.5 w-2.5 text-[#C5D1BD]" />
+                          <CheckCircle2 className="h-2.5 w-2.5 text-[#165B33]" />
                         ) : (
-                          <Clock className="h-2.5 w-2.5 text-amber-300" />
+                          <Clock className="h-2.5 w-2.5 text-amber-700" />
                         )}
                         <span>{item.statusLabel}</span>
                       </span>
                     </div>
-                    <h2 className="font-heading text-base font-normal text-[#F5F0E4] truncate mt-0.5">
+                    <h2 className="font-heading text-base font-semibold text-slate-900 truncate mt-0.5">
                       {item.question}
                     </h2>
                   </div>
                 </div>
 
-                <div className="shrink-0 text-[#C5D1BD]">
+                <div className="shrink-0 text-slate-400">
                   {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
 
               {isOpen && (
-                <div className="border-t border-white/10 bg-black/20 p-4 text-xs sm:text-sm text-[#C5D1BD]/90 space-y-2.5 leading-relaxed">
+                <div className="border-t border-slate-100 bg-slate-50/70 p-4 text-xs sm:text-sm text-slate-700 space-y-2.5 leading-relaxed">
                   <p>{item.answer}</p>
                   {item.bulletPoints && (
-                    <ul className="space-y-1.5 pl-3 list-disc marker:text-[#C5D1BD]/60">
+                    <ul className="space-y-1.5 pl-3 list-disc marker:text-[#165B33]">
                       {item.bulletPoints.map((pt, idx) => (
-                        <li key={idx} className="text-xs text-[#F5F0E4]/90">
+                        <li key={idx} className="text-xs text-slate-800">
                           {pt}
                         </li>
                       ))}

@@ -17,14 +17,14 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ onBack }: SettingsPageProps) {
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F5F0E4]">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-slate-800">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/15 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
             Configuration & Preferences
           </span>
-          <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4] mt-0.5">
+          <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900 mt-0.5">
             Settings
           </h1>
         </div>
@@ -33,7 +33,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
@@ -41,7 +41,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         ) : (
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Dashboard</span>
@@ -49,9 +49,9 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         )}
       </div>
 
-      <p className="text-xs text-[#C5D1BD] leading-relaxed">
+      <p className="text-xs text-slate-600 leading-relaxed">
         Manage your local storage, display options, and integration preferences. In accordance with
-        B LIFFE&apos;s field-data transparency principles, all working options and planned features
+        B-LIFFE&apos;s field-data transparency principles, all working options and planned features
         are clearly labelled.
       </p>
 
@@ -175,9 +175,9 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
           <div className="mt-3 space-y-2 text-xs text-[#414B32]">
             <p className="leading-relaxed">
-              The application uses an optimized, outdoor-contrast nature theme (`#142217` forest dark
-              background paired with `#FAF7F0` warm cream cards) specifically engineered for field
-              readability in direct daylight.
+              The application uses an optimized, outdoor-contrast living biodiversity theme (luminous
+              pearl canvas `#F8FAF7`, botanical emerald green `#165B33`, warm saffron orange `#EA580C`,
+              and crisp off-white cards) specifically engineered for field readability in direct daylight.
             </p>
             <p className="text-[11px] text-[#414B32]/75 italic">
               Manual toggle between alternate light and dark themes is planned for subsequent releases.

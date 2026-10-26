@@ -105,39 +105,36 @@ function ProjectsPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-5 sm:px-6">
       {/* Header section */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/15 pb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#263D2B] border border-[#C5D1BD]/30 text-[#C5D1BD]">
-              <FolderGit2 className="h-4.5 w-4.5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-[#165B33]">
+              <FolderGit2 className="h-5 w-5" />
             </div>
-            <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4]">
+            <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900">
               Projects
             </h1>
           </div>
-
         </div>
 
         <Button
           onClick={() => setShowAddForm((prev) => !prev)}
-          className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] font-medium text-base shadow-sm rounded-xl transition-all active:scale-95"
+          className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white border border-emerald-600/30 hover:from-[#134D2C] hover:to-[#17663A] font-medium text-sm shadow-xs rounded-xl transition-all active:scale-95"
         >
-          <Plus className="h-4 w-4 text-[#C5D1BD]" />
+          <Plus className="h-4 w-4 text-white" />
           <span>{showAddForm ? 'Cancel' : 'New Project'}</span>
         </Button>
-
-
       </div>
 
       {/* Tabs: All Projects vs My Projects */}
-      <div className="mt-4 flex items-center gap-2 border-b border-white/10 pb-3">
+      <div className="mt-4 flex items-center gap-2 border-b border-slate-200 pb-3">
         <button
           type="button"
           onClick={() => setActiveTab('all')}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
             activeTab === 'all'
-              ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-sm'
-              : 'bg-white/5 text-[#C5D1BD] border border-white/15 hover:bg-white/10'
+              ? 'bg-[#165B33] text-white shadow-xs'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
           }`}
         >
           All Projects ({projects.length})
@@ -148,8 +145,8 @@ function ProjectsPage() {
           onClick={() => setActiveTab('my')}
           className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
             activeTab === 'my'
-              ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-sm'
-              : 'bg-white/5 text-[#C5D1BD] border border-white/15 hover:bg-white/10'
+              ? 'bg-[#165B33] text-white shadow-xs'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
           }`}
         >
           My Projects ({projects.filter((p) => joinedIds.includes(p.id)).length})
@@ -261,39 +258,39 @@ function ProjectsPage() {
                     navigate(`/projects/${proj.id}/wards`)
                   }
                 }}
-                className="group cursor-pointer rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all hover:border-white/40 hover:bg-white/[0.13] text-[#F5F0E4] focus:outline-none focus:ring-2 focus:ring-[#C5D1BD]/50"
+                className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 hover:shadow-md text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#165B33]/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="font-heading text-xl font-normal text-[#F5F0E4] truncate">{proj.name}</h2>
-                      <span className="rounded-full bg-[#263D2B]/90 border border-[#C5D1BD]/40 px-2.5 py-0.5 text-xs font-semibold text-[#C5D1BD]">
+                      <h2 className="font-heading text-xl font-bold text-slate-900 group-hover:text-[#165B33] transition-colors truncate">{proj.name}</h2>
+                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
                         Active
                       </span>
                       {isJoined && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#263D2B] border border-[#C5D1BD]/40 px-2 py-0.5 text-[10px] font-semibold text-[#C5D1BD] uppercase">
-                          <CheckCircle2 className="h-3 w-3 text-[#C5D1BD]" />
+                        <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 border border-orange-200 px-2 py-0.5 text-[10px] font-semibold text-[#EA580C] uppercase">
+                          <CheckCircle2 className="h-3 w-3 text-[#EA580C]" />
                           Joined
                         </span>
                       )}
                     </div>
 
                     {proj.organization && (
-                      <p className="mt-1 flex items-center gap-1.5 text-sm text-[#C5D1BD]">
-                        <Building2 className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+                        <Building2 className="h-4 w-4 text-[#165B33] shrink-0" />
                         <span className="truncate">{proj.organization}</span>
                       </p>
                     )}
 
                     {proj.targetRegion && (
-                      <p className="mt-0.5 flex items-center gap-1.5 text-sm text-[#C5D1BD]">
-                        <MapPin className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+                      <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
+                        <MapPin className="h-4 w-4 text-[#165B33] shrink-0" />
                         <span className="truncate">{proj.targetRegion}</span>
                       </p>
                     )}
 
                     {proj.description && (
-                      <div className="mt-2 text-xs text-[#C5D1BD]/90">
+                      <div className="mt-2 text-xs text-slate-600">
                         <p className={isExpanded ? 'leading-relaxed' : 'line-clamp-2 leading-relaxed'}>
                           {proj.description}
                         </p>
@@ -307,7 +304,7 @@ function ProjectsPage() {
                             onKeyDown={(e) => {
                               e.stopPropagation()
                             }}
-                            className="mt-1 inline-flex items-center gap-0.5 text-[11px] text-[#C5D1BD] hover:text-[#F5F0E4] underline underline-offset-2"
+                            className="mt-1 inline-flex items-center gap-0.5 text-[11px] text-[#165B33] hover:underline"
                           >
                             <span>{isExpanded ? 'Show less' : 'Details'}</span>
                             {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -319,52 +316,52 @@ function ProjectsPage() {
                 </div>
 
                 {/* Card Footer */}
-                <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
-                  <span className="text-xs text-[#C5D1BD]">
-                    <strong className="text-[#F5F0E4] font-semibold">{observationCounts[proj.id] ?? 0}</strong>{' '}
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                  <span className="text-xs text-slate-500">
+                    <strong className="text-slate-900 font-bold">{observationCounts[proj.id] ?? 0}</strong>{' '}
                     {observationCounts[proj.id] === 1 ? 'observation' : 'observations'}
                   </span>
 
-                  <span className="inline-flex items-center gap-1 text-xs text-[#C5D1BD] group-hover:text-[#F5F0E4] transition-colors">
+                  <span className="inline-flex items-center gap-1 text-xs text-slate-500 group-hover:text-[#165B33] transition-colors">
                     <span>View project</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-[#C5D1BD] group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-[#165B33] group-hover:translate-x-0.5 transition-transform" />
                   </span>
                 </div>
               </div>
             )
           })
         ) : activeTab === 'my' ? (
-          <div className="rounded-2xl border border-dashed border-white/25 p-8 text-center bg-white/10 backdrop-blur-md shadow-xl">
-            <FolderGit2 className="mx-auto h-12 w-12 text-[#C5D1BD]/70" />
-            <h3 className="mt-2 font-heading text-xl font-normal text-[#F5F0E4]">No joined projects</h3>
-            <p className="mt-1 text-xs text-[#C5D1BD] max-w-sm mx-auto">
+          <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center bg-white shadow-xs">
+            <FolderGit2 className="mx-auto h-12 w-12 text-slate-300" />
+            <h3 className="mt-2 font-heading text-xl font-bold text-slate-900">No joined projects</h3>
+            <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
               You haven&apos;t joined any projects yet. Open any project to view details and join.
             </p>
             <Button
               onClick={() => setActiveTab('all')}
-              className="mt-4 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-xs font-medium rounded-xl active:scale-95 shadow-sm"
+              className="mt-4 bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-xs font-semibold rounded-xl active:scale-95 shadow-xs"
             >
               Browse All Projects
             </Button>
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/25 p-8 text-center bg-white/10 backdrop-blur-md shadow-xl">
-            <FolderPlus className="mx-auto h-12 w-12 text-[#C5D1BD]" />
-            <h3 className="mt-2 font-heading text-xl font-normal text-[#F5F0E4]">No projects yet</h3>
-            <p className="mt-1 text-sm text-[#C5D1BD] max-w-sm mx-auto">
+          <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center bg-white shadow-xs">
+            <FolderPlus className="mx-auto h-12 w-12 text-[#165B33]/60" />
+            <h3 className="mt-2 font-heading text-xl font-bold text-slate-900">No projects yet</h3>
+            <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
               Create a project to organize biodiversity field data and occurrences across Thiruvananthapuram Corporation.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
               <Button
                 onClick={() => setShowAddForm(true)}
-                className="bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-base font-medium min-h-[48px] rounded-xl active:scale-95 shadow-sm"
+                className="bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-sm font-semibold min-h-[46px] rounded-xl active:scale-95 shadow-xs"
               >
                 + Create Project
               </Button>
               <Button
                 variant="outline"
                 onClick={handleCreateSampleProject}
-                className="border-white/20 bg-white/10 text-[#F5F0E4] hover:bg-white/20 text-base font-medium min-h-[48px] rounded-xl active:scale-95"
+                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-sm font-semibold min-h-[46px] rounded-xl active:scale-95 shadow-xs"
               >
                 + Load Sample PBR Project
               </Button>

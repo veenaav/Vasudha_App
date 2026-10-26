@@ -522,8 +522,8 @@ function Home() {
 
   if (isLoadingExisting) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center text-[#C5D1BD]">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#C5D1BD]" />
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-slate-500">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#165B33]" />
         <p className="mt-3 text-sm">Loading observation record...</p>
       </div>
     )
@@ -534,21 +534,21 @@ function Home() {
       {/* Header Context */}
       {surveyId ? (
         <div className="mb-6">
-          <nav className="mb-2.5 flex items-center gap-1.5 text-xs tracking-wider uppercase text-[#C5D1BD]">
+          <nav className="mb-2.5 flex items-center gap-1.5 text-xs tracking-wider uppercase text-slate-500">
             <Link
               to={`/projects/${projectId}/wards/${wardId}/surveys`}
-              className="inline-flex items-center gap-1 text-[#F5F0E4] hover:underline"
+              className="inline-flex items-center gap-1 text-[#165B33] font-medium hover:underline"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Field Visits</span>
             </Link>
             <span>/</span>
-            <span className="font-semibold text-[#F5F0E4]">Log Observation</span>
+            <span className="font-semibold text-slate-800">Log Observation</span>
           </nav>
 
           <div className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-4 sm:p-5 shadow-xl text-[#263D2B]">
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-[#263D2B] px-3 py-0.5 text-xs font-semibold tracking-wider uppercase text-[#F5F0E4]">
+              <span className="rounded-full bg-[#165B33] px-3 py-0.5 text-xs font-semibold tracking-wider uppercase text-white">
                 Ward {activeWard?.wardNumber}
               </span>
               <span className="text-xs text-[#414B32] font-medium">
@@ -562,12 +562,12 @@ function Home() {
           </div>
         </div>
       ) : (
-        <div className="mb-6 flex items-center justify-between border-b border-white/15 pb-4">
+        <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
           <div>
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
               {isEditMode ? 'Update Observation' : 'Field Recording'}
             </span>
-            <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4]">
+            <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900">
               {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
           </div>
@@ -579,7 +579,7 @@ function Home() {
                   navigate('/observations')
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
             >
               <X className="h-3.5 w-3.5" />
               <span>Cancel</span>
@@ -1124,18 +1124,18 @@ function Home() {
         <section className="pt-2">
           <Button
             type="button"
-            className="min-h-[52px] w-full bg-[#263D2B] text-[#F5F0E4] hover:bg-[#1E3022] border border-[#C5D1BD]/40 font-medium text-base sm:text-lg tracking-wider uppercase shadow-xl rounded-full sm:rounded-2xl active:scale-[0.98] transition-all"
+            className="min-h-[52px] w-full bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white border border-emerald-600/30 font-medium text-base sm:text-lg tracking-wider uppercase shadow-md rounded-full sm:rounded-2xl active:scale-[0.98] transition-all"
             disabled={saved || isSaving}
             onClick={handleSaveObservation}
           >
             {isSaving ? (
               <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#C5D1BD]" />
+                <Loader2 className="h-5 w-5 mr-2 animate-spin text-white" />
                 <span>{isEditMode ? 'Updating Record...' : 'Saving Record...'}</span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                <CheckCircle2 className="h-5 w-5 mr-2 text-white" />
                 <span>{isEditMode ? 'Save Changes' : 'Save Observation'}</span>
               </>
             )}
@@ -1143,21 +1143,21 @@ function Home() {
 
           {/* Saved Confirmation Banner */}
           {saved && (
-            <div className="mt-4 rounded-3xl border border-[#C5D1BD] bg-[#E8EFE5] p-5 text-center shadow-xl text-[#263D2B]">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#263D2B] text-[#F5F0E4] mb-2">
+            <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-center shadow-xs text-emerald-950">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#165B33] text-white mb-2 shadow-xs">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
-              <p className="text-base font-semibold text-[#263D2B]">
+              <p className="text-base font-bold text-[#165B33]">
                 {isEditMode ? 'Observation updated successfully!' : 'Observation saved to local database!'}
               </p>
-              <p className="text-xs text-[#414B32] mt-0.5">
+              <p className="text-xs text-emerald-800 mt-0.5">
                 Stored offline in IndexedDB on this device.
               </p>
               <div className="mt-4 flex gap-2.5">
                 {isEditMode ? (
                   <Button
                     type="button"
-                    className="flex-1 min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
+                    className="flex-1 min-h-[46px] bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-xs"
                     onClick={() => navigate('/observations')}
                   >
                     <span>Back to Records</span>
@@ -1165,10 +1165,10 @@ function Home() {
                 ) : (
                   <Button
                     type="button"
-                    className="w-full min-h-[46px] bg-[#263D2B] hover:bg-[#1E3022] text-[#F5F0E4] text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-sm"
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-xs"
                     onClick={resetForm}
                   >
-                    <RotateCcw className="h-4 w-4 mr-1.5 text-[#C5D1BD]" />
+                    <RotateCcw className="h-4 w-4 mr-1.5 text-white" />
                     <span>+ Record Next Observation</span>
                   </Button>
                 )}

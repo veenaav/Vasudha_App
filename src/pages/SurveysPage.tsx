@@ -137,46 +137,46 @@ function SurveysPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 text-slate-800">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-4 flex items-center gap-1.5 text-sm text-[#C5D1BD] flex-wrap">
-        <Link to="/projects" className="text-[#F5F0E4] font-medium hover:underline">
+      <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 flex-wrap">
+        <Link to="/projects" className="text-[#165B33] font-semibold hover:underline">
           Projects
         </Link>
         <span>/</span>
         <Link
           to={`/projects/${projectId}/wards`}
-          className="inline-flex items-center gap-1 text-[#F5F0E4] font-medium hover:underline truncate max-w-[200px]"
+          className="inline-flex items-center gap-1 text-[#165B33] font-semibold hover:underline truncate max-w-[200px]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>{ward ? `Ward ${ward.wardNumber}` : 'Wards'}</span>
         </Link>
         <span>/</span>
-        <span className="font-semibold text-[#F5F0E4]">Field Visits</span>
+        <span className="font-semibold text-slate-900">Field Visits</span>
       </nav>
 
       {/* Ward Context Header */}
-      <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl mb-6">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs mb-6 text-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-md bg-[#263D2B] border border-[#C5D1BD]/30 px-2.5 py-0.5 text-xs font-semibold text-[#F5F0E4]">
+              <span className="rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
                 Ward {ward?.wardNumber}
               </span>
-              <h1 className="font-heading text-xl sm:text-2xl font-normal text-[#F5F0E4]">{ward?.wardName}</h1>
+              <h1 className="font-heading text-xl sm:text-2xl font-semibold text-slate-900">{ward?.wardName}</h1>
             </div>
             {project && (
-              <p className="mt-1 text-xs text-[#C5D1BD]">
-                Project: <span className="text-[#F5F0E4] font-medium">{project.name}</span>
+              <p className="mt-1 text-xs text-slate-500">
+                Project: <span className="text-slate-800 font-medium">{project.name}</span>
               </p>
             )}
           </div>
 
           <Button
             onClick={() => setShowAddForm((prev) => !prev)}
-            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] font-medium text-base shadow-sm rounded-xl active:scale-95 transition-all"
+            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] font-medium text-sm shadow-xs rounded-xl active:scale-95 transition-all"
           >
-            <Plus className="h-4 w-4 text-[#C5D1BD]" />
+            <Plus className="h-4 w-4 text-white" />
             <span>{showAddForm ? 'Cancel' : 'Start Field Visit'}</span>
           </Button>
         </div>
@@ -303,40 +303,40 @@ function SurveysPage() {
           surveys.map((survey) => (
             <div
               key={survey.id}
-              className="group rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl transition-all hover:border-white/30 text-[#F5F0E4]"
+              className="group rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 text-slate-800"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="flex items-center gap-1.5 font-heading text-lg font-normal text-[#F5F0E4]">
-                      <User className="h-4 w-4 text-[#C5D1BD]" />
+                    <span className="flex items-center gap-1.5 font-heading text-lg font-bold text-slate-900">
+                      <User className="h-4 w-4 text-[#165B33]" />
                       {survey.leadObserver}
                     </span>
-                    <span className="rounded-full bg-[#263D2B] border border-[#C5D1BD]/40 px-2.5 py-0.5 text-xs font-semibold text-[#C5D1BD]">
+                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
                       {survey.surveyMethod}
                     </span>
                   </div>
 
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#C5D1BD]">
-                    <Calendar className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
+                    <Calendar className="h-3.5 w-3.5 text-[#165B33]" />
                     <span>Started: {formatDateTime(survey.startTime)}</span>
                   </p>
 
-                  <div className="mt-2.5 flex items-center gap-2 text-xs text-[#F5F0E4] flex-wrap">
+                  <div className="mt-2.5 flex items-center gap-2 text-xs text-slate-700 flex-wrap">
                     {survey.habitatType && (
-                      <span className="bg-white/10 border border-white/15 rounded-lg px-2.5 py-0.5 font-normal">
+                      <span className="bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-0.5 font-medium">
                         Habitat: {survey.habitatType}
                       </span>
                     )}
                     {survey.targetGroup && (
-                      <span className="bg-white/10 border border-white/15 rounded-lg px-2.5 py-0.5 font-normal">
+                      <span className="bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-0.5 font-medium">
                         Focus: {survey.targetGroup}
                       </span>
                     )}
                   </div>
 
                   {survey.weatherNotes && (
-                    <p className="mt-2 text-xs text-[#C5D1BD]/90 italic">
+                    <p className="mt-2 text-xs text-slate-500 italic">
                       &ldquo;{survey.weatherNotes}&rdquo;
                     </p>
                   )}
@@ -345,7 +345,7 @@ function SurveysPage() {
                 <button
                   type="button"
                   onClick={() => handleDeleteSurvey(survey.id)}
-                  className="rounded-lg p-2 text-[#B87555] hover:bg-[#B87555]/20 hover:text-[#E8A585] transition-colors"
+                  className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
                   title="Delete field visit"
                   aria-label="Delete field visit"
                 >
@@ -354,9 +354,9 @@ function SurveysPage() {
               </div>
 
               {/* Action row */}
-              <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
-                <span className="text-xs text-[#C5D1BD]">
-                  <strong className="text-[#F5F0E4] font-semibold">{observationCounts[survey.id] ?? 0}</strong>{' '}
+              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                <span className="text-xs text-slate-500">
+                  <strong className="text-slate-900 font-bold">{observationCounts[survey.id] ?? 0}</strong>{' '}
                   {observationCounts[survey.id] === 1 ? 'observation' : 'observations'} logged
                 </span>
 
@@ -364,25 +364,25 @@ function SurveysPage() {
                   onClick={() =>
                     navigate(`/projects/${projectId}/wards/${wardId}/surveys/${survey.id}/observations`)
                   }
-                  className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-sm font-medium px-4 shadow-sm transition-all active:scale-95"
+                  className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-sm font-semibold px-4 shadow-xs transition-all active:scale-95"
                 >
-                  <Leaf className="h-4 w-4 text-[#C5D1BD]" />
+                  <Leaf className="h-4 w-4 text-emerald-100" />
                   <span>Log Species</span>
-                  <ArrowRight className="h-4 w-4 ml-0.5 text-[#C5D1BD]" />
+                  <ArrowRight className="h-4 w-4 ml-0.5 text-emerald-100" />
                 </Button>
               </div>
             </div>
           ))
         ) : (
-          <div className="rounded-2xl border border-dashed border-white/25 p-8 text-center bg-white/10 backdrop-blur-md shadow-xl">
-            <Layers className="mx-auto h-12 w-12 text-[#C5D1BD]" />
-            <h3 className="mt-3 font-heading text-xl font-normal text-[#F5F0E4]">No field visits recorded yet</h3>
-            <p className="mt-1 text-sm text-[#C5D1BD] max-w-sm mx-auto">
+          <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center bg-white shadow-xs">
+            <Layers className="mx-auto h-12 w-12 text-[#165B33]/60" />
+            <h3 className="mt-3 font-heading text-xl font-bold text-slate-900">No field visits recorded yet</h3>
+            <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
               Start a field visit in Ward {ward?.wardNumber || ''} to log species observations.
             </p>
             <Button
               onClick={() => setShowAddForm(true)}
-              className="mt-5 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#324D38] text-base font-medium min-h-[48px] px-6 rounded-xl active:scale-95 shadow-sm"
+              className="mt-5 bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-sm font-semibold min-h-[46px] px-6 rounded-xl active:scale-95 shadow-xs"
             >
               + Start Field Visit
             </Button>

@@ -52,17 +52,17 @@ export default function OfflineSyncPage({ onBack }: OfflineSyncPageProps) {
   }, [])
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F5F0E4]">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-slate-800">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/15 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
             Data Management & Sync
           </span>
-          <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4] mt-0.5">
+          <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900 mt-0.5">
             Offline Data & Sync
           </h1>
-          <p className="text-xs text-[#C5D1BD]/85 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Saved data and synchronisation status
           </p>
         </div>
@@ -71,7 +71,7 @@ export default function OfflineSyncPage({ onBack }: OfflineSyncPageProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
@@ -79,7 +79,7 @@ export default function OfflineSyncPage({ onBack }: OfflineSyncPageProps) {
         ) : (
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 hover:text-[#F5F0E4] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Dashboard</span>
@@ -173,49 +173,49 @@ export default function OfflineSyncPage({ onBack }: OfflineSyncPageProps) {
 
       {/* Offline Capabilities Clarity */}
       <div className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#C5D1BD]">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[#165B33]">
           Operational Offline Capabilities
         </h3>
 
-        <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4 space-y-2 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-[#F5F0E4]">
-            <HardDrive className="h-4 w-4 text-[#C5D1BD]" />
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2 text-xs shadow-xs">
+          <div className="flex items-center gap-2 font-semibold text-slate-900">
+            <HardDrive className="h-4 w-4 text-[#165B33]" />
             <span>Local IndexedDB Persistence (Active)</span>
           </div>
-          <p className="text-[#C5D1BD]/85 leading-relaxed">
+          <p className="text-slate-600 leading-relaxed">
             All observation records, taxonomy names, and ecology notes are committed directly to your
             browser&apos;s IndexedDB store on this device.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4 space-y-2 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-[#F5F0E4]">
-            <Camera className="h-4 w-4 text-[#C5D1BD]" />
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2 text-xs shadow-xs">
+          <div className="flex items-center gap-2 font-semibold text-slate-900">
+            <Camera className="h-4 w-4 text-[#165B33]" />
             <span>Field Photographs (Stored Locally)</span>
           </div>
-          <p className="text-[#C5D1BD]/85 leading-relaxed">
+          <p className="text-slate-600 leading-relaxed">
             Attached photographs are converted to binary Blobs and stored inside IndexedDB. Photos
             remain viewable offline on this device.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4 space-y-2 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-[#F5F0E4]">
-            <MapPin className="h-4 w-4 text-[#C5D1BD]" />
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2 text-xs shadow-xs">
+          <div className="flex items-center gap-2 font-semibold text-slate-900">
+            <MapPin className="h-4 w-4 text-[#165B33]" />
             <span>Hardware GPS Geolocation (Active Offline)</span>
           </div>
-          <p className="text-[#C5D1BD]/85 leading-relaxed">
+          <p className="text-slate-600 leading-relaxed">
             Geolocation relies on your phone&apos;s onboard GPS hardware chip, receiving satellite
             signals directly without needing cellular data or internet coverage.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-4 space-y-2 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-[#F5F0E4]">
-            <CloudOff className="h-4 w-4 text-[#C5D1BD]" />
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-4 space-y-2 text-xs shadow-xs">
+          <div className="flex items-center gap-2 font-semibold text-slate-900">
+            <CloudOff className="h-4 w-4 text-[#EA580C]" />
             <span>What Requires Internet Connectivity</span>
           </div>
-          <p className="text-[#C5D1BD]/85 leading-relaxed">
+          <p className="text-slate-600 leading-relaxed">
             Interactive map base layer tile loading and future remote registry submissions require
             active network connections.
           </p>

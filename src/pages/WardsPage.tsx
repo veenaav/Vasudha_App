@@ -110,11 +110,11 @@ function WardsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 text-slate-800">
       {/* Temporary Developer Testing: Role Switcher */}
-      <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs text-[#F5F0E4] backdrop-blur-md">
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3.5 py-2 text-xs text-amber-900">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <span className="text-[11px] font-medium text-amber-200/90 tracking-wide">
+          <span className="text-[11px] font-semibold text-amber-800 tracking-wide">
             🛠️ Dev Mode • Mock Role:
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -132,10 +132,10 @@ function WardsPage() {
                   setUserRole(role.id)
                   localStorage.setItem('shrishti_mock_user_role', role.id)
                 }}
-                className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all ${
+                className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
                   userRole === role.id
-                    ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-xs'
-                    : 'bg-white/5 text-[#C5D1BD] border border-white/10 hover:bg-white/10'
+                    ? 'bg-[#165B33] text-white shadow-xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 {role.label}
@@ -146,29 +146,29 @@ function WardsPage() {
       </div>
 
       {/* Breadcrumb Navigation */}
-      <nav className="mb-4 flex items-center gap-1.5 text-sm text-[#C5D1BD] flex-wrap">
-        <Link to="/projects" className="inline-flex items-center gap-1 text-[#F5F0E4] font-medium hover:underline">
+      <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 flex-wrap">
+        <Link to="/projects" className="inline-flex items-center gap-1 text-[#165B33] font-semibold hover:underline">
           <ArrowLeft className="h-4 w-4" />
           <span>Projects</span>
         </Link>
         <span>/</span>
-        <span className="text-[#C5D1BD]/80 truncate max-w-[200px]">
+        <span className="text-slate-600 truncate max-w-[200px]">
           {project.name}
         </span>
         <span>/</span>
-        <span className="font-semibold text-[#F5F0E4]">Overview</span>
+        <span className="font-semibold text-slate-900">Overview</span>
       </nav>
 
       {/* Project Context Header */}
-      <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md p-5 shadow-xl mb-6">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs mb-6 text-slate-800">
         {/* Top Badges */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="rounded-md bg-[#263D2B]/90 border border-[#C5D1BD]/40 px-2.5 py-0.5 text-xs font-semibold text-[#C5D1BD]">
+          <span className="rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
             Project Hub
           </span>
           {isJoined && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#263D2B] border border-[#C5D1BD]/40 px-2.5 py-0.5 text-[10px] font-semibold text-[#C5D1BD] uppercase">
-              <CheckCircle2 className="h-3 w-3 text-[#C5D1BD]" />
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 border border-orange-200 px-2.5 py-0.5 text-[10px] font-semibold text-[#EA580C] uppercase">
+              <CheckCircle2 className="h-3 w-3 text-[#EA580C]" />
               Joined
             </span>
           )}
@@ -176,27 +176,27 @@ function WardsPage() {
 
         {/* Project Title & Metadata (Full Width) */}
         <div className="mt-2.5 w-full">
-          <h1 className="font-heading text-xl sm:text-2xl font-normal text-[#F5F0E4] leading-snug">
+          <h1 className="font-heading text-xl sm:text-2xl font-semibold text-slate-900 leading-snug">
             {project.name}
           </h1>
 
           {project.organization && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-[#C5D1BD]">
-              <Building2 className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-slate-600">
+              <Building2 className="h-4 w-4 text-[#165B33] shrink-0" />
               <span>{project.organization}</span>
             </p>
           )}
 
           {project.targetRegion && (
-            <p className="mt-1 flex items-center gap-1.5 text-xs sm:text-sm text-[#C5D1BD]">
-              <MapPin className="h-4 w-4 text-[#C5D1BD] shrink-0" />
+            <p className="mt-1 flex items-center gap-1.5 text-xs sm:text-sm text-slate-600">
+              <MapPin className="h-4 w-4 text-[#165B33] shrink-0" />
               <span>{project.targetRegion}</span>
             </p>
           )}
 
           {project.description && (
-            <div className="mt-3.5 rounded-xl bg-black/25 border border-white/10 p-3.5 text-xs sm:text-sm text-[#C5D1BD]/90 leading-relaxed">
-              <p className="font-semibold text-[11px] text-[#F5F0E4] uppercase tracking-wider mb-1">
+            <div className="mt-3.5 rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
+              <p className="font-semibold text-[11px] text-slate-900 uppercase tracking-wider mb-1">
                 Project Scope & Guidelines:
               </p>
               <p className="whitespace-pre-line">{project.description}</p>
@@ -205,14 +205,14 @@ function WardsPage() {
         </div>
 
         {/* Action Buttons Row */}
-        <div className="mt-4 pt-3.5 border-t border-white/15 flex items-center justify-between gap-2.5 flex-wrap">
+        <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2.5 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Primary Action: Direct New Observation for this project */}
             <Button
               onClick={() => navigate(`/new-observation?projectId=${projectId}`)}
-              className="inline-flex min-h-[40px] items-center gap-1.5 bg-[#C5D1BD] text-[#263D2B] hover:bg-[#d8e2d1] font-semibold text-xs sm:text-sm shadow-sm rounded-xl active:scale-95 transition-all"
+              className="inline-flex min-h-[40px] items-center gap-1.5 bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white font-semibold text-xs sm:text-sm shadow-xs rounded-xl active:scale-95 transition-all"
             >
-              <Plus className="h-4 w-4 text-[#263D2B]" />
+              <Plus className="h-4 w-4 text-white" />
               <span>Record Observation</span>
             </Button>
 
@@ -220,15 +220,15 @@ function WardsPage() {
             <button
               type="button"
               onClick={handleToggleJoin}
-              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-medium transition-all active:scale-95 shadow-sm ${
+              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-xs ${
                 isJoined
-                  ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 hover:bg-[#344F3A]'
-                  : 'bg-white/10 text-[#F5F0E4] border border-white/20 hover:bg-white/20'
+                  ? 'bg-orange-50 text-[#EA580C] border border-orange-200 hover:bg-orange-100'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               {isJoined ? (
                 <>
-                  <CheckCircle2 className="h-4 w-4 text-[#C5D1BD]" />
+                  <CheckCircle2 className="h-4 w-4 text-[#EA580C]" />
                   <span>Joined</span>
                 </>
               ) : (
@@ -242,10 +242,10 @@ function WardsPage() {
             <button
               type="button"
               onClick={handleDeleteProject}
-              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-red-950/40 text-red-200 border border-red-500/40 hover:bg-red-900/50 hover:border-red-400 px-3.5 py-2 text-xs sm:text-sm font-medium transition-all active:scale-95 ml-auto sm:ml-0"
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 ml-auto sm:ml-0 shadow-xs"
               title="Delete Project"
             >
-              <Trash2 className="h-4 w-4 text-red-300" />
+              <Trash2 className="h-4 w-4 text-rose-600" />
               <span>Delete Project</span>
             </button>
           )}
@@ -257,11 +257,11 @@ function WardsPage() {
         <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
           <div className="flex items-center gap-2">
             <Compass className="h-5 w-5 text-[#263D2B]" />
-            <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
+            <h2 className="font-heading text-base sm:text-lg font-bold tracking-wider uppercase text-[#263D2B]">
               Automatic GPS Ward Identification
             </h2>
           </div>
-          <span className="rounded-full bg-[#263D2B] px-2.5 py-0.5 text-[10px] font-semibold text-[#F5F0E4] uppercase tracking-wider">
+          <span className="rounded-full bg-[#165B33] px-2.5 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wider">
             No Manual Wards
           </span>
         </div>
@@ -284,23 +284,23 @@ function WardsPage() {
       </div>
 
       {/* Project Observations Section */}
-      <div className="border-t border-white/15 pt-6">
+      <div className="border-t border-slate-200 pt-6">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <Leaf className="h-4.5 w-4.5 text-[#C5D1BD]" />
-            <h2 className="font-heading text-lg sm:text-xl font-normal text-[#F5F0E4]">
+            <Leaf className="h-4.5 w-4.5 text-[#165B33]" />
+            <h2 className="font-heading text-lg sm:text-xl font-bold text-slate-900">
               Project Observations
             </h2>
           </div>
-          <span className="text-xs text-[#C5D1BD]">
+          <span className="text-xs text-slate-500">
             {projectObservations.length} {projectObservations.length === 1 ? 'record' : 'records'}
           </span>
         </div>
 
         {projectObservations.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-center text-xs text-[#C5D1BD]">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-xs text-slate-500 shadow-xs">
             <p>No observations recorded in this project yet.</p>
-            <p className="mt-1 text-[11px] text-[#C5D1BD]/80">
+            <p className="mt-1 text-[11px] text-slate-400">
               Tap &quot;Record Observation&quot; above to log species directly in the field.
             </p>
           </div>
@@ -314,9 +314,9 @@ function WardsPage() {
               return (
                 <div
                   key={obs.id}
-                  className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-3.5 flex items-center gap-3 text-[#F5F0E4] shadow-md"
+                  className="rounded-2xl border border-slate-200/90 bg-white p-3.5 flex items-center gap-3 text-slate-800 shadow-xs hover:border-emerald-300 transition-colors"
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-black/30 shadow-inner">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                     {previewUrl ? (
                       <img
                         src={previewUrl}
@@ -324,30 +324,30 @@ function WardsPage() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <Leaf className="h-5 w-5 text-[#C5D1BD]/60" />
+                      <Leaf className="h-5 w-5 text-slate-300" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-[#263D2B] px-2 py-0.5 text-[10px] font-semibold text-[#C5D1BD] border border-[#C5D1BD]/30 uppercase">
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-[#165B33] border border-emerald-200 uppercase">
                         {obs.identificationStatus || 'Record'}
                       </span>
                       {obs.speciesGroup && (
-                        <span className="text-xs text-[#C5D1BD]/80 truncate">
+                        <span className="text-xs text-slate-500 truncate">
                           • {obs.speciesGroup}
                         </span>
                       )}
                     </div>
-                    <h3 className="font-heading text-base font-normal truncate mt-0.5">
+                    <h3 className="font-heading text-base font-bold text-slate-900 truncate mt-0.5">
                       {obs.speciesName}
                     </h3>
                     {obs.localName && (
-                      <p className="text-xs text-[#C5D1BD] truncate">{obs.localName}</p>
+                      <p className="text-xs text-slate-500 truncate">{obs.localName}</p>
                     )}
                   </div>
-                  <div className="text-right text-xs text-[#C5D1BD]/80 shrink-0">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Calendar className="h-3 w-3 text-[#C5D1BD]" />
+                  <div className="text-right text-xs text-slate-400 shrink-0">
+                    <span className="flex items-center gap-1 font-medium text-slate-600">
+                      <Calendar className="h-3 w-3 text-[#165B33]" />
                       {new Date(obs.recordedAt || obs.createdAt || 0).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',

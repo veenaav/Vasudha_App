@@ -37,22 +37,22 @@ const formatCoordinate = (value?: number | string | null) => {
   return Number.isNaN(num) ? null : num.toFixed(5)
 }
 
-// Visual style mapping for identification verification pills matching B LIFFE palette
+// Visual style mapping for identification verification pills matching B-LIFFE palette
 const STATUS_STYLES: Record<IdentificationStatus, { bg: string; text: string; border: string }> = {
   Identified: {
-    bg: 'bg-[#263D2B]/95',
-    text: 'text-[#C5D1BD]',
-    border: 'border-[#C5D1BD]/50',
+    bg: 'bg-[#165B33]',
+    text: 'text-white',
+    border: 'border-emerald-600',
   },
   Unknown: {
-    bg: 'bg-black/75',
-    text: 'text-[#F5F0E4]',
-    border: 'border-white/30',
+    bg: 'bg-slate-700',
+    text: 'text-white',
+    border: 'border-slate-600',
   },
   'Needs verification': {
-    bg: 'bg-[#B87555]/90',
-    text: 'text-[#FAF7F0]',
-    border: 'border-[#B87555]',
+    bg: 'bg-[#EA580C]',
+    text: 'text-white',
+    border: 'border-orange-500',
   },
 }
 
@@ -130,7 +130,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
       {/* 1. Image-first observation card — Entire card is clickable to open details */}
       <article
         onClick={() => setIsDetailOpen(true)}
-        className="group cursor-pointer overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-md shadow-xl transition-all duration-200 hover:border-white/35 hover:shadow-2xl text-[#F5F0E4]"
+        className="group cursor-pointer overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-200 hover:border-emerald-300 hover:shadow-md text-slate-800"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -142,7 +142,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         aria-label={`View details for ${displayTitle}`}
       >
         {/* Photograph occupies 60–70% of card visible area */}
-        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-black/30">
+        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
           {photoUrls.length > 0 ? (
             <img
               src={photoUrls[0]}
@@ -150,8 +150,8 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center bg-black/25 text-[#C5D1BD]/60">
-              <Camera className="h-10 w-10 stroke-[1.5] text-[#C5D1BD]/40" />
+            <div className="flex h-full w-full flex-col items-center justify-center bg-slate-100 text-slate-400">
+              <Camera className="h-10 w-10 stroke-[1.5] text-slate-300" />
               <span className="mt-2 text-xs font-medium tracking-wide">No photograph attached</span>
             </div>
           )}
@@ -160,10 +160,10 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
           {observation.identificationStatus && (
             <div className="absolute top-3 left-3 z-10">
               <span
-                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] tracking-wider uppercase font-semibold backdrop-blur-md shadow-sm ${
-                  statusConfig?.bg || 'bg-black/60'
-                } ${statusConfig?.text || 'text-[#F5F0E4]'} ${
-                  statusConfig?.border || 'border-white/20'
+                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] tracking-wider uppercase font-medium shadow-xs ${
+                  statusConfig?.bg || 'bg-slate-700'
+                } ${statusConfig?.text || 'text-white'} ${
+                  statusConfig?.border || 'border-slate-600'
                 }`}
               >
                 {observation.identificationStatus}
@@ -186,7 +186,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                   onDelete(observation.id!)
                 }
               }}
-              className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-[#F5F0E4] backdrop-blur-md border border-white/25 hover:bg-[#B87555] hover:text-white hover:border-[#B87555] transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-[#B87555]"
+              className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 backdrop-blur-md border border-slate-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
               title="Delete observation from local storage"
               aria-label={`Delete ${displayTitle}`}
             >
@@ -199,28 +199,28 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         <div className="p-4 sm:p-5 space-y-2">
           {/* Common / species name — prominent and bold */}
           <div>
-            <h3 className="font-heading text-lg sm:text-xl font-bold tracking-tight text-[#F5F0E4] line-clamp-1">
+            <h3 className="font-heading text-lg sm:text-xl font-semibold tracking-tight text-slate-900 line-clamp-1">
               {displayTitle}
             </h3>
 
             {/* Scientific name — secondary text, if available */}
             {observation.scientificName?.trim() && (
-              <p className="mt-0.5 text-xs sm:text-sm italic text-[#C5D1BD]/85 line-clamp-1">
+              <p className="mt-0.5 text-xs sm:text-sm italic text-emerald-800 line-clamp-1">
                 {observation.scientificName.trim()}
               </p>
             )}
           </div>
 
-          <div className="pt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs text-[#C5D1BD] border-t border-white/10">
+          <div className="pt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs text-slate-500 border-t border-slate-100">
             {/* Recorded time — smaller text */}
-            <div className="flex items-center gap-1.5 text-[11px] text-[#C5D1BD]/80">
-              <Clock className="h-3.5 w-3.5 shrink-0 text-[#C5D1BD]" />
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <Clock className="h-3.5 w-3.5 shrink-0 text-[#165B33]" />
               <span>{formatDateTime(recordedTimestamp)}</span>
             </div>
 
-            {/* Location coordinates — latitude and longitude (no GPS accuracy on the card) */}
-            <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#F5F0E4]/90">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#C5D1BD]" />
+            {/* Location coordinates — latitude and longitude */}
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-700">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#165B33]" />
               <span>
                 {hasCoordinates ? `${latStr}, ${lngStr}` : 'Coordinates not recorded'}
               </span>
@@ -232,30 +232,30 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
       {/* 5. Detailed View Modal — Extended information, only non-empty fields */}
       {isDetailOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto"
           onClick={() => setIsDetailOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-label={`Observation Details: ${displayTitle}`}
         >
           <div
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-white/20 bg-[#1A2E20] text-[#F5F0E4] shadow-2xl p-5 sm:p-6 space-y-5"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white text-slate-800 shadow-2xl p-5 sm:p-6 space-y-5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#C5D1BD]">
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#165B33]">
                   Observation Details
                 </span>
-                <h2 className="font-heading text-xl sm:text-2xl font-bold text-[#F5F0E4]">
+                <h2 className="font-heading text-xl sm:text-2xl font-semibold text-slate-900">
                   {displayTitle}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDetailOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#F5F0E4] hover:bg-white/20 transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
                 aria-label="Close detailed view"
               >
                 <X className="h-5 w-5" />
@@ -265,7 +265,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             {/* Full-size photograph and any additional photos */}
             {photoUrls.length > 0 ? (
               <div className="space-y-2">
-                <div className="overflow-hidden rounded-2xl border border-white/20 bg-black/40">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                   <img
                     src={photoUrls[activePhotoIdx] || photoUrls[0]}
                     alt={`${displayTitle} full size`}
@@ -282,8 +282,8 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                         onClick={() => setActivePhotoIdx(idx)}
                         className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                           activePhotoIdx === idx
-                            ? 'border-[#C5D1BD] ring-2 ring-[#C5D1BD]/50'
-                            : 'border-white/20 opacity-70 hover:opacity-100'
+                            ? 'border-[#165B33] ring-2 ring-[#165B33]/40'
+                            : 'border-slate-200 opacity-70 hover:opacity-100'
                         }`}
                         aria-label={`View photo ${idx + 1}`}
                       >
@@ -298,37 +298,37 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 )}
               </div>
             ) : (
-              <div className="flex h-36 w-full flex-col items-center justify-center rounded-2xl border border-white/15 bg-black/20 text-[#C5D1BD]/60">
-                <Camera className="h-8 w-8 stroke-[1.5] text-[#C5D1BD]/40" />
+              <div className="flex h-36 w-full flex-col items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-400">
+                <Camera className="h-8 w-8 stroke-[1.5] text-slate-300" />
                 <span className="mt-1.5 text-xs font-medium">No photograph attached</span>
               </div>
             )}
 
             {/* Taxonomy & Identification details */}
-            <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2.5">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold tracking-wider uppercase text-[#C5D1BD]">
+                <span className="text-xs font-semibold tracking-wider uppercase text-slate-500">
                   Identification Status
                 </span>
                 {observation.identificationStatus ? (
                   <span
-                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold ${
-                      statusConfig?.bg || 'bg-black/60'
-                    } ${statusConfig?.text || 'text-[#F5F0E4]'} ${
-                      statusConfig?.border || 'border-white/20'
+                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold shadow-xs ${
+                      statusConfig?.bg || 'bg-slate-700'
+                    } ${statusConfig?.text || 'text-white'} ${
+                      statusConfig?.border || 'border-slate-600'
                     }`}
                   >
                     {observation.identificationStatus}
                   </span>
                 ) : (
-                  <span className="text-xs text-[#C5D1BD]/60">Not specified</span>
+                  <span className="text-xs text-slate-400">Not specified</span>
                 )}
               </div>
 
               {observation.scientificName?.trim() && (
                 <div className="text-sm">
-                  <span className="text-xs text-[#C5D1BD] block">Scientific Name:</span>
-                  <span className="italic font-medium text-[#F5F0E4]">
+                  <span className="text-xs text-slate-500 block">Scientific Name:</span>
+                  <span className="italic font-semibold text-emerald-800">
                     {observation.scientificName.trim()}
                   </span>
                 </div>
@@ -336,31 +336,31 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
               {observation.localName?.trim() && (
                 <div className="text-sm">
-                  <span className="text-xs text-[#C5D1BD] block">Local / Regional Name:</span>
-                  <span className="font-medium text-[#F5F0E4]">
+                  <span className="text-xs text-slate-500 block">Local / Regional Name:</span>
+                  <span className="font-semibold text-slate-800">
                     {observation.localName.trim()}
                   </span>
                 </div>
               )}
 
               {displaySpeciesGroup?.trim() && (
-                <div className="text-sm flex items-center gap-1.5 text-[#F5F0E4]">
-                  <Leaf className="h-3.5 w-3.5 text-[#C5D1BD]" />
-                  <span className="text-xs text-[#C5D1BD]">Group:</span>
-                  <span className="font-medium">{displaySpeciesGroup}</span>
+                <div className="text-sm flex items-center gap-1.5 text-slate-700">
+                  <Leaf className="h-3.5 w-3.5 text-[#165B33]" />
+                  <span className="text-xs text-slate-500">Group:</span>
+                  <span className="font-semibold text-slate-800">{displaySpeciesGroup}</span>
                 </div>
               )}
             </div>
 
             {/* Temporal info */}
-            <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2 text-xs text-[#C5D1BD]">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs text-slate-600">
               {observation.observationAt && (
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                    <Calendar className="h-3.5 w-3.5 text-[#165B33]" />
                     <span>Observation Time:</span>
                   </span>
-                  <span className="font-medium text-[#F5F0E4]">
+                  <span className="font-medium text-slate-800">
                     {formatDateTime(observation.observationAt)}
                   </span>
                 </div>
@@ -369,10 +369,10 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
               {recordedTimestamp && (
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                    <Clock className="h-3.5 w-3.5 text-[#165B33]" />
                     <span>Recorded Time:</span>
                   </span>
-                  <span className="font-medium text-[#F5F0E4]">
+                  <span className="font-medium text-slate-800">
                     {formatDateTime(recordedTimestamp)}
                   </span>
                 </div>
@@ -380,35 +380,35 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             </div>
 
             {/* Geolocation & GPS Accuracy */}
-            <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2 text-xs">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                  <MapPin className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                <span className="flex items-center gap-1.5 text-slate-500">
+                  <MapPin className="h-3.5 w-3.5 text-[#165B33]" />
                   <span>Coordinates:</span>
                 </span>
-                <span className="font-mono font-medium text-[#F5F0E4]">
+                <span className="font-mono font-medium text-slate-800">
                   {hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
                 </span>
               </div>
 
               {observation.accuracyMeters !== null && observation.accuracyMeters !== undefined && (
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                    <Crosshair className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                  <span className="flex items-center gap-1.5 text-slate-500">
+                    <Crosshair className="h-3.5 w-3.5 text-[#165B33]" />
                     <span>GPS Accuracy:</span>
                   </span>
-                  <span className="font-medium text-[#F5F0E4]">
+                  <span className="font-medium text-slate-800">
                     ±{Math.round(observation.accuracyMeters)} metres
                   </span>
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                  <Compass className="h-3.5 w-3.5 text-[#C5D1BD]" />
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                <span className="flex items-center gap-1.5 text-slate-500">
+                  <Compass className="h-3.5 w-3.5 text-[#165B33]" />
                   <span>Administrative Ward:</span>
                 </span>
-                <span className="font-medium text-[#F5F0E4] text-right">
+                <span className="font-medium text-slate-800 text-right">
                   {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Automatic GIS identification pending')}
                 </span>
               </div>
@@ -416,18 +416,18 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
             {/* Habitat & Ecology (only if data exists) */}
             {(displayMicroHabitat || observation.individualCount !== undefined || observation.lifeStage) && (
-              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-2 text-xs">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#C5D1BD] block">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs">
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-slate-500 block">
                   Ecology & Count
                 </span>
 
                 {observation.individualCount !== undefined && (
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                      <Hash className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                    <span className="flex items-center gap-1.5 text-slate-500">
+                      <Hash className="h-3.5 w-3.5 text-[#165B33]" />
                       <span>Individual Count:</span>
                     </span>
-                    <span className="font-medium text-[#F5F0E4]">
+                    <span className="font-medium text-slate-800">
                       {observation.individualCount}
                     </span>
                   </div>
@@ -435,18 +435,18 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
                 {observation.lifeStage && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[#C5D1BD]">Life Stage:</span>
-                    <span className="font-medium text-[#F5F0E4]">{observation.lifeStage}</span>
+                    <span className="text-slate-500">Life Stage:</span>
+                    <span className="font-medium text-slate-800">{observation.lifeStage}</span>
                   </div>
                 )}
 
                 {displayMicroHabitat && (
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                      <Layers className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                    <span className="flex items-center gap-1.5 text-slate-500">
+                      <Layers className="h-3.5 w-3.5 text-[#165B33]" />
                       <span>Micro-Habitat:</span>
                     </span>
-                    <span className="font-medium text-[#F5F0E4]">{displayMicroHabitat}</span>
+                    <span className="font-medium text-slate-800">{displayMicroHabitat}</span>
                   </div>
                 )}
               </div>
@@ -454,14 +454,14 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
             {/* Traditional Knowledge information (only if present) */}
             {observation.hasTraditionalKnowledge === 'Yes' && (
-              <div className="rounded-2xl border border-[#B87555]/40 bg-[#B87555]/15 p-4 text-xs text-[#F5F0E4] space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-[#E8A585] uppercase tracking-wider">
+              <div className="rounded-2xl border border-orange-200 bg-orange-50/80 p-4 text-xs text-orange-950 space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold text-[#EA580C] uppercase tracking-wider">
                   <BookOpen className="h-4 w-4" />
                   <span>Traditional Knowledge Documented</span>
                 </div>
                 {displayTKSource && (
-                  <p className="text-[#C5D1BD] pt-1">
-                    <span className="font-medium text-[#F5F0E4]">Source:</span> {displayTKSource}
+                  <p className="text-slate-700 pt-1">
+                    <span className="font-medium text-slate-900">Source:</span> {displayTKSource}
                   </p>
                 )}
               </div>
@@ -469,11 +469,11 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
             {/* Field Notes (only if present) */}
             {observation.notes?.trim() && (
-              <div className="rounded-2xl border border-white/15 bg-black/25 p-4 text-xs">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#C5D1BD] block mb-1">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs">
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-slate-500 block mb-1">
                   Field Notes
                 </span>
-                <p className="whitespace-pre-wrap leading-relaxed text-[#F5F0E4]/90 text-sm">
+                <p className="whitespace-pre-wrap leading-relaxed text-slate-800 text-sm">
                   {observation.notes}
                 </p>
               </div>
@@ -481,12 +481,12 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
             {/* Verification Status (only if present) */}
             {observation.verificationStatus && (
-              <div className="rounded-2xl border border-white/15 bg-white/5 p-4 text-xs flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[#C5D1BD]">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[#C5D1BD]" />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-xs flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-slate-500">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#165B33]" />
                   <span>Expert Verification:</span>
                 </span>
-                <span className="font-medium text-[#F5F0E4]">{observation.verificationStatus}</span>
+                <span className="font-medium text-slate-800">{observation.verificationStatus}</span>
               </div>
             )}
 
@@ -499,9 +499,9 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                     setIsDetailOpen(false)
                     navigate(`/observations/${observation.id}/edit`)
                   }}
-                  className="flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-[#263D2B] hover:bg-[#324D38] border border-[#C5D1BD]/40 px-5 py-2.5 text-xs font-semibold tracking-wider uppercase text-[#F5F0E4] transition-all shadow-md active:scale-95"
+                  className="flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] border border-emerald-600/30 px-5 py-2.5 text-xs font-medium tracking-wider uppercase text-white transition-all shadow-md active:scale-95"
                 >
-                  <Pencil className="h-4 w-4 text-[#C5D1BD]" />
+                  <Pencil className="h-4 w-4 text-emerald-100" />
                   <span>Edit Observation</span>
                 </button>
               )}
@@ -509,7 +509,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
               <button
                 type="button"
                 onClick={() => setIsDetailOpen(false)}
-                className="inline-flex min-h-[46px] items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold tracking-wider uppercase text-[#C5D1BD] hover:bg-white/20 transition-all active:scale-95"
+                className="inline-flex min-h-[46px] items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-all active:scale-95 shadow-xs"
               >
                 Close
               </button>

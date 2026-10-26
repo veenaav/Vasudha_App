@@ -1,44 +1,46 @@
-import { Link, useLocation } from 'react-router-dom'
-import { Home } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function TopBar() {
-  const location = useLocation()
-  const isHomeActive = location.pathname === '/'
-
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#142217]/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-lg items-center justify-between px-3.5 py-2.5 sm:px-6 sm:py-3 gap-2">
-        {/* Left: Dedicated Home icon - ONLY persistent Home button in the application */}
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+      <div className="flex w-full items-center justify-start px-3.5 py-2.5 sm:px-6 sm:py-3">
+        {/* Left-aligned Branding Group: Logo Icon + Wordmark & Subtitle */}
         <Link
           to="/"
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#C5D1BD]/50 ${
-            isHomeActive
-              ? 'border-[#C5D1BD]/50 bg-[#263D2B] text-[#F5F0E4] shadow-sm'
-              : 'border-white/15 bg-white/5 text-[#C5D1BD] hover:bg-white/15 hover:text-[#F5F0E4]'
-          }`}
-          aria-label="Home - Return to Dashboard"
-          title="Return to B LIFFE Dashboard"
+          className="flex items-center text-left group gap-2.5 sm:gap-3.5 max-w-full"
+          title="B-liffe - Bharat Local Informatics for Flora, Fauna, and Ecosystems"
         >
-          <Home className="h-5 w-5" strokeWidth={1.85} />
-        </Link>
+          {/* Logo Icon - Enlarged */}
+          <img
+            src="/logo.png"
+            alt="B-liffe Logo"
+            className="h-11 w-11 sm:h-12 sm:w-12 object-contain rounded-lg shrink-0"
+          />
 
-        {/* Center: Prominent B LIFFE Title and Full Subtitle */}
-        <Link
-          to="/"
-          className="flex min-w-0 flex-1 flex-col items-center text-center group px-1"
-          title="B LIFFE - Bharat Local Informatics for Flora, Fauna, and Ecosystems"
-        >
-          <span className="font-heading text-lg sm:text-xl font-normal tracking-[0.22em] uppercase text-[#F5F0E4] transition-colors group-hover:text-white leading-tight">
-            B LIFFE
-          </span>
-          <p className="text-[9px] sm:text-[10px] leading-tight sm:leading-snug tracking-wide text-[#C5D1BD]/90 font-medium text-center line-clamp-2 max-w-[240px] sm:max-w-md">
-            Bharat Local Informatics for Flora, Fauna, and Ecosystems
-          </p>
-        </Link>
+          {/* Wordmark and Subtitle in compact vertical arrangement */}
+          <div className="flex flex-col items-start text-left min-w-0">
+            {/* Wordmark: B-liffe Inter ExtraBold (800) */}
+            <div
+              className="flex items-baseline font-sans font-extrabold text-xl sm:text-2xl tracking-normal leading-none"
+              aria-label="B-liffe"
+            >
+              <span style={{ color: '#39A935' }}>B</span>
+              <span style={{ color: '#39A935' }}>-</span>
+              <span style={{ color: '#39A935' }}>l</span>
+              <span style={{ color: '#39A935' }}>i</span>
+              <span style={{ color: '#F28C28' }}>f</span>
+              <span style={{ color: '#39A935' }}>f</span>
+              <span style={{ color: '#39A935' }}>e</span>
+            </div>
 
-        {/* Right: Balance spacer for layout equilibrium (no profile control currently implemented) */}
-        <div className="h-10 w-10 shrink-0" aria-hidden="true" />
+            {/* Subtitle: Inter Regular (400) */}
+            <p className="text-[10px] sm:text-xs leading-tight tracking-normal text-[#1B5E20] font-normal mt-0.5 max-w-xs sm:max-w-md">
+              Bharat Local Informatics for Flora, Fauna, and Ecosystems
+            </p>
+          </div>
+        </Link>
       </div>
     </header>
   )
 }
+

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { PlusCircle, Leaf, Menu } from 'lucide-react'
+import { Home, PlusCircle, Leaf, Menu } from 'lucide-react'
 
 interface BottomNavProps {
   onOpenMenu: () => void
@@ -9,82 +9,127 @@ interface BottomNavProps {
 export default function BottomNav({ onOpenMenu, isMenuOpen }: BottomNavProps) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-white/10 bg-[#142217]/95 backdrop-blur-lg px-2 sm:px-6 shadow-2xl pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-slate-200 bg-white px-2 sm:px-6 pb-[env(safe-area-inset-bottom)]"
       aria-label="Bottom Navigation"
     >
       <div className="mx-auto flex w-full max-w-lg items-center justify-between">
-        {/* Item 1: New Observation */}
+        {/* Item 1: Home */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `group flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 transition-all focus:outline-none ${
+              isActive ? 'text-[#1B5E20]' : 'text-slate-500 hover:text-slate-700'
+            }`
+          }
+          aria-label="Home"
+        >
+          {({ isActive }) => (
+            <div
+              className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition-all ${
+                isActive
+                  ? 'bg-emerald-50 text-[#1B5E20] ring-2 ring-emerald-300'
+                  : 'text-slate-500 group-active:scale-95 group-active:bg-emerald-50 group-active:ring-2 group-active:ring-emerald-200 group-active:text-[#1B5E20]'
+              }`}
+            >
+              <Home
+                className={`h-4.5 w-4.5 mb-0.5 transition-colors ${
+                  isActive ? 'text-[#1B5E20]' : 'text-slate-500'
+                }`}
+                strokeWidth={isActive ? 2.25 : 1.75}
+              />
+              <span className="truncate text-[10px] tracking-normal font-medium">Home</span>
+            </div>
+          )}
+        </NavLink>
+
+        {/* Item 2: New Observation */}
         <NavLink
           to="/new-observation"
           className={({ isActive }) =>
-            `flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 text-[11px] tracking-wider uppercase transition-all active:scale-95 ${
-              isActive
-                ? 'text-[#F5F0E4] font-semibold'
-                : 'text-[#C5D1BD]/75 hover:text-[#F5F0E4]'
+            `group flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 transition-all focus:outline-none ${
+              isActive ? 'text-[#1B5E20]' : 'text-slate-500 hover:text-slate-700'
             }`
           }
+          aria-label="New Observation"
+          title="New Observation"
         >
           {({ isActive }) => (
-            <>
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full mb-0.5 transition-colors ${
-                  isActive ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-xs' : ''
+            <div
+              className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition-all ${
+                isActive
+                  ? 'bg-emerald-50 text-[#1B5E20] ring-2 ring-emerald-300'
+                  : 'text-slate-500 group-active:scale-95 group-active:bg-emerald-50 group-active:ring-2 group-active:ring-emerald-200 group-active:text-[#1B5E20]'
+              }`}
+            >
+              <PlusCircle
+                className={`h-4.5 w-4.5 mb-0.5 transition-colors ${
+                  isActive ? 'text-[#1B5E20]' : 'text-slate-500'
                 }`}
-              >
-                <PlusCircle className="h-4.5 w-4.5" strokeWidth={isActive ? 2.25 : 1.75} />
-              </div>
-              <span className="truncate">New Observation</span>
-            </>
+                strokeWidth={isActive ? 2.25 : 1.75}
+              />
+              <span className="truncate text-[10px] tracking-normal font-medium">New</span>
+            </div>
           )}
         </NavLink>
 
-        {/* Item 2: Records */}
+        {/* Item 3: Records */}
         <NavLink
           to="/observations"
           className={({ isActive }) =>
-            `flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 text-[11px] tracking-wider uppercase transition-all active:scale-95 ${
-              isActive
-                ? 'text-[#F5F0E4] font-semibold'
-                : 'text-[#C5D1BD]/75 hover:text-[#F5F0E4]'
+            `group flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 transition-all focus:outline-none ${
+              isActive ? 'text-[#1B5E20]' : 'text-slate-500 hover:text-slate-700'
             }`
           }
+          aria-label="Records"
         >
           {({ isActive }) => (
-            <>
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full mb-0.5 transition-colors ${
-                  isActive ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-xs' : ''
+            <div
+              className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition-all ${
+                isActive
+                  ? 'bg-emerald-50 text-[#1B5E20] ring-2 ring-emerald-300'
+                  : 'text-slate-500 group-active:scale-95 group-active:bg-emerald-50 group-active:ring-2 group-active:ring-emerald-200 group-active:text-[#1B5E20]'
+              }`}
+            >
+              <Leaf
+                className={`h-4.5 w-4.5 mb-0.5 transition-colors ${
+                  isActive ? 'text-[#1B5E20]' : 'text-slate-500'
                 }`}
-              >
-                <Leaf className="h-4.5 w-4.5" strokeWidth={isActive ? 2.25 : 1.75} />
-              </div>
-              <span>Records</span>
-            </>
+                strokeWidth={isActive ? 2.25 : 1.75}
+              />
+              <span className="text-[10px] tracking-normal font-medium">Records</span>
+            </div>
           )}
         </NavLink>
 
-        {/* Item 3: Menu */}
+        {/* Item 4: Menu */}
         <button
           type="button"
           onClick={onOpenMenu}
-          className={`flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 text-[11px] tracking-wider uppercase transition-all active:scale-95 ${
-            isMenuOpen
-              ? 'text-[#F5F0E4] font-semibold'
-              : 'text-[#C5D1BD]/75 hover:text-[#F5F0E4]'
+          className={`group flex flex-1 flex-col items-center justify-center min-h-[48px] py-1 transition-all focus:outline-none ${
+            isMenuOpen ? 'text-[#1B5E20]' : 'text-slate-500 hover:text-slate-700'
           }`}
           aria-label="Open secondary navigation menu"
           aria-expanded={isMenuOpen}
         >
           <div
-            className={`flex h-7 w-7 items-center justify-center rounded-full mb-0.5 transition-colors ${
-              isMenuOpen ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-xs' : ''
+            className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition-all ${
+              isMenuOpen
+                ? 'bg-emerald-50 text-[#1B5E20] ring-2 ring-emerald-300'
+                : 'text-slate-500 group-active:scale-95 group-active:bg-emerald-50 group-active:ring-2 group-active:ring-emerald-200 group-active:text-[#1B5E20]'
             }`}
           >
-            <Menu className="h-4.5 w-4.5" strokeWidth={isMenuOpen ? 2.25 : 1.75} />
+            <Menu
+              className={`h-4.5 w-4.5 mb-0.5 transition-colors ${
+                isMenuOpen ? 'text-[#1B5E20]' : 'text-slate-500'
+              }`}
+              strokeWidth={isMenuOpen ? 2.25 : 1.75}
+            />
+            <span className="text-[10px] tracking-normal font-medium">Menu</span>
           </div>
-          <span>Menu</span>
         </button>
       </div>
     </nav>
   )
 }
+

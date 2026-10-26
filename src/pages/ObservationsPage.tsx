@@ -47,31 +47,31 @@ export default function ObservationsPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5">
-      {/* Editorial Header (MOYA style) */}
-      <div className="flex items-center justify-between border-b border-white/15 pb-4">
+      {/* Editorial Header */}
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#C5D1BD]">
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
             Biodiversity Archive
           </span>
-          <h1 className="font-heading text-2xl sm:text-[28px] font-normal tracking-wide text-[#F5F0E4]">
+          <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900">
             My Records
           </h1>
-          <p className="text-xs text-[#C5D1BD]">
+          <p className="text-xs text-slate-500">
             {observations.length} {observations.length === 1 ? 'record' : 'records'} stored locally on device
           </p>
         </div>
 
         <Link
           to="/new-observation"
-          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 shadow-sm hover:bg-[#324D38] transition-all active:scale-95"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white border border-emerald-600/30 shadow-sm hover:from-[#134D2C] hover:to-[#17663A] transition-all active:scale-95"
           title="Record New Observation"
           aria-label="Record New Observation"
         >
-          <PlusCircle className="h-5 w-5 text-[#C5D1BD]" />
+          <PlusCircle className="h-5 w-5 text-white" />
         </Link>
       </div>
 
-      {/* Filter Pills (MOYA Screen 3 style: ALL, BEST SELLER, STARTER KIT) */}
+      {/* Filter Pills */}
       {observations.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
           {(['All', 'Identified', 'Needs verification', 'Unknown'] as const).map((filter) => (
@@ -81,8 +81,8 @@ export default function ObservationsPage() {
               onClick={() => setSelectedFilter(filter)}
               className={`rounded-full px-3.5 py-1.5 font-medium tracking-wider uppercase transition-all whitespace-nowrap active:scale-95 ${
                 selectedFilter === filter
-                  ? 'bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/50 shadow-sm'
-                  : 'bg-white/5 text-[#C5D1BD] border border-white/15 hover:bg-white/10'
+                  ? 'bg-[#165B33] text-white shadow-xs border border-transparent'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               {filter === 'All' ? `All (${observations.length})` : filter}
@@ -93,18 +93,18 @@ export default function ObservationsPage() {
 
       {/* Observations List */}
       {isLoading ? (
-        <div className="py-12 text-center text-sm text-[#C5D1BD]">
+        <div className="py-12 text-center text-sm text-slate-500">
           <p>Loading observations...</p>
         </div>
       ) : filteredObservations.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-white/25 bg-white/10 backdrop-blur-md p-8 text-center shadow-xl">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#263D2B] border border-[#C5D1BD]/30 text-[#C5D1BD]">
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-100 text-[#165B33]">
             <Leaf className="h-7 w-7" />
           </div>
-          <h2 className="mt-4 font-heading text-xl font-normal text-[#F5F0E4]">
+          <h2 className="mt-4 font-heading text-xl font-semibold text-slate-900">
             {observations.length === 0 ? 'No observations recorded yet' : `No "${selectedFilter}" observations`}
           </h2>
-          <p className="mt-1.5 text-xs text-[#C5D1BD] max-w-xs mx-auto">
+          <p className="mt-1.5 text-xs text-slate-500 max-w-xs mx-auto">
             {observations.length === 0
               ? 'Capture species, Malayalam local names, GPS coordinates, and photographs in the field.'
               : 'Try selecting a different filter above.'}
@@ -112,9 +112,9 @@ export default function ObservationsPage() {
           {observations.length === 0 && (
             <Link
               to="/new-observation"
-              className="mt-6 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-[#263D2B] px-6 py-3 text-sm font-medium tracking-wider uppercase text-[#F5F0E4] border border-[#C5D1BD]/40 shadow-sm hover:bg-[#324D38] transition-all active:scale-95"
+              className="mt-6 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-gradient-to-r from-[#165B33] to-[#1E7B46] px-6 py-3 text-sm font-semibold tracking-wider uppercase text-white shadow-md hover:from-[#134D2C] hover:to-[#17663A] transition-all active:scale-95"
             >
-              <PlusCircle className="h-4 w-4 text-[#C5D1BD]" />
+              <PlusCircle className="h-4 w-4 text-white" />
               <span>Record First Observation</span>
             </Link>
           )}
