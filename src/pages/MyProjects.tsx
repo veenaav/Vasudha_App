@@ -34,7 +34,7 @@ export const toggleJoinedProject = (projectId: string): string[] => {
 export default function MyProjects() {
   const navigate = useNavigate()
   const [joinedProjects, setJoinedProjects] = useState<Project[]>([])
-  const [wardCounts, setWardCounts] = useState<Record<string, number>>({})
+  const [observationCounts, setObservationCounts] = useState<Record<string, number>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   const loadData = async () => {
@@ -47,9 +47,9 @@ export default function MyProjects() {
 
       const counts: Record<string, number> = {}
       for (const p of filtered) {
-        counts[p.id] = await db.wards.where('projectId').equals(p.id).count()
+        counts[p.id] = await db.observations.where('projectId').equals(p.id).count()
       }
-      setWardCounts(counts)
+      setObservationCounts(counts)
     } catch (err) {
       console.error('Failed to load joined projects:', err)
     } finally {
@@ -164,8 +164,8 @@ export default function MyProjects() {
               {/* Action row */}
               <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
                 <span className="text-xs text-[#C5D1BD]">
-                  <strong className="text-[#F5F0E4]">{wardCounts[proj.id] ?? 0}</strong>{' '}
-                  {wardCounts[proj.id] === 1 ? 'ward' : 'wards'}
+                  <strong className="text-[#F5F0E4] font-semibold">{observationCounts[proj.id] ?? 0}</strong>{' '}
+                  {observationCounts[proj.id] === 1 ? 'observation' : 'observations'}
                 </span>
 
                 <div className="flex items-center gap-2">

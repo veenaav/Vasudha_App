@@ -24,7 +24,13 @@ import {
   X,
   List,
   Clock,
+  AlertCircle,
+  Compass,
 } from 'lucide-react'
+import {
+  identifyWardFromCoordinates,
+  type WardIdentificationStatus,
+} from '@/lib/wardService'
 
 export const SPECIES_GROUPS = [
   'Mammals',
@@ -88,6 +94,16 @@ function Home() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+
+  // Dedicated Automatic Ward Identification state (read-only for ordinary field workers)
+  const [autoWardId, setAutoWardId] = useState<string | null>(null)
+  const [autoWardName, setAutoWardName] = useState<string | null>(null)
+  const [autoWardNumber, setAutoWardNumber] = useState<string | null>(null)
+  const [wardStatus, setWardStatus] = useState<WardIdentificationStatus>('location_not_obtained')
+  const [wardStatusMessage, setWardStatusMessage] = useState<string>(
+    'Ward will be identified automatically after GPS acquisition.'
+  )
 
   // Photo attachments state
   const [photos, setPhotos] = useState<Blob[]>([])
@@ -149,6 +165,21 @@ function Home() {
           setLocation({ latitude: existing.latitude, longitude: existing.longitude })
           setLocationAccuracy(existing.accuracyMeters ?? null)
         }
+
+        if (existing.wardId) {
+          setAutoWardId(existing.wardId)
+          setAutoWardName(existing.wardName || null)
+          setWardStatus('ward_identified')
+          setWardStatusMessage(existing.wardName ? `Ward: ${existing.wardName}` : `Ward ID: ${existing.wardId}`)
+        } else if (existing.latitude && existing.longitude) {
+          setAutoWardId(null)
+          setAutoWardName(null)
+          setWardStatus('ward_unidentified')
+          setWardStatusMessage('Ward could not be identified from coordinates (Official boundary dataset pending).')
+        } else {
+          setWardStatus('location_not_obtained')
+          setWardStatusMessage('Ward will be identified automatically after GPS acquisition.')
+        }
         const attached = existing.photos?.length
           ? existing.photos
           : existing.photo
@@ -181,21 +212,51 @@ function Home() {
     }
   }, [photoPreviews])
 
-  // Request high-accuracy GPS coordinates from the browser geolocation API
+  // Request high-accuracy GPS coordinates and trigger automatic ward identification
   const getLocation = () => {
     setIsGettingLocation(true)
+    setLocationError(null)
+    setWardStatus('requesting_location')
+    setWardStatusMessage('Requesting GPS coordinates from device...')
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
         setLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          latitude: lat,
+          longitude: lng,
         })
         setLocationAccuracy(position.coords.accuracy)
         setIsGettingLocation(false)
+
+        // Automatic GPS-based ward identification step
+        setWardStatus('identifying_ward')
+        setWardStatusMessage('Matching coordinates against Thiruvananthapuram Corporation ward boundaries...')
+
+        try {
+          const result = await identifyWardFromCoordinates(lat, lng)
+          setWardStatus(result.status)
+          setWardStatusMessage(result.message)
+          if (result.status === 'ward_identified' && result.ward) {
+            setAutoWardId(result.ward.wardId)
+            setAutoWardName(result.ward.wardName)
+            setAutoWardNumber(result.ward.wardNumber)
+          } else {
+            setAutoWardId(null)
+            setAutoWardName(null)
+            setAutoWardNumber(null)
+          }
+        } catch {
+          setWardStatus('ward_unidentified')
+          setWardStatusMessage('Ward identification service error.')
+        }
       },
       (error) => {
         setIsGettingLocation(false)
-        alert(`Unable to get location: ${error.message}`)
+        setLocationError(error.message)
+        setWardStatus('location_unavailable')
+        setWardStatusMessage(`Location permission denied or unavailable: ${error.message}`)
       },
       {
         enableHighAccuracy: true,
@@ -223,6 +284,12 @@ function Home() {
     setOtherTraditionalKnowledgeSource('')
     setLocation(null)
     setLocationAccuracy(null)
+    setLocationError(null)
+    setAutoWardId(null)
+    setAutoWardName(null)
+    setAutoWardNumber(null)
+    setWardStatus('location_not_obtained')
+    setWardStatusMessage('Ward will be identified automatically after GPS acquisition.')
     setPhotos([])
     setPhotoCapturedAt(null)
     setIsGettingLocation(false)
@@ -353,7 +420,8 @@ function Home() {
           ...existingRecord,
           id: existingRecord.id,
           surveyId: existingRecord.surveyId,
-          wardId: existingRecord.wardId,
+          wardId: autoWardId ?? existingRecord.wardId,
+          wardName: autoWardName ?? existingRecord.wardName,
           projectId: existingRecord.projectId,
 
           speciesName: speciesName.trim(),
@@ -395,9 +463,10 @@ function Home() {
       } else {
         const newObservation: Observation = {
           id: crypto.randomUUID(),
-          // Link to parent Project / Ward / Survey session if active, undefined for standalone
+          // Link to parent Project / Survey session if active; ward is automatically identified
           surveyId: surveyId || undefined,
-          wardId: wardId || undefined,
+          wardId: autoWardId || undefined,
+          wardName: autoWardName || undefined,
           projectId: projectId || undefined,
 
           // Core Taxonomy & Identification
@@ -622,11 +691,11 @@ function Home() {
           )}
         </section>
 
-        {/* 2. Location and Observation Time */}
+        {/* 2. Location & Administrative Ward (Automatic GPS Identification) */}
         <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
           <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
             <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
-              2. Location & Time <span className="text-[#B87555] text-base">*</span>
+              2. Location & Ward <span className="text-[#B87555] text-base">*</span>
             </h2>
             {location && locationAccuracy !== null && (
               <span
@@ -641,29 +710,37 @@ function Home() {
             )}
           </div>
 
-          <Button
-            type="button"
-            className="mt-4 min-h-[50px] w-full bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#344F3A] font-medium text-base shadow-sm rounded-2xl transition-all active:scale-98 tracking-wide"
-            disabled={saved || isGettingLocation}
-            onClick={getLocation}
-          >
-            {isGettingLocation ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#C5D1BD]" />
-                <span>Acquiring Coordinates...</span>
-              </>
-            ) : location ? (
-              <>
-                <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                <span>Update GPS Location</span>
-              </>
-            ) : (
-              <>
-                <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                <span>Acquire Coordinates</span>
-              </>
-            )}
-          </Button>
+          {/* GPS Acquire / Retry Button */}
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="button"
+              className="min-h-[50px] flex-1 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#344F3A] font-medium text-base shadow-sm rounded-2xl transition-all active:scale-98 tracking-wide"
+              disabled={saved || isGettingLocation}
+              onClick={getLocation}
+            >
+              {isGettingLocation ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#C5D1BD]" />
+                  <span>Acquiring Coordinates...</span>
+                </>
+              ) : location ? (
+                <>
+                  <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <span>Update GPS Location</span>
+                </>
+              ) : locationError ? (
+                <>
+                  <RotateCcw className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <span>Retry GPS Location</span>
+                </>
+              ) : (
+                <>
+                  <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <span>Acquire Coordinates</span>
+                </>
+              )}
+            </Button>
+          </div>
 
           {/* Coordinates and Time Readout */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#EDE7DA] px-4 py-3 border border-[#DCD5C5] text-sm">
@@ -678,6 +755,86 @@ function Home() {
             <div className="flex items-center gap-1.5 text-xs text-[#414B32]">
               <Clock className="h-3.5 w-3.5 text-[#414B32]" />
               <span>{displayObservationTime}</span>
+            </div>
+          </div>
+
+          {/* Dedicated Read-Only Administrative Ward Information Field */}
+          <div className="mt-4 pt-4 border-t border-[#DCD5C5]">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+                Administrative Ward
+              </label>
+              <span className="rounded-full bg-white/80 border border-[#C5D1BD] px-2 py-0.5 text-[10px] font-semibold text-[#414B32] uppercase tracking-wider">
+                Automatic GPS • Read-Only
+              </span>
+            </div>
+
+            {/* Read-only Ward container supporting all 7 states */}
+            <div
+              className={`rounded-2xl border p-4 transition-all ${
+                wardStatus === 'ward_identified'
+                  ? 'border-[#C5D1BD] bg-[#E5EFE4] text-[#263D2B]'
+                  : wardStatus === 'identifying_ward' || wardStatus === 'requesting_location'
+                  ? 'border-[#C5D1BD] bg-white text-[#263D2B]'
+                  : wardStatus === 'location_unavailable'
+                  ? 'border-red-300 bg-red-50 text-red-900'
+                  : 'border-[#DCD5C5] bg-white/70 text-[#414B32]'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 shrink-0">
+                  {wardStatus === 'ward_identified' ? (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-700" />
+                  ) : wardStatus === 'identifying_ward' || wardStatus === 'requesting_location' ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-[#263D2B]" />
+                  ) : wardStatus === 'location_unavailable' ? (
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  ) : (
+                    <Compass className="h-5 w-5 text-[#414B32]/70" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-heading text-base font-medium">
+                      {wardStatus === 'ward_identified' && autoWardName
+                        ? `Ward ${autoWardNumber ? autoWardNumber + ' – ' : ''}${autoWardName}`
+                        : wardStatus === 'location_not_obtained'
+                        ? 'Ward will be identified automatically after GPS acquisition'
+                        : wardStatus === 'requesting_location'
+                        ? 'Requesting location...'
+                        : wardStatus === 'identifying_ward'
+                        ? 'Identifying ward from boundary dataset...'
+                        : wardStatus === 'location_unavailable'
+                        ? 'Location unavailable'
+                        : 'Ward could not be identified'}
+                    </span>
+
+                    {autoWardId && (
+                      <span className="rounded bg-[#263D2B] px-1.5 py-0.5 font-mono text-[10px] text-[#F5F0E4]">
+                        ID: {autoWardId}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-1 text-xs leading-relaxed text-[#414B32]/85">
+                    {wardStatusMessage}
+                  </p>
+
+                  {/* Quick retry action if location permission failed outdoors */}
+                  {wardStatus === 'location_unavailable' && (
+                    <button
+                      type="button"
+                      onClick={getLocation}
+                      disabled={isGettingLocation}
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-800 hover:underline"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span>Retry acquiring GPS</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>

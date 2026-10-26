@@ -15,6 +15,7 @@ import {
   Crosshair,
   Hash,
   ShieldCheck,
+  Compass,
 } from 'lucide-react'
 
 // Format ISO timestamp into Indian English localized string
@@ -401,6 +402,16 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                   </span>
                 </div>
               )}
+
+              <div className="flex items-center justify-between pt-1 border-t border-white/10">
+                <span className="flex items-center gap-1.5 text-[#C5D1BD]">
+                  <Compass className="h-3.5 w-3.5 text-[#C5D1BD]" />
+                  <span>Administrative Ward:</span>
+                </span>
+                <span className="font-medium text-[#F5F0E4] text-right">
+                  {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Automatic GIS identification pending')}
+                </span>
+              </div>
             </div>
 
             {/* Habitat & Ecology (only if data exists) */}

@@ -32,9 +32,11 @@ function App() {
             element={<Home />}
           />
 
-          {/* Projects, Wards & Surveys Workflows */}
+          {/* Projects & Surveys Workflows */}
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/my-projects" element={<MyProjects />} />
+          <Route path="/projects/:projectId" element={<WardsPage />} />
+          <Route path="/projects/:projectId/overview" element={<WardsPage />} />
           <Route path="/projects/:projectId/wards" element={<WardsPage />} />
           <Route path="/projects/:projectId/wards/:wardId/surveys" element={<SurveysPage />} />
 

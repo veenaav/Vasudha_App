@@ -8,10 +8,10 @@ import { getJoinedProjectIds } from './MyProjects'
 function ProjectsPage() {
   const navigate = useNavigate()
   const [projects, setProjects] = useState<Project[]>([])
-  const [wardCounts, setWardCounts] = useState<Record<string, number>>({})
   const [joinedIds, setJoinedIds] = useState<string[]>(getJoinedProjectIds())
   const [activeTab, setActiveTab] = useState<'all' | 'my'>('all')
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null)
+  const [observationCounts, setObservationCounts] = useState<Record<string, number>>({})
   const [showAddForm, setShowAddForm] = useState(false)
 
   // New project form state
@@ -27,13 +27,12 @@ function ProjectsPage() {
     const list = await db.projects.toArray()
     setProjects(list.reverse())
 
-    // Load ward counts per project
-    const counts: Record<string, number> = {}
+    // Load observation counts per project
+    const obsCounts: Record<string, number> = {}
     for (const p of list) {
-      const count = await db.wards.where('projectId').equals(p.id).count()
-      counts[p.id] = count
+      obsCounts[p.id] = await db.observations.where('projectId').equals(p.id).count()
     }
-    setWardCounts(counts)
+    setObservationCounts(obsCounts)
   }
 
   useEffect(() => {
@@ -87,7 +86,7 @@ function ProjectsPage() {
       name: 'Thiruvananthapuram City Biodiversity Register',
       organization: 'Kerala State Biodiversity Board',
       targetRegion: 'Thiruvananthapuram Municipal Corporation',
-      description: 'Comprehensive ward-level documentation of urban flora, fauna, and local biodiversity.',
+      description: 'Comprehensive municipal ward-level documentation of urban flora, fauna, and local biodiversity.',
       status: 'active',
       createdAt: now,
       updatedAt: now,
@@ -95,23 +94,6 @@ function ProjectsPage() {
     }
 
     await db.projects.add(sampleProj)
-
-    // Pre-create a sample ward
-    const sampleWardId = crypto.randomUUID()
-    await db.wards.add({
-      id: sampleWardId,
-      projectId: newId,
-      wardNumber: '14',
-      wardName: 'Palayam',
-      localBodyName: 'Thiruvananthapuram Municipal Corporation',
-      district: 'Thiruvananthapuram',
-      state: 'Kerala',
-      keyLandmarks: 'Secretariat, Palayam Market, University Library area',
-      createdAt: now,
-      updatedAt: now,
-      syncStatus: 'pending',
-    })
-
     await loadProjects()
   }
 
@@ -339,8 +321,8 @@ function ProjectsPage() {
                 {/* Card Footer */}
                 <div className="mt-4 flex items-center justify-between border-t border-white/15 pt-3">
                   <span className="text-xs text-[#C5D1BD]">
-                    <strong className="text-[#F5F0E4] font-semibold">{wardCounts[proj.id] ?? 0}</strong>{' '}
-                    {wardCounts[proj.id] === 1 ? 'ward' : 'wards'}
+                    <strong className="text-[#F5F0E4] font-semibold">{observationCounts[proj.id] ?? 0}</strong>{' '}
+                    {observationCounts[proj.id] === 1 ? 'observation' : 'observations'}
                   </span>
 
                   <span className="inline-flex items-center gap-1 text-xs text-[#C5D1BD] group-hover:text-[#F5F0E4] transition-colors">
@@ -370,7 +352,7 @@ function ProjectsPage() {
             <FolderPlus className="mx-auto h-12 w-12 text-[#C5D1BD]" />
             <h3 className="mt-2 font-heading text-xl font-normal text-[#F5F0E4]">No projects yet</h3>
             <p className="mt-1 text-sm text-[#C5D1BD] max-w-sm mx-auto">
-              Create a project to organize municipal wards, survey visits, and biodiversity occurrences.
+              Create a project to organize biodiversity field data and occurrences across Thiruvananthapuram Corporation.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
               <Button

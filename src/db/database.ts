@@ -113,7 +113,8 @@ export interface Survey {
 export interface Observation {
   id?: string // UUID primary key
   surveyId?: string // Foreign key -> Survey.id (optional for standalone observations)
-  wardId?: string // Foreign key -> Ward.id (optional)
+  wardId?: string // Foreign key -> Ward.id (optional, preferred identifier from GIS boundary)
+  wardName?: string // Administrative ward name for display (e.g. "Ward 14 – Palayam")
   projectId?: string // Foreign key -> Project.id (optional)
 
   // Species details
