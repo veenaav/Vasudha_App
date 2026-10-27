@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Observation, IdentificationStatus } from '@/db/database'
+import { BASIS_OF_RECORD_OPTIONS } from '@/db/database'
+import { getTagById } from '@/lib/tagCatalogue'
 import {
   MapPin,
   Clock,
@@ -16,6 +18,9 @@ import {
   Hash,
   ShieldCheck,
   Compass,
+  Eye,
+  EyeOff,
+  Tag as TagIcon,
 } from 'lucide-react'
 
 // Format ISO timestamp into Indian English localized string
@@ -211,6 +216,28 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             )}
           </div>
 
+          {/* Tags preview on card face */}
+          {observation.tags && observation.tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1 pt-0.5">
+              {observation.tags.slice(0, 3).map((tagId) => {
+                const tag = getTagById(tagId)
+                return (
+                  <span
+                    key={tagId}
+                    className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-100/80"
+                  >
+                    #{tag ? tag.label : tagId}
+                  </span>
+                )
+              })}
+              {observation.tags.length > 3 && (
+                <span className="text-[10px] text-slate-400 font-medium">
+                  +{observation.tags.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+
           <div className="pt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs text-slate-500 border-t border-slate-100">
             {/* Recorded time — smaller text */}
             <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
@@ -325,6 +352,30 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 )}
               </div>
 
+              {/* Organism Status (only present on observations recorded after this field was added) */}
+              {observation.organismStatus && (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold tracking-wider uppercase text-slate-500">
+                    Organism Status
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold text-slate-700">
+                    {observation.organismStatus}
+                  </span>
+                </div>
+              )}
+
+              {/* Basis of Record (Darwin Core standard evidence nature) */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-semibold tracking-wider uppercase text-slate-500">
+                  Basis of Record
+                </span>
+                <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold text-emerald-800">
+                  {BASIS_OF_RECORD_OPTIONS.find((o) => o.value === observation.basis_of_record)?.label ||
+                    observation.basis_of_record ||
+                    'Human Observation'}
+                </span>
+              </div>
+
               {observation.scientificName?.trim() && (
                 <div className="text-sm">
                   <span className="text-xs text-slate-500 block">Scientific Name:</span>
@@ -384,18 +435,51 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-slate-500">
                   <MapPin className="h-3.5 w-3.5 text-[#165B33]" />
-                  <span>Coordinates:</span>
+                  <span>Final Coordinates:</span>
                 </span>
                 <span className="font-mono font-medium text-slate-800">
                   {hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
                 </span>
               </div>
 
+              {observation.location_source && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-slate-500">
+                    <Crosshair className="h-3.5 w-3.5 text-[#165B33]" />
+                    <span>Location Source:</span>
+                  </span>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
+                      observation.location_source === 'GPS'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                        : 'bg-amber-50 border-amber-300 text-amber-800'
+                    }`}
+                  >
+                    {observation.location_source}
+                  </span>
+                </div>
+              )}
+
+              {observation.gps_latitude !== null &&
+                observation.gps_latitude !== undefined &&
+                observation.gps_longitude !== null &&
+                observation.gps_longitude !== undefined && (
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-slate-500">
+                      <Compass className="h-3.5 w-3.5 text-[#165B33]" />
+                      <span>Raw GPS:</span>
+                    </span>
+                    <span className="font-mono font-medium text-slate-600">
+                      {formatCoordinate(observation.gps_latitude)}, {formatCoordinate(observation.gps_longitude)}
+                    </span>
+                  </div>
+                )}
+
               {observation.accuracyMeters !== null && observation.accuracyMeters !== undefined && (
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-slate-500">
                     <Crosshair className="h-3.5 w-3.5 text-[#165B33]" />
-                    <span>GPS Accuracy:</span>
+                    <span>GPS Sensor Accuracy:</span>
                   </span>
                   <span className="font-medium text-slate-800">
                     ±{Math.round(observation.accuracyMeters)} metres
@@ -412,6 +496,36 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                   {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Automatic GIS identification pending')}
                 </span>
               </div>
+
+              {/* Location Visibility preference — only shown if set; absent on older records */}
+              {observation.locationVisibility && (
+                <div className="flex items-start justify-between gap-2 pt-1 border-t border-slate-200">
+                  <span className="flex items-center gap-1.5 text-slate-500 shrink-0">
+                    {observation.locationVisibility === 'Open' ? (
+                      <Eye className="h-3.5 w-3.5 text-[#165B33]" />
+                    ) : (
+                      <EyeOff className="h-3.5 w-3.5 text-[#B87555]" />
+                    )}
+                    <span>Location Visibility:</span>
+                  </span>
+                  <div className="text-right">
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
+                        observation.locationVisibility === 'Open'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                          : observation.locationVisibility === 'Obscured'
+                          ? 'bg-amber-50 border-amber-300 text-amber-800'
+                          : 'bg-rose-50 border-rose-300 text-rose-800'
+                      }`}
+                    >
+                      {observation.locationVisibility}
+                    </span>
+                    <p className="mt-1 text-[10px] text-slate-400 leading-snug">
+                      Stored preference only — public enforcement requires a future backend.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Habitat & Ecology (only if data exists) */}
@@ -449,6 +563,37 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                     <span className="font-medium text-slate-800">{displayMicroHabitat}</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Classification Tags (only if present) */}
+            {observation.tags && observation.tags.length > 0 && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase text-slate-500">
+                    <TagIcon className="h-3.5 w-3.5 text-[#165B33]" />
+                    <span>Classification Tags ({observation.tags.length})</span>
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {observation.tags.map((tagId) => {
+                    const tag = getTagById(tagId)
+                    return (
+                      <span
+                        key={tagId}
+                        className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-800 shadow-2xs"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#165B33]" />
+                        <span>{tag ? tag.label : tagId}</span>
+                        {tag && (
+                          <span className="text-[9px] uppercase tracking-wider text-slate-400 border-l border-slate-200 pl-1 ml-0.5 font-normal">
+                            {tag.category}
+                          </span>
+                        )}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             )}
 

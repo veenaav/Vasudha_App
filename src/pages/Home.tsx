@@ -5,6 +5,10 @@ import {
   db,
   type Observation,
   type IdentificationStatus,
+  type OrganismStatus,
+  ORGANISM_STATUSES,
+  type LocationVisibility,
+  LOCATION_VISIBILITIES,
   type Project,
   type Ward,
   type Survey,
@@ -12,6 +16,10 @@ import {
   LIFE_STAGES,
   TRADITIONAL_KNOWLEDGE_SOURCES,
   type YesNo,
+  type LocationSource,
+  isValidCoordinate,
+  type BasisOfRecord,
+  BASIS_OF_RECORD_OPTIONS,
 } from '@/db/database'
 import {
   ArrowLeft,
@@ -25,11 +33,17 @@ import {
   Clock,
   AlertCircle,
   Compass,
+  Info,
+  ChevronDown,
+  Tag as TagIcon,
 } from 'lucide-react'
 import {
   identifyWardFromCoordinates,
   type WardIdentificationStatus,
 } from '@/lib/wardService'
+import LocationPickerMap from '@/components/LocationPickerMap'
+import MalayalamTransliterationInput from '@/components/MalayalamTransliterationInput'
+import TagSelector from '@/components/TagSelector'
 
 export const SPECIES_GROUPS = [
   'Mammals',
@@ -76,6 +90,12 @@ function Home() {
   const [otherSpeciesGroup, setOtherSpeciesGroup] = useState('')
   const [scientificName, setScientificName] = useState('')
   const [identificationStatus, setIdentificationStatus] = useState<IdentificationStatus | ''>('')
+  const [organismStatus, setOrganismStatus] = useState<OrganismStatus | ''>('')
+  const [locationVisibility, setLocationVisibility] = useState<LocationVisibility | ''>('')
+  const [showVisibilityHelp, setShowVisibilityHelp] = useState(false)
+  const [basisOfRecord, setBasisOfRecord] = useState<BasisOfRecord>('HumanObservation')
+  const [tags, setTags] = useState<string[]>([])
+  const [showTagsSection, setShowTagsSection] = useState(false)
   const [notes, setNotes] = useState('')
 
   // Abundance & Ecology state
@@ -90,8 +110,10 @@ function Home() {
   const [otherTraditionalKnowledgeSource, setOtherTraditionalKnowledgeSource] = useState('')
 
   // Geolocation state
+  const [gpsLocation, setGpsLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null)
   const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null)
+  const [locationSource, setLocationSource] = useState<LocationSource | null>(null)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
 
@@ -147,6 +169,10 @@ function Home() {
         setSpeciesGroup(group)
         setOtherSpeciesGroup(existing.otherSpeciesGroup || '')
         setIdentificationStatus(existing.identificationStatus || '')
+        setOrganismStatus(existing.organismStatus || '')
+        setLocationVisibility(existing.locationVisibility || '')
+        setBasisOfRecord(existing.basis_of_record || 'HumanObservation')
+        setTags(existing.tags || [])
         setNotes(existing.notes || '')
         setIndividualCount(existing.individualCount ?? 1)
         setLifeStage(existing.lifeStage || '')
@@ -162,7 +188,21 @@ function Home() {
           existing.longitude !== undefined
         ) {
           setLocation({ latitude: existing.latitude, longitude: existing.longitude })
+          if (
+            existing.gps_latitude !== null &&
+            existing.gps_latitude !== undefined &&
+            existing.gps_longitude !== null &&
+            existing.gps_longitude !== undefined
+          ) {
+            setGpsLocation({ latitude: existing.gps_latitude, longitude: existing.gps_longitude })
+          } else {
+            setGpsLocation(null)
+          }
           setLocationAccuracy(existing.accuracyMeters ?? null)
+          setLocationSource(
+            existing.location_source ||
+              (existing.gps_latitude ? 'GPS' : 'Manual Pin Adjustment')
+          )
         }
 
         if (existing.wardId) {
@@ -220,12 +260,22 @@ function Home() {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
+        const lat = Number(position.coords.latitude.toFixed(6))
+        const lng = Number(position.coords.longitude.toFixed(6))
+
+        // When Get My Location succeeds:
+        // 1. Save returned coordinates to gps_latitude and gps_longitude
+        setGpsLocation({
+          latitude: lat,
+          longitude: lng,
+        })
+        // 2. Initially copy same values into latitude and longitude
         setLocation({
           latitude: lat,
           longitude: lng,
         })
+        // 3. Set location_source to GPS
+        setLocationSource('GPS')
         setLocationAccuracy(position.coords.accuracy)
         setIsGettingLocation(false)
 
@@ -255,7 +305,9 @@ function Home() {
         setIsGettingLocation(false)
         setLocationError(error.message)
         setWardStatus('location_unavailable')
-        setWardStatusMessage(`Location permission denied or unavailable: ${error.message}`)
+        setWardStatusMessage(`Location permission denied or unavailable (${error.message}). You can select your location manually on the map below.`)
+        // If geolocation fails or permission is denied, do not fabricate coordinates
+        // or overwrite a previously captured valid GPS reading.
       },
       {
         enableHighAccuracy: true,
@@ -263,6 +315,43 @@ function Home() {
         maximumAge: 0,
       }
     )
+  }
+
+  // Handle manual correction or tap/drag on the interactive map
+  const handleManualLocationChange = async (
+    newLocation: { latitude: number; longitude: number },
+    _source: 'manual'
+  ) => {
+    // 1. Update only final latitude and longitude
+    setLocation(newLocation)
+    // 2. Preserve original GPS coordinates (gpsLocation) unchanged!
+    // 3. Set location_source to Manual Pin Adjustment
+    setLocationSource('Manual Pin Adjustment')
+    // Clear GPS accuracy radius since manual pin positioning has no device-measured error radius
+    setLocationAccuracy(null)
+    setLocationError(null)
+
+    // Trigger automatic ward identification with the updated coordinates
+    setWardStatus('identifying_ward')
+    setWardStatusMessage('Matching corrected coordinates against ward boundaries...')
+
+    try {
+      const result = await identifyWardFromCoordinates(newLocation.latitude, newLocation.longitude)
+      setWardStatus(result.status)
+      setWardStatusMessage(result.message)
+      if (result.status === 'ward_identified' && result.ward) {
+        setAutoWardId(result.ward.wardId)
+        setAutoWardName(result.ward.wardName)
+        setAutoWardNumber(result.ward.wardNumber)
+      } else {
+        setAutoWardId(null)
+        setAutoWardName(null)
+        setAutoWardNumber(null)
+      }
+    } catch {
+      setWardStatus('ward_unidentified')
+      setWardStatusMessage('Ward identification service error.')
+    }
   }
 
   // Reset form inputs and locks back to an empty initial state
@@ -273,6 +362,12 @@ function Home() {
     setOtherSpeciesGroup('')
     setScientificName('')
     setIdentificationStatus('')
+    setOrganismStatus('')
+    setLocationVisibility('')
+    setShowVisibilityHelp(false)
+    setBasisOfRecord('HumanObservation')
+    setTags([])
+    setShowTagsSection(false)
     setNotes('')
     setIndividualCount(1)
     setLifeStage('')
@@ -281,8 +376,10 @@ function Home() {
     setHasTraditionalKnowledge('')
     setTraditionalKnowledgeSource('')
     setOtherTraditionalKnowledgeSource('')
+    setGpsLocation(null)
     setLocation(null)
     setLocationAccuracy(null)
+    setLocationSource(null)
     setLocationError(null)
     setAutoWardId(null)
     setAutoWardName(null)
@@ -382,9 +479,21 @@ function Home() {
       return
     }
 
-    // Validate geolocation coordinates capture
-    if (!location) {
-      alert('Please acquire GPS location coordinates before saving.')
+    // Validate geolocation coordinates capture and coordinate bounds (-90..90, -180..180)
+    if (!location || !isValidCoordinate(location.latitude, location.longitude)) {
+      alert('Please provide valid location coordinates (latitude between -90 and 90, longitude between -180 and 180) before saving.')
+      return
+    }
+
+    if (gpsLocation && !isValidCoordinate(gpsLocation.latitude, gpsLocation.longitude)) {
+      alert('Captured raw GPS coordinates are outside valid geographic bounds.')
+      return
+    }
+
+    // Validate Basis of Record (Darwin Core required field)
+    const validBasis = BASIS_OF_RECORD_OPTIONS.some((opt) => opt.value === basisOfRecord)
+    if (!basisOfRecord || !validBasis) {
+      alert('Please select a valid Basis of Record.')
       return
     }
 
@@ -430,6 +539,10 @@ function Home() {
           speciesGroups: speciesGroup || undefined,
           otherSpeciesGroup: finalOtherGroup,
           identificationStatus: identificationStatus as IdentificationStatus,
+          organismStatus: organismStatus || undefined,
+          locationVisibility: locationVisibility || undefined,
+          basis_of_record: basisOfRecord,
+          tags: tags.length > 0 ? tags : undefined,
           notes: notes.trim(),
 
           individualCount: parsedCount,
@@ -445,7 +558,10 @@ function Home() {
           recordedAt: existingRecord.recordedAt, // Preserve original recording timestamp
           latitude: location.latitude,
           longitude: location.longitude,
-          accuracyMeters: locationAccuracy !== null ? locationAccuracy : null,
+          gps_latitude: gpsLocation ? gpsLocation.latitude : null,
+          gps_longitude: gpsLocation ? gpsLocation.longitude : null,
+          location_source: locationSource || 'Manual Pin Adjustment',
+          accuracyMeters: locationSource === 'GPS' && locationAccuracy !== null ? locationAccuracy : null,
           photo: photos[0] ?? null,
           photos,
 
@@ -476,6 +592,10 @@ function Home() {
           speciesGroups: speciesGroup || undefined,
           otherSpeciesGroup: finalOtherGroup,
           identificationStatus: identificationStatus as IdentificationStatus,
+          organismStatus: organismStatus || undefined,
+          locationVisibility: locationVisibility || undefined,
+          basis_of_record: basisOfRecord,
+          tags: tags.length > 0 ? tags : undefined,
           notes: notes.trim(),
 
           // Ecological metadata
@@ -493,7 +613,10 @@ function Home() {
           recordedAt,
           latitude: location.latitude,
           longitude: location.longitude,
-          accuracyMeters: locationAccuracy !== null ? locationAccuracy : null,
+          gps_latitude: gpsLocation ? gpsLocation.latitude : null,
+          gps_longitude: gpsLocation ? gpsLocation.longitude : null,
+          location_source: locationSource || 'Manual Pin Adjustment',
+          accuracyMeters: locationSource === 'GPS' && locationAccuracy !== null ? locationAccuracy : null,
           photo: photos[0] ?? null,
           photos,
 
@@ -682,26 +805,34 @@ function Home() {
           )}
         </section>
 
-        {/* 2. Location & Administrative Ward (Automatic GPS Identification) */}
+        {/* 2. Location & Administrative Ward (Interactive Map & GPS) */}
         <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
+          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3 flex-wrap gap-2">
             <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
               2. Location & Ward <span className="text-[#B87555] text-base">*</span>
             </h2>
-            {location && locationAccuracy !== null && (
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                  locationAccuracy <= 10
-                    ? 'bg-[#E5EFE4] text-[#263D2B] border-[#C5D1BD]'
-                    : 'bg-[#B87555]/20 text-[#B87555] border-[#B87555]/40'
-                }`}
-              >
-                ±{Math.round(locationAccuracy)}m accuracy
-              </span>
+            {location && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {locationSource === 'Manual Pin Adjustment' ? (
+                  <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold border bg-amber-50 text-amber-800 border-amber-300">
+                    Manual Pin Adjustment
+                  </span>
+                ) : locationSource === 'GPS' ? (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
+                      locationAccuracy !== null && locationAccuracy <= 10
+                        ? 'bg-[#E5EFE4] text-[#263D2B] border-[#C5D1BD]'
+                        : 'bg-[#B87555]/20 text-[#B87555] border-[#B87555]/40'
+                    }`}
+                  >
+                    GPS Fix {locationAccuracy !== null ? `(±${Math.round(locationAccuracy)}m)` : ''}
+                  </span>
+                ) : null}
+              </div>
             )}
           </div>
 
-          {/* GPS Acquire / Retry Button */}
+          {/* GPS Acquire / Retry Button (Get My Location) */}
           <div className="mt-4 flex gap-2">
             <Button
               type="button"
@@ -717,36 +848,78 @@ function Home() {
               ) : location ? (
                 <>
                   <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                  <span>Update GPS Location</span>
+                  <span>Get My Location</span>
                 </>
               ) : locationError ? (
                 <>
                   <RotateCcw className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                  <span>Retry GPS Location</span>
+                  <span>Retry Get My Location</span>
                 </>
               ) : (
                 <>
                   <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
-                  <span>Acquire Coordinates</span>
+                  <span>Get My Location</span>
                 </>
               )}
             </Button>
           </div>
 
+          {/* Interactive OpenStreetMap */}
+          <LocationPickerMap
+            location={location}
+            onLocationChange={handleManualLocationChange}
+            disabled={saved}
+          />
+
           {/* Coordinates and Time Readout */}
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#EDE7DA] px-4 py-3 border border-[#DCD5C5] text-sm">
-            <div className="flex items-center gap-2 font-mono text-sm sm:text-base font-medium text-[#263D2B]">
-              <MapPin className="h-4 w-4 text-[#263D2B] shrink-0" />
-              <span>
-                {location
-                  ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
-                  : 'Coordinates not captured'}
-              </span>
+          <div className="mt-3 rounded-2xl bg-[#EDE7DA] px-4 py-3 border border-[#DCD5C5] text-sm space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-mono text-sm sm:text-base font-medium text-[#263D2B]">
+                <MapPin className="h-4 w-4 text-[#263D2B] shrink-0" />
+                <span>
+                  {location
+                    ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
+                    : 'Coordinates not selected yet'}
+                </span>
+                {locationSource && (
+                  <span className="ml-1 text-[11px] font-sans font-semibold text-[#414B32] bg-white/70 px-2 py-0.5 rounded-full border border-[#DCD5C5]">
+                    {locationSource}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-[#414B32]">
+                <Clock className="h-3.5 w-3.5 text-[#414B32]" />
+                <span>{displayObservationTime}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-[#414B32]">
-              <Clock className="h-3.5 w-3.5 text-[#414B32]" />
-              <span>{displayObservationTime}</span>
-            </div>
+
+            {/* Audit display: Raw GPS coordinates preserved when adjusted */}
+            {gpsLocation && (
+              <div className="pt-2 border-t border-[#DCD5C5]/60 flex flex-wrap items-center justify-between gap-2 text-xs text-[#414B32]">
+                <div className="flex items-center gap-1.5 font-mono">
+                  <Compass className="h-3.5 w-3.5 text-[#263D2B] shrink-0" />
+                  <span>
+                    Raw GPS: {gpsLocation.latitude.toFixed(5)}, {gpsLocation.longitude.toFixed(5)}
+                  </span>
+                  {locationAccuracy !== null && (
+                    <span className="text-[11px] text-[#414B32]/80">
+                      (±{Math.round(locationAccuracy)}m sensor accuracy)
+                    </span>
+                  )}
+                </div>
+                {locationSource === 'Manual Pin Adjustment' && (
+                  <span className="text-[11px] text-amber-900 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    Original GPS preserved • Final adjusted on map
+                  </span>
+                )}
+              </div>
+            )}
+
+            {locationSource === 'Manual Pin Adjustment' && !gpsLocation && (
+              <div className="pt-2 border-t border-[#DCD5C5]/60 text-xs text-[#414B32]/90">
+                <span>📍 Manual pin placement without GPS acquisition. Raw GPS fields are null.</span>
+              </div>
+            )}
           </div>
 
           {/* Dedicated Read-Only Administrative Ward Information Field */}
@@ -879,19 +1052,15 @@ function Home() {
             />
           </div>
 
-          {/* Local Name / Vernacular Name */}
+          {/* Local Name / Vernacular Name with Malayalam Transliteration */}
           <div className="mt-4">
-            <label htmlFor="localName" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-              Local Name / Vernacular Name (optional)
-            </label>
-            <input
+            <MalayalamTransliterationInput
               id="localName"
-              type="text"
               value={localName}
               disabled={saved || isUnknown}
-              onChange={(e) => setLocalName(e.target.value)}
+              onChange={(val) => setLocalName(val)}
+              label="Local Name / Vernacular Name (optional)"
               placeholder="e.g. നാട്ടുമയിൽ, തുളസി, കണിക്കൊന്ന"
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
             />
           </div>
 
@@ -947,6 +1116,35 @@ function Home() {
                 />
               </div>
             )}
+          </div>
+
+          {/* Basis of Record (Darwin Core standard evidence nature) */}
+          <div className="mt-4 pt-4 border-t border-[#DCD5C5]">
+            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+              <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+                Basis of Record <span className="text-[#B87555]">*</span>
+              </label>
+              <span className="rounded-full bg-white/80 border border-[#C5D1BD] px-2 py-0.5 text-[10px] font-semibold text-[#414B32] uppercase tracking-wider">
+                Darwin Core Standard
+              </span>
+            </div>
+            <select
+              id="basisOfRecord"
+              value={basisOfRecord}
+              disabled={saved}
+              onChange={(e) => setBasisOfRecord(e.target.value as BasisOfRecord)}
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base font-medium outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 text-[#263D2B]"
+            >
+              {BASIS_OF_RECORD_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-[11px] text-[#414B32]/75 leading-relaxed">
+              {BASIS_OF_RECORD_OPTIONS.find((o) => o.value === basisOfRecord)?.description ||
+                'Identifies the nature of the biological evidence (e.g. human sighting, camera trap machine, or museum specimen).'}
+            </p>
           </div>
         </section>
 
@@ -1030,6 +1228,30 @@ function Home() {
               </div>
             )}
           </div>
+
+          {/* Organism Status */}
+          <div className="mt-4">
+            <label htmlFor="organismStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+              Organism Status (optional)
+            </label>
+            <select
+              id="organismStatus"
+              value={organismStatus}
+              disabled={saved}
+              onChange={(e) => setOrganismStatus(e.target.value as OrganismStatus | '')}
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                !organismStatus ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              }`}
+            >
+              <option value="">Select organism status...</option>
+              {ORGANISM_STATUSES.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-[11px] text-[#414B32]/70 leading-relaxed">
+              Is this organism wild (free-living), captive (kept by humans), or cultivated (planted/farmed)?
+            </p>
+          </div>
         </section>
 
         {/* 6. Traditional Knowledge */}
@@ -1104,23 +1326,140 @@ function Home() {
             7. Notes
           </h2>
 
+          {/* Field Notes (supports optional Malayalam transliteration) */}
           <div className="mt-4">
-            <label htmlFor="notes" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-              Field Notes (optional)
-            </label>
-            <textarea
+            <MalayalamTransliterationInput
               id="notes"
               value={notes}
               disabled={saved}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Habit, weather, host plant, landmarks..."
+              isTextarea
               rows={3}
-              className="mt-2 w-full rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100"
+              onChange={(val) => setNotes(val)}
+              label="Field Notes (optional)"
+              placeholder="Habit, weather, host plant, landmarks..."
             />
           </div>
         </section>
 
-        {/* 8. Save Observation Button (MOYA Checkout Style) */}
+        {/* 8. Additional Details & Classification Tags (Optional Collapsible Section) */}
+        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
+          <button
+            type="button"
+            onClick={() => setShowTagsSection((v) => !v)}
+            className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
+            aria-expanded={showTagsSection}
+          >
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <TagIcon className="h-5 w-5 text-[#263D2B]" />
+                <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
+                  8. Classification Tags
+                </h2>
+              </div>
+              <span className="text-xs font-sans text-[#414B32]/70 lowercase">(optional)</span>
+              {tags.length > 0 && (
+                <span className="rounded-full bg-[#165B33] text-white px-2 py-0.5 text-[10px] font-semibold">
+                  {tags.length} selected
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              className={`h-5 w-5 text-[#263D2B] transition-transform duration-200 shrink-0 ${
+                showTagsSection ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {showTagsSection && (
+            <div className="mt-4 pt-3 border-t border-[#DCD5C5]">
+              <TagSelector
+                selectedTagIds={tags}
+                onChange={(newTags) => setTags(newTags)}
+                disabled={saved}
+              />
+            </div>
+          )}
+        </section>
+
+        {/* 9. Location Visibility */}
+        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
+          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
+            <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
+              9. Location Visibility
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowVisibilityHelp((v) => !v)}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#C5D1BD] text-[#414B32] hover:bg-[#EDE7DA] transition-colors"
+              aria-label={showVisibilityHelp ? 'Hide location visibility help' : 'Show location visibility help'}
+              aria-expanded={showVisibilityHelp}
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Collapsible help panel — descriptions for each option live here */}
+          {showVisibilityHelp && (
+            <div className="mt-3 rounded-2xl bg-[#EDE7DA] border border-[#DCD5C5] px-4 py-3 text-xs text-[#414B32] leading-relaxed space-y-2">
+              <p className="font-semibold text-[#263D2B]">What does each option mean?</p>
+              {LOCATION_VISIBILITIES.map((opt) => (
+                <div key={opt.value} className="flex gap-2">
+                  <span className="font-semibold text-[#263D2B] shrink-0">{opt.label}:</span>
+                  <span>{opt.description}</span>
+                </div>
+              ))}
+              <p className="font-semibold text-[#263D2B] pt-0.5">Current status</p>
+              <p className="text-[#B87555]">⚠ This app is currently offline-only. No backend or public sharing pathway exists yet. "Obscured" and "Private" settings are stored and displayed faithfully, but coordinate restriction is not yet enforced. Enforcement will require a future server-side access system.</p>
+            </div>
+          )}
+
+          <div className="mt-4 space-y-2.5" role="radiogroup" aria-label="Location Visibility Options">
+            {LOCATION_VISIBILITIES.map((opt) => {
+              const isSelected = locationVisibility === opt.value
+              return (
+                <div
+                  key={opt.value}
+                  role="radio"
+                  aria-checked={isSelected}
+                  tabIndex={saved ? -1 : 0}
+                  onClick={() => {
+                    if (saved) return
+                    setLocationVisibility((current) => (current === opt.value ? '' : opt.value))
+                  }}
+                  onKeyDown={(e) => {
+                    if (saved) return
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault()
+                      setLocationVisibility((current) => (current === opt.value ? '' : opt.value))
+                    }
+                  }}
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-4 transition-all select-none ${
+                    saved ? 'cursor-not-allowed opacity-60' : ''
+                  } ${
+                    isSelected
+                      ? 'border-[#263D2B] bg-[#E5EFE4]'
+                      : 'border-[#C5D1BD] bg-white hover:border-[#263D2B]/50 hover:bg-[#EDE7DA]'
+                  }`}
+                >
+                  <span
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
+                      isSelected
+                        ? 'border-[#263D2B] bg-[#263D2B]'
+                        : 'border-[#C5D1BD] bg-white'
+                    }`}
+                  >
+                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-[#FAF7F0]" />}
+                  </span>
+                  <span className={`text-sm font-semibold ${isSelected ? 'text-[#165B33]' : 'text-[#263D2B]'}`}>
+                    {opt.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* 9. Save Observation Button (MOYA Checkout Style) */}
         <section className="pt-2">
           <Button
             type="button"
