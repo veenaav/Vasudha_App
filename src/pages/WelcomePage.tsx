@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   UserCheck,
   LogIn,
   ShieldCheck,
@@ -9,73 +8,57 @@ import BrandName from '@/components/BrandName'
 
 export default function WelcomePage() {
   return (
-    <div className="min-h-screen bg-[#08221A] text-[#F0F5EF] flex flex-col justify-between p-4 sm:p-6 max-w-lg mx-auto space-y-6">
-      {/* Main Card with Nature Imagery & Content */}
-      <div className="relative rounded-3xl overflow-hidden border border-[#1C4D3C] bg-[#0D2D22] shadow-2xl shadow-[#061812]/70">
-        {/* Enhanced Visibility Image Banner */}
-        <div className="h-56 sm:h-64 w-full relative overflow-hidden">
-          <img
-            src="/nature-welcome.jpg"
-            alt="Forest Cup Fungi Microhabitat"
-            className="w-full h-full object-cover object-center filter brightness-[1.05] contrast-[1.05] saturate-[1.1]"
-          />
-          {/* Subtle gradient overlay at the base only to blend smoothly into the card body */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D2D22] via-[#0D2D22]/15 to-transparent pointer-events-none" />
-        </div>
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#08221A] text-[#F0F5EF] flex flex-col justify-between px-4 py-3 sm:py-5 max-w-lg mx-auto select-none">
+      {/* Full-bleed Nature Image Card with overlaid content at the bottom */}
+      <div className="relative flex-1 min-h-0 w-full rounded-3xl overflow-hidden border border-[#1C4D3C] shadow-2xl shadow-[#061812]/70">
+        <img
+          src="/nature-welcome.jpg"
+          alt="Forest Cup Fungi Microhabitat"
+          className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.05] saturate-[1.1]"
+        />
 
-        {/* Content Section */}
-        <div className="p-5 sm:p-6 -mt-4 relative z-10 space-y-3">
+        {/* Text Container overlay at the bottom with upward gradient fade */}
+        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-14 pb-5 sm:pb-6 px-5 sm:px-6 z-10 space-y-2">
+          {/* B-Liffe logo & badge inside the image */}
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"
               alt="B-Liffe Logo"
-              className="w-8 h-8 rounded-lg bg-[#061812] border border-[#1C4D3C] p-0.5 object-contain"
+              className="w-7 h-7 rounded-lg bg-[#061812]/80 border border-[#1C4D3C] p-0.5 object-contain backdrop-blur-sm"
             />
-            <BrandName className="text-sm font-bold tracking-wider" />
+            <BrandName className="text-sm sm:text-base font-bold tracking-wider drop-shadow-sm" />
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-            Explore. Observe. Conserve.
-          </h1>
-
-          <p className="text-xs sm:text-sm text-[#B2C8BA] leading-relaxed">
+          {/* Description Paragraph directly inside the image */}
+          <p className="text-xs sm:text-sm text-[#E2EBE5] leading-relaxed font-normal drop-shadow-sm">
             Welcome to <BrandName /> (Bharat Local Informatics for Flora, Fauna, and Ecosystems). An open, scientific field data collection platform designed for researchers, local naturalists, ward volunteers, and biodiversity committees.
           </p>
         </div>
       </div>
 
       {/* Action Buttons Section */}
-      <div className="space-y-3 pt-2">
-        {/* Primary Action: Get Started */}
-        <Link
-          to="/create-account"
-          className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] px-6 py-3.5 text-base font-extrabold shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all"
-        >
-          <span>Get Started</span>
-          <ArrowRight className="w-5 h-5 text-[#061812]" />
-        </Link>
-
-        {/* Secondary Grid: Log In & Create Account */}
-        <div className="grid grid-cols-2 gap-2.5">
+      <div className="pt-2.5 space-y-2 flex-shrink-0">
+        {/* Actions: Log In & Create Account */}
+        <div className="grid grid-cols-2 gap-3">
           <Link
             to="/login"
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] hover:border-[#A6F16A]/50 text-xs sm:text-sm font-bold text-white hover:bg-[#133D2F]/70 transition-all"
+            className="flex min-h-[46px] items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] text-sm sm:text-base font-extrabold shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all"
           >
-            <LogIn className="w-4 h-4 text-[#A6F16A]" />
+            <LogIn className="w-4 h-4 sm:w-5 sm:h-5 text-[#061812]" />
             <span>Log In</span>
           </Link>
 
           <Link
             to="/create-account"
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] hover:border-[#20D6A0]/50 text-xs sm:text-sm font-bold text-white hover:bg-[#133D2F]/70 transition-all"
+            className="flex min-h-[46px] items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] text-sm sm:text-base font-extrabold shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all"
           >
-            <UserCheck className="w-4 h-4 text-[#20D6A0]" />
+            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#061812]" />
             <span>Create Account</span>
           </Link>
         </div>
 
         {/* Field Worker Local Mode Link */}
-        <div className="pt-2 text-center">
+        <div className="pt-0.5 text-center">
           <Link
             to="/home"
             className="inline-flex items-center gap-1.5 text-xs text-[#7B9586] hover:text-[#A6F16A] transition-colors py-1"

@@ -11,12 +11,12 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const location = useLocation()
-  const authRoutes = ['/', '/splash', '/welcome', '/login', '/create-account', '/register']
-  const isAuthRoute = authRoutes.includes(location.pathname)
+  const staticRoutes = ['/', '/splash', '/welcome', '/login', '/create-account', '/register']
+  const isStaticRoute = staticRoutes.includes(location.pathname)
 
-  if (isAuthRoute) {
+  if (isStaticRoute) {
     return (
-      <div className="relative min-h-screen bg-[#08221A] text-[#F0F5EF] antialiased overflow-x-hidden selection:bg-[#A6F16A] selection:text-[#061812]">
+      <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#08221A] text-[#F0F5EF] antialiased selection:bg-[#A6F16A] selection:text-[#061812]">
         {children}
       </div>
     )

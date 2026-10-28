@@ -94,15 +94,18 @@
     color: #F0F5EF;
     font-family: var(--font-sans);
     min-height: 100vh;
+    min-height: 100dvh;
     font-size: 16px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
     background-color: #08221A;
     color-scheme: dark;
+    overflow-x: hidden;
   }
   h1, h2, h3, .font-heading {
     font-family: var(--font-heading);
