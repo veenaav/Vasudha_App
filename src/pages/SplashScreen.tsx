@@ -10,50 +10,51 @@ export default function SplashScreen() {
   }
 
   return (
-    <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#061812] text-[#F0F5EF] flex flex-col justify-between items-center text-center px-6 py-6 sm:py-10 select-none">
-      {/* Background Nature Imagery with Dark Overlay */}
+    <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#061812] text-[#F0F5EF] flex flex-col justify-between items-center text-center px-4 sm:px-6 py-4 sm:py-6 md:py-8 select-none">
+      {/* Background Nature Imagery with Bird - Restored original darkness & deep contrast */}
       <div className="absolute inset-0 z-0">
         <img
           src="/nature-splash.jpg"
-          alt="Lush rainforest canopy"
+          alt="Lush rainforest canopy with bird"
           className="h-full w-full object-cover object-center filter brightness-[0.35] contrast-[1.1]"
         />
+        {/* Original deep gradient overlay for foreground legibility */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#061812]/85 via-[#061812]/60 to-[#061812]" />
       </div>
 
-      {/* Main Branding Section - Positioned higher up within viewport */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-lg mx-auto -translate-y-4 sm:-translate-y-6">
-        {/* Logo */}
-        <div className="mb-6 w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#0D2D22]/90 border border-[#1C4D3C] p-3 shadow-2xl shadow-[#061812] flex items-center justify-center backdrop-blur-sm">
+      {/* Main Branding Section - Balanced Vertical Composition */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-lg mx-auto w-full py-1 sm:py-2">
+        {/* Tree Logo: Preserved size & aspect ratio with subtle floating glow */}
+        <div className="mb-3 sm:mb-4 flex items-center justify-center">
           <img
-            src="/logo.png"
-            alt="B-Liffe Logo"
-            className="w-full h-full object-contain filter drop-shadow-md"
+            src="/splash-logo.png"
+            alt="B-Liffe Tree Logo"
+            className="w-[150px] h-[150px] sm:w-[192px] sm:h-[192px] max-h-[28vh] aspect-square object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.65)] drop-shadow-[0_0_16px_rgba(166,241,106,0.18)] select-none transition-transform duration-500 hover:scale-[1.03]"
           />
         </div>
 
-        {/* Title */}
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
-          <BrandName />
+        {/* B-Liffe Title: Refined font weight (Bold 700 instead of ExtraBold 800) */}
+        <h1 className="text-[40px] sm:text-[54px] font-bold tracking-tight leading-tight select-none">
+          <BrandName className="text-[40px] sm:text-[54px] font-bold tracking-tight" />
         </h1>
 
-        {/* Subtitle / Full Form in Normal Title Case */}
-        <p className="mt-3 text-sm sm:text-base font-medium tracking-wide text-[#8FA899] max-w-md leading-relaxed">
+        {/* Subtitle / Full Form: Soft mint color, ~14px mobile, ~16px desktop */}
+        <p className="mt-2 sm:mt-2.5 text-[14px] sm:text-[16px] font-medium tracking-wide text-[#A2EAD0] max-w-md leading-relaxed px-2">
           Bharat Local Informatics for Flora, Fauna & Ecosystems
         </p>
 
-        {/* Action Phrase: Larger, bolder, and noticeable */}
-        <p className="mt-4 text-lg sm:text-xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#A6F16A] via-[#48E59B] to-[#20D6A0] drop-shadow-sm">
+        {/* Action Phrase: Moved lower with increased spacing (mt-6 sm:mt-8), refined medium-bold weight */}
+        <p className="mt-6 sm:mt-8 text-[17px] sm:text-[20px] font-medium tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#A6F16A] via-[#48E59B] to-[#20D6A0] drop-shadow-sm">
           Explore. Observe. Record.
         </p>
       </div>
 
-      {/* Action Button: Positioned further down toward bottom for better thumb reach, larger size */}
-      <div className="relative z-10 pb-4 sm:pb-6 w-full max-w-xs mx-auto flex-shrink-0">
+      {/* Action Button: Prominent, height ~54px mobile / ~60px desktop, rounded-2xl, green-to-turquoise gradient */}
+      <div className="relative z-10 pb-3 sm:pb-5 w-full flex justify-center flex-shrink-0">
         <button
           type="button"
           onClick={handleContinue}
-          className="w-full flex items-center justify-center gap-2.5 py-3.5 px-8 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-base sm:text-lg shadow-xl shadow-[#20D6A0]/25 hover:shadow-2xl hover:shadow-[#A6F16A]/35 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full max-w-[280px] sm:max-w-xs h-[54px] min-h-[54px] sm:h-[60px] sm:min-h-[60px] flex items-center justify-center gap-2.5 px-8 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-base sm:text-lg shadow-xl shadow-[#20D6A0]/25 hover:shadow-2xl hover:shadow-[#A6F16A]/35 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
         >
           <span>Get Started</span>
           <ArrowRight className="w-5 h-5 text-[#061812]" />

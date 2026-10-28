@@ -13,7 +13,6 @@ import {
   UserPlus,
   ArrowRight,
 } from 'lucide-react'
-import BrandName from '@/components/BrandName'
 
 export default function CreateAccountPage() {
   const navigate = useNavigate()
@@ -90,20 +89,15 @@ export default function CreateAccountPage() {
 
   return (
     <div className="min-h-screen bg-[#08221A] text-[#F0F5EF] flex flex-col justify-between p-4 sm:p-6 max-w-lg mx-auto">
-      {/* Top Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#1C4D3C]/70">
+      {/* Top Header with Back Arrow */}
+      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#1C4D3C]/70 flex-shrink-0">
         <Link
           to="/welcome"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0D2D22] border border-[#1C4D3C] text-xs font-semibold text-[#F0F5EF] hover:bg-[#133D2F] transition-colors"
+          aria-label="Back"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#0D2D22] border border-[#1C4D3C] text-[#F0F5EF] hover:bg-[#133D2F] hover:border-[#A6F16A]/50 transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5 text-[#A6F16A]" />
-          <span>Welcome</span>
+          <ArrowLeft className="w-4 h-4 text-[#A6F16A]" />
         </Link>
-
-        <div className="flex items-center gap-1.5">
-          <BrandName className="text-xs" />
-          <span className="text-[10px] text-[#7B9586]">Registration</span>
-        </div>
       </div>
 
       {/* Main Registration Card */}
