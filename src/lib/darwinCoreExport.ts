@@ -22,6 +22,7 @@
 
 import type { Observation } from '@/db/database'
 import { getTagById } from './tagCatalogue'
+import { generateId } from './utils'
 
 export interface DarwinCoreRecord {
   'dwc:occurrenceID': string
@@ -67,7 +68,7 @@ export function toDarwinCoreRecord(obs: Observation): DarwinCoreRecord {
   }
 
   return {
-    'dwc:occurrenceID': obs.id || crypto.randomUUID(),
+    'dwc:occurrenceID': obs.id || generateId(),
     'dwc:basisOfRecord': obs.basis_of_record || 'HumanObservation',
     'dwc:scientificName': obs.scientificName?.trim() || undefined,
     'dwc:vernacularName': obs.localName?.trim() || obs.speciesName?.trim() || undefined,

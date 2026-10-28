@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { db, type Project } from '@/db/database'
-import { Plus, ArrowRight, FolderPlus, MapPin, Building2, FolderGit2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
-import { getJoinedProjectIds } from './MyProjects'
+import { Plus, ArrowRight, FolderPlus, MapPin, Building2, FolderGit2, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
+import { generateId } from '@/lib/utils'
 
 function ProjectsPage() {
   const navigate = useNavigate()
@@ -49,7 +50,7 @@ function ProjectsPage() {
 
     setIsSubmitting(true)
     try {
-      const newId = crypto.randomUUID()
+      const newId = generateId()
       const now = new Date().toISOString()
       const newProj: Project = {
         id: newId,
@@ -79,7 +80,7 @@ function ProjectsPage() {
 
   // Create quick sample project (helpful for first-time use)
   const handleCreateSampleProject = async () => {
-    const newId = crypto.randomUUID()
+    const newId = generateId()
     const now = new Date().toISOString()
     const sampleProj: Project = {
       id: newId,
@@ -97,6 +98,28 @@ function ProjectsPage() {
     await loadProjects()
   }
 
+  // Delete project and update state
+  const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation()
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this project? Associated local project records will be removed.'
+    )
+    if (!confirmed) return
+
+    try {
+      await db.projects.delete(projectId)
+      const currentJoined = getJoinedProjectIds()
+      if (currentJoined.includes(projectId)) {
+        toggleJoinedProject(projectId)
+      }
+      await loadProjects()
+    } catch (err) {
+      alert(`Failed to delete project: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
+
+  const hasProjects = projects.length > 0
+
   const displayedProjects =
     activeTab === 'my'
       ? projects.filter((p) => joinedIds.includes(p.id))
@@ -107,56 +130,56 @@ function ProjectsPage() {
       {/* Header section */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#1C4D3C] pb-4">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] shadow-md">
               <FolderGit2 className="h-5 w-5" />
             </div>
-            <div>
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A6F16A] block">
-                Field Framework
-              </span>
-              <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
-                Projects
-              </h1>
-            </div>
+            <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
+              Projects
+            </h1>
           </div>
         </div>
 
-        <Button
-          onClick={() => setShowAddForm((prev) => !prev)}
-          className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm shadow-md shadow-[#20D6A0]/20 rounded-2xl transition-all active:scale-95"
-        >
-          <Plus className="h-4 w-4 text-[#061812]" />
-          <span>{showAddForm ? 'Cancel' : 'New Project'}</span>
-        </Button>
+        {/* Top-right + New Project button: revealed only when projects exist */}
+        {hasProjects && (
+          <Button
+            onClick={() => setShowAddForm((prev) => !prev)}
+            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm shadow-md shadow-[#20D6A0]/20 rounded-2xl transition-all active:scale-95"
+          >
+            <Plus className="h-4 w-4 text-[#061812]" />
+            <span>{showAddForm ? 'Cancel' : 'New Project'}</span>
+          </Button>
+        )}
       </div>
 
-      {/* Tabs: All Projects vs My Projects */}
-      <div className="mt-4 flex items-center gap-2 border-b border-[#1C4D3C] pb-3">
-        <button
-          type="button"
-          onClick={() => setActiveTab('all')}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
-            activeTab === 'all'
-              ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
-              : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
-          }`}
-        >
-          All Projects ({projects.length})
-        </button>
+      {/* Tabs: All Projects vs My Projects (only visible when projects exist) */}
+      {hasProjects && (
+        <div className="mt-4 flex items-center gap-2 border-b border-[#1C4D3C] pb-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab('all')}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
+              activeTab === 'all'
+                ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
+                : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
+            }`}
+          >
+            All Projects ({projects.length})
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('my')}
-          className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
-            activeTab === 'my'
-              ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
-              : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
-          }`}
-        >
-          My Projects ({projects.filter((p) => joinedIds.includes(p.id)).length})
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('my')}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
+              activeTab === 'my'
+                ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
+                : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
+            }`}
+          >
+            My Projects ({projects.filter((p) => joinedIds.includes(p.id)).length})
+          </button>
+        </div>
+      )}
 
       {/* Add Project Form (Collapsible) */}
       {showAddForm && (
@@ -244,9 +267,35 @@ function ProjectsPage() {
         </form>
       )}
 
-      {/* Projects List */}
+      {/* Projects List or Empty State */}
       <div className="mt-6 space-y-4">
-        {displayedProjects.length > 0 ? (
+        {!hasProjects ? (
+          !showAddForm && (
+            <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
+              <FolderPlus className="mx-auto h-12 w-12 text-[#A6F16A]/70" />
+              <h3 className="mt-2 text-xl font-bold text-white">No projects yet</h3>
+              <p className="mt-1 text-sm text-[#B2C8BA] max-w-sm mx-auto">
+                Create a project to organize biodiversity field data.
+              </p>
+              <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold min-h-[46px] rounded-xl active:scale-95 shadow-md"
+                >
+                  <Plus className="h-4 w-4 mr-1 text-[#061812]" />
+                  Create Project
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCreateSampleProject}
+                  className="border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] text-sm font-semibold min-h-[46px] rounded-xl active:scale-95 shadow-sm"
+                >
+                  + Load Sample PBR Project
+                </Button>
+              </div>
+            </div>
+          )
+        ) : displayedProjects.length > 0 ? (
           displayedProjects.map((proj) => {
             const isJoined = joinedIds.includes(proj.id)
             const isExpanded = expandedProjectId === proj.id
@@ -320,6 +369,17 @@ function ProjectsPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Delete project button */}
+                  <button
+                    type="button"
+                    title="Delete project"
+                    aria-label={`Delete project ${proj.name}`}
+                    onClick={(e) => handleDeleteProject(e, proj.id)}
+                    className="p-2 -mr-1 -mt-1 rounded-xl text-[#7B9586] hover:text-rose-400 hover:bg-rose-950/40 transition-colors shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
 
                 {/* Card Footer */}
@@ -337,7 +397,7 @@ function ProjectsPage() {
               </div>
             )
           })
-        ) : activeTab === 'my' ? (
+        ) : (
           <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
             <FolderGit2 className="mx-auto h-12 w-12 text-[#7B9586]" />
             <h3 className="mt-2 text-xl font-bold text-white">No joined projects</h3>
@@ -350,29 +410,6 @@ function ProjectsPage() {
             >
               Browse All Projects
             </Button>
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
-            <FolderPlus className="mx-auto h-12 w-12 text-[#A6F16A]/70" />
-            <h3 className="mt-2 text-xl font-bold text-white">No projects yet</h3>
-            <p className="mt-1 text-sm text-[#B2C8BA] max-w-sm mx-auto">
-              Create a project to organize biodiversity field data and occurrences across Thiruvananthapuram Corporation.
-            </p>
-            <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
-              <Button
-                onClick={() => setShowAddForm(true)}
-                className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold min-h-[46px] rounded-xl active:scale-95 shadow-md"
-              >
-                + Create Project
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleCreateSampleProject}
-                className="border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] text-sm font-semibold min-h-[46px] rounded-xl active:scale-95 shadow-sm"
-              >
-                + Load Sample PBR Project
-              </Button>
-            </div>
           </div>
         )}
       </div>

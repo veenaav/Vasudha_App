@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { db, type Survey, type Ward, type Project } from '@/db/database'
 import { Plus, ArrowRight, Trash2, ArrowLeft, Calendar, User, Layers, Leaf } from 'lucide-react'
+import { generateId } from '@/lib/utils'
 
 const SURVEY_METHODS = [
   'Opportunistic Encounter',
@@ -89,7 +90,7 @@ function SurveysPage() {
 
     setIsSubmitting(true)
     try {
-      const newId = crypto.randomUUID()
+      const newId = generateId()
       const now = new Date().toISOString()
       const newSurvey: Survey = {
         id: newId,

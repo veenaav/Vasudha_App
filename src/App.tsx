@@ -16,19 +16,27 @@ import SplashScreen from '@/pages/SplashScreen'
 import WelcomePage from '@/pages/WelcomePage'
 import LoginPage from '@/pages/LoginPage'
 import CreateAccountPage from '@/pages/CreateAccountPage'
+import ProfilePage from '@/pages/ProfilePage'
+import { ProfileProvider } from '@/context/ProfileContext'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppLayout>
-        <Routes>
-          {/* Opening & Authentication Interface */}
-          <Route path="/" element={<SplashScreen />} />
-          <Route path="/splash" element={<SplashScreen />} />
-          <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/create-account" element={<CreateAccountPage />} />
-          <Route path="/register" element={<CreateAccountPage />} />
+    <ProfileProvider>
+      <BrowserRouter>
+        <AppLayout>
+          <Routes>
+            {/* Opening & Authentication Interface */}
+            <Route path="/" element={<SplashScreen />} />
+            <Route path="/splash" element={<SplashScreen />} />
+            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/create-account" element={<CreateAccountPage />} />
+            <Route path="/register" element={<CreateAccountPage />} />
+
+            {/* Profile Page */}
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/my-profile" element={<ProfilePage />} />
+
 
           {/* 1. Minimal & Attractive Home Screen */}
           <Route path="/home" element={<HomePage />} />
@@ -70,7 +78,9 @@ function App() {
         </Routes>
       </AppLayout>
     </BrowserRouter>
+  </ProfileProvider>
   )
 }
+
 
 export default App

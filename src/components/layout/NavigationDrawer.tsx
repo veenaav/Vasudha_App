@@ -317,7 +317,32 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
                 <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
               </button>
 
-              {/* 8. Account & Opening Tour */}
+              {/* 8. My Profile */}
+              <NavLink
+                to="/profile"
+                onClick={handleClose}
+                className={({ isActive }) =>
+                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
+                    ? 'bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]'
+                    : 'text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent'
+                  }`
+                }
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
+                    <User className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block text-sm font-semibold leading-snug">My Profile</span>
+                    <span className="block text-[11px] text-[#B2C8BA] truncate">
+                      Manage avatar, display name, and bio.
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
+              </NavLink>
+
+              {/* 9. Account & Opening Tour */}
               <NavLink
                 to="/welcome"
                 onClick={handleClose}

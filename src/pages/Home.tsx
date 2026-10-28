@@ -44,6 +44,7 @@ import {
 import LocationPickerMap from '@/components/LocationPickerMap'
 import MalayalamTransliterationInput from '@/components/MalayalamTransliterationInput'
 import TagSelector from '@/components/TagSelector'
+import { generateId } from '@/lib/utils'
 
 export const SPECIES_GROUPS = [
   'Mammals',
@@ -577,7 +578,7 @@ function Home() {
         setSaved(true)
       } else {
         const newObservation: Observation = {
-          id: crypto.randomUUID(),
+          id: generateId(),
           // Link to parent Project / Survey session if active; ward is automatically identified
           surveyId: surveyId || undefined,
           wardId: autoWardId || undefined,

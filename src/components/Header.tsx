@@ -9,7 +9,7 @@ function Header() {
           <NavLink to="/" className="flex items-center gap-2 text-decoration-none">
             <span className="text-2xl font-bold tracking-tight text-emerald-800">🌿 B LIFFE</span>
           </NavLink>
-          <p className="text-xs text-muted-foreground">Bharat Local Informatics for Flora, Fauna, and Ecosystems</p>
+          <p className="hidden md:block text-xs text-muted-foreground">Bharat Local Informatics for Flora, Fauna, and Ecosystems</p>
         </div>
 
         {/* Navigation links */}
