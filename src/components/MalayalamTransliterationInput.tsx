@@ -207,14 +207,14 @@ export default function MalayalamTransliterationInput({
       <div className="flex items-center justify-between flex-wrap gap-2 mb-1.5">
         <label
           htmlFor={id}
-          className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]"
+          className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
         >
-          {label} {required && <span className="text-[#B87555]">*</span>}
+          {label} {required && <span className="text-[#A6F16A]">*</span>}
         </label>
 
         {/* English / Malayalam Input Mode Toggle */}
-        <div className="flex items-center gap-1 rounded-full bg-white/90 p-1 border border-[#C5D1BD] shadow-xs text-xs">
-          <Languages className="h-3.5 w-3.5 text-[#263D2B] ml-1.5 mr-0.5" />
+        <div className="flex items-center gap-1 rounded-full bg-[#061812] p-1 border border-[#1C4D3C] shadow-xs text-xs">
+          <Languages className="h-3.5 w-3.5 text-[#A6F16A] ml-1.5 mr-0.5" />
           <button
             type="button"
             disabled={disabled}
@@ -224,8 +224,8 @@ export default function MalayalamTransliterationInput({
             }}
             className={`rounded-full px-2.5 py-0.5 font-medium transition-all text-[11px] ${
               mode === 'en'
-                ? 'bg-[#263D2B] text-[#F5F0E4] shadow-xs'
-                : 'text-[#414B32] hover:bg-slate-100'
+                ? 'bg-[#133D2F] text-white border border-[#1C4D3C] shadow-xs'
+                : 'text-[#7B9586] hover:text-[#F0F5EF]'
             }`}
             title="Type in English"
             aria-pressed={mode === 'en'}
@@ -242,10 +242,10 @@ export default function MalayalamTransliterationInput({
                 inputRef.current.focus()
               }
             }}
-            className={`rounded-full px-2.5 py-0.5 font-medium transition-all text-[11px] ${
+            className={`rounded-full px-2.5 py-0.5 font-semibold transition-all text-[11px] ${
               mode === 'ml'
-                ? 'bg-[#165B33] text-white shadow-xs font-semibold'
-                : 'text-[#414B32] hover:bg-slate-100'
+                ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
+                : 'text-[#7B9586] hover:text-[#F0F5EF]'
             }`}
             title="Phonetic typing in Malayalam (e.g. typing malayalam gives മലയാളം)"
             aria-pressed={mode === 'ml'}
@@ -272,7 +272,7 @@ export default function MalayalamTransliterationInput({
                 ? "മലയാളത്തിൽ എഴുതുക (e.g. type 'thulasi' for തുളസി)..."
                 : 'Enter text...')
             }
-            className="w-full rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100"
+            className="w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
           />
         ) : (
           <input
@@ -289,7 +289,7 @@ export default function MalayalamTransliterationInput({
                 ? "മലയാളത്തിൽ എഴുതുക (e.g. type 'malayalam' for മലയാളം)..."
                 : 'Enter name...')
             }
-            className="w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100"
+            className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
           />
         )}
       </div>
@@ -297,18 +297,18 @@ export default function MalayalamTransliterationInput({
       {/* Candidate Selection Bar / Dropdown (when typing phonetically in Malayalam mode) */}
       {mode === 'ml' && showSuggestions && candidates.length > 0 && (
         <div
-          className="mt-2 rounded-2xl border border-emerald-300 bg-white p-2 shadow-lg z-20 transition-all animate-in fade-in slide-in-from-top-1"
+          className="mt-2 rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-2 shadow-2xl z-20 transition-all animate-in fade-in slide-in-from-top-1"
           role="listbox"
           aria-label="Malayalam transliteration candidates"
         >
-          <div className="flex items-center justify-between pb-1.5 px-2 border-b border-slate-100 text-[11px] text-slate-500">
-            <span className="font-medium text-emerald-800 flex items-center gap-1">
+          <div className="flex items-center justify-between pb-1.5 px-2 border-b border-[#1C4D3C] text-[11px] text-[#B2C8BA]">
+            <span className="font-medium text-[#A6F16A] flex items-center gap-1">
               <span>Select Malayalam candidate (or press Space for #1):</span>
             </span>
             <button
               type="button"
               onClick={() => setShowSuggestions(false)}
-              className="p-0.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              className="p-0.5 rounded-full hover:bg-[#133D2F] text-[#7B9586] hover:text-[#F0F5EF]"
               title="Close candidate bar"
               aria-label="Close suggestions"
             >
@@ -324,15 +324,15 @@ export default function MalayalamTransliterationInput({
                 onClick={() => commitCandidate(cand, true)}
                 className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95 touch-manipulation cursor-pointer ${
                   activeCandidateIdx === idx
-                    ? 'bg-[#165B33] text-white shadow-sm ring-2 ring-emerald-600/30 font-semibold'
-                    : 'bg-emerald-50 text-slate-800 border border-emerald-200 hover:bg-emerald-100'
+                    ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
+                    : 'bg-[#133D2F] text-[#F0F5EF] border border-[#1C4D3C] hover:border-[#A6F16A]/50'
                 }`}
                 role="option"
                 aria-selected={activeCandidateIdx === idx}
               >
                 <span className="text-[10px] opacity-75 font-mono">{idx + 1}.</span>
                 <span>{cand}</span>
-                {activeCandidateIdx === idx && <Check className="h-3 w-3 text-emerald-100 ml-0.5" />}
+                {activeCandidateIdx === idx && <Check className="h-3 w-3 text-[#061812] ml-0.5" />}
               </button>
             ))}
 
@@ -341,7 +341,7 @@ export default function MalayalamTransliterationInput({
               <button
                 type="button"
                 onClick={() => commitCandidate(activeWordInfo.word, true)}
-                className="min-h-[38px] px-2.5 py-1.5 rounded-xl text-xs font-mono text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 whitespace-nowrap"
+                className="min-h-[38px] px-2.5 py-1.5 rounded-xl text-xs font-mono text-[#B2C8BA] bg-[#061812] hover:bg-[#133D2F] border border-[#1C4D3C] whitespace-nowrap"
                 title="Keep English letters as typed"
               >
                 Keep: {activeWordInfo.word}
@@ -352,7 +352,7 @@ export default function MalayalamTransliterationInput({
       )}
 
       {/* Mode active hint / helper text */}
-      <div className="mt-1 flex items-center justify-between text-[11px] text-[#414B32]/75">
+      <div className="mt-1 flex items-center justify-between text-[11px] text-[#7B9586]">
         <span>
           {helperText ||
             (mode === 'ml'

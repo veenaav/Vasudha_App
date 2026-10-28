@@ -12,14 +12,27 @@ import AboutPage from '@/pages/AboutPage'
 import FAQPage from '@/pages/FAQPage'
 import OfflineSyncPage from '@/pages/OfflineSyncPage'
 import PrivacyPage from '@/pages/PrivacyPage'
+import SplashScreen from '@/pages/SplashScreen'
+import WelcomePage from '@/pages/WelcomePage'
+import LoginPage from '@/pages/LoginPage'
+import CreateAccountPage from '@/pages/CreateAccountPage'
 
 function App() {
   return (
     <BrowserRouter>
       <AppLayout>
         <Routes>
+          {/* Opening & Authentication Interface */}
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/splash" element={<SplashScreen />} />
+          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/create-account" element={<CreateAccountPage />} />
+          <Route path="/register" element={<CreateAccountPage />} />
+
           {/* 1. Minimal & Attractive Home Screen */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/dashboard" element={<HomePage />} />
 
           {/* 2. New Observation Recording Screen */}
           <Route path="/new-observation" element={<Home />} />

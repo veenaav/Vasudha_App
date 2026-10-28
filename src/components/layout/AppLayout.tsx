@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import TopBar from './TopBar'
 import BottomNav from './BottomNav'
 import NavigationDrawer from './NavigationDrawer'
@@ -9,20 +10,31 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const location = useLocation()
+  const authRoutes = ['/', '/splash', '/welcome', '/login', '/create-account', '/register']
+  const isAuthRoute = authRoutes.includes(location.pathname)
+
+  if (isAuthRoute) {
+    return (
+      <div className="relative min-h-screen bg-[#08221A] text-[#F0F5EF] antialiased overflow-x-hidden selection:bg-[#A6F16A] selection:text-[#061812]">
+        {children}
+      </div>
+    )
+  }
 
   return (
-    <div className="relative min-h-screen bg-[#F8FAF7] text-[#1E293B] antialiased selection:bg-[#EA580C] selection:text-white">
+    <div className="relative min-h-screen bg-[#08221A] text-[#F0F5EF] antialiased selection:bg-[#A6F16A] selection:text-[#061812]">
       {/* Main content layer */}
       <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Top Application Bar with B LIFFE branding & Home icon */}
+        {/* Top Application Bar with B-LIFFE branding */}
         <TopBar />
 
-        {/* Main Viewport Content Area with ample padding for bottom nav on mobile */}
+        {/* Main Viewport Content Area */}
         <main className="flex-1 pb-28 sm:pb-20">
           {children}
         </main>
 
-        {/* Sticky Bottom Navigation (3 items: New Observation, Records, Menu) */}
+        {/* Sticky Bottom Navigation */}
         <BottomNav
           onOpenMenu={() => setIsDrawerOpen(true)}
           isMenuOpen={isDrawerOpen}

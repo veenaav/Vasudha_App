@@ -8,32 +8,32 @@ import {
 } from '@/lib/tagCatalogue'
 import { Search, Tag as TagIcon, X, Check, Filter } from 'lucide-react'
 
-// Color styles per category for clear visual differentiation
+// Color styles per category for clear visual differentiation in dark mode
 const CATEGORY_STYLES: Record<TagCategory, { badge: string; chip: string; dot: string }> = {
   Habitat: {
-    badge: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    chip: 'bg-[#E5EFE4] text-[#165B33] border-[#C5D1BD]',
-    dot: 'bg-emerald-600',
+    badge: 'bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]',
+    chip: 'bg-[#0D2D22] text-[#A6F16A] border-[#1C4D3C]',
+    dot: 'bg-[#A6F16A]',
   },
   'Ecological role': {
-    badge: 'bg-blue-50 text-blue-800 border-blue-200',
-    chip: 'bg-blue-50 text-blue-900 border-blue-200',
-    dot: 'bg-blue-600',
+    badge: 'bg-[#0A2E35] text-[#20D6A0] border-[#145350]',
+    chip: 'bg-[#0A2E35] text-[#20D6A0] border-[#145350]',
+    dot: 'bg-[#20D6A0]',
   },
   'Activity or behaviour': {
-    badge: 'bg-amber-50 text-amber-900 border-amber-200',
-    chip: 'bg-amber-50 text-amber-950 border-amber-200',
-    dot: 'bg-amber-600',
+    badge: 'bg-amber-950/60 text-amber-300 border-amber-800/60',
+    chip: 'bg-amber-950/60 text-amber-200 border-amber-800/60',
+    dot: 'bg-amber-400',
   },
   Conservation: {
-    badge: 'bg-rose-50 text-rose-900 border-rose-200',
-    chip: 'bg-rose-50 text-rose-950 border-rose-200',
-    dot: 'bg-rose-600',
+    badge: 'bg-rose-950/60 text-rose-300 border-rose-800/60',
+    chip: 'bg-rose-950/60 text-rose-200 border-rose-800/60',
+    dot: 'bg-rose-400',
   },
   'Observation context': {
-    badge: 'bg-purple-50 text-purple-900 border-purple-200',
-    chip: 'bg-purple-50 text-purple-950 border-purple-200',
-    dot: 'bg-purple-600',
+    badge: 'bg-purple-950/60 text-purple-300 border-purple-800/60',
+    chip: 'bg-purple-950/60 text-purple-200 border-purple-800/60',
+    dot: 'bg-purple-400',
   },
 }
 
@@ -95,21 +95,21 @@ export default function TagSelector({
       {selectedTags.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <span className="text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Selected Tags ({selectedTags.length})
             </span>
             {!disabled && (
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="text-[11px] text-[#B87555] hover:underline"
+                className="text-[11px] text-[#A6F16A] hover:underline"
               >
                 Clear all tags
               </button>
             )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5 p-2 rounded-2xl bg-white border border-[#C5D1BD]/80 min-h-[46px] items-center">
+          <div className="flex flex-wrap gap-1.5 p-2 rounded-2xl bg-[#061812] border border-[#1C4D3C] min-h-[46px] items-center">
             {selectedTags.map((tag) => {
               const style = CATEGORY_STYLES[tag.category]
               return (
@@ -123,7 +123,7 @@ export default function TagSelector({
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag.id)}
-                      className="ml-0.5 rounded-full p-0.5 hover:bg-black/10 transition-colors"
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-white/20 transition-colors"
                       title={`Remove tag ${tag.label}`}
                       aria-label={`Remove tag ${tag.label}`}
                     >
@@ -141,20 +141,20 @@ export default function TagSelector({
       <div className="space-y-2">
         {/* Search input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#414B32]/50" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B9586]" />
           <input
             type="text"
             value={searchQuery}
             disabled={disabled}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search approved tags (e.g. Pollinator, Western Ghats, Sacred Grove)..."
-            className="w-full min-h-[42px] rounded-xl border border-[#C5D1BD] bg-white pl-9 pr-8 py-2 text-xs sm:text-sm text-[#263D2B] placeholder-[#414B32]/45 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100"
+            className="w-full min-h-[42px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-9 pr-8 py-2 text-xs sm:text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7B9586] hover:text-[#F0F5EF] p-1"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -163,7 +163,7 @@ export default function TagSelector({
 
         {/* Category Filter Pills (Horizontal scrollable on mobile) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
-          <span className="text-slate-400 flex items-center gap-1 shrink-0 mr-0.5">
+          <span className="text-[#7B9586] flex items-center gap-1 shrink-0 mr-0.5">
             <Filter className="h-3 w-3" />
           </span>
           <button
@@ -171,8 +171,8 @@ export default function TagSelector({
             onClick={() => setActiveCategoryFilter('All')}
             className={`rounded-full px-2.5 py-1 font-medium transition-all shrink-0 ${
               activeCategoryFilter === 'All'
-                ? 'bg-[#263D2B] text-white shadow-2xs font-semibold'
-                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-[#A6F16A] text-[#061812] shadow-2xs font-bold'
+                : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
             }`}
           >
             All Categories
@@ -184,8 +184,8 @@ export default function TagSelector({
               onClick={() => setActiveCategoryFilter(cat)}
               className={`rounded-full px-2.5 py-1 font-medium transition-all shrink-0 ${
                 activeCategoryFilter === cat
-                  ? 'bg-[#263D2B] text-white shadow-2xs font-semibold'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-[#A6F16A] text-[#061812] shadow-2xs font-bold'
+                  : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
               }`}
             >
               {cat}
@@ -195,12 +195,12 @@ export default function TagSelector({
       </div>
 
       {/* 3. Approved Catalogue List */}
-      <div className="max-h-52 overflow-y-auto rounded-2xl border border-[#DCD5C5] bg-[#FAF7F0] p-2 space-y-1.5">
+      <div className="max-h-52 overflow-y-auto rounded-2xl border border-[#1C4D3C] bg-[#061812] p-2 space-y-1.5">
         {filteredTags.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-400">
-            <TagIcon className="h-6 w-6 mx-auto mb-1 opacity-40" />
+          <div className="py-6 text-center text-xs text-[#7B9586]">
+            <TagIcon className="h-6 w-6 mx-auto mb-1 opacity-40 text-[#A6F16A]" />
             <p>No matching approved tags found.</p>
-            <p className="text-[10px] mt-0.5">Only curated catalogue tags can be applied.</p>
+            <p className="text-[10px] mt-0.5 text-[#7B9586]">Only curated catalogue tags can be applied.</p>
           </div>
         ) : (
           filteredTags.map((tag) => {
@@ -215,8 +215,8 @@ export default function TagSelector({
                 onClick={() => handleToggleTag(tag.id)}
                 className={`w-full flex items-start justify-between gap-2 p-2 rounded-xl text-left transition-all border ${
                   isSelected
-                    ? 'bg-emerald-50/90 border-emerald-300 text-[#165B33] shadow-2xs'
-                    : 'bg-white border-transparent hover:border-slate-200 text-slate-800'
+                    ? 'bg-[#133D2F] border-[#A6F16A] text-white shadow-2xs'
+                    : 'bg-[#0D2D22] border-[#1C4D3C] hover:border-[#A6F16A]/40 text-[#F0F5EF]'
                 }`}
               >
                 <div className="min-w-0 flex-1">
@@ -229,7 +229,7 @@ export default function TagSelector({
                     </span>
                   </div>
                   {tag.description && (
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-1">
+                    <p className="text-[11px] text-[#B2C8BA] mt-0.5 leading-snug line-clamp-1">
                       {tag.description}
                     </p>
                   )}
@@ -238,8 +238,8 @@ export default function TagSelector({
                 <div
                   className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 border transition-all mt-0.5 ${
                     isSelected
-                      ? 'bg-[#165B33] text-white border-[#165B33]'
-                      : 'border-slate-300 bg-white'
+                      ? 'bg-[#A6F16A] text-[#061812] border-[#A6F16A]'
+                      : 'border-[#1C4D3C] bg-[#061812]'
                   }`}
                 >
                   {isSelected && <Check className="h-3.5 w-3.5 stroke-[2.5]" />}
@@ -250,7 +250,7 @@ export default function TagSelector({
         )}
       </div>
 
-      <p className="text-[10px] text-[#414B32]/70 leading-relaxed">
+      <p className="text-[10px] text-[#7B9586] leading-relaxed">
         🏷️ Tags are optional classification metadata from the curated catalogue. They do not replace
         structured fields like species identification or location.
       </p>

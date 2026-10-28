@@ -69,25 +69,25 @@ export default function MyProjects() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-slate-800">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F0F5EF]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-4">
         <div>
-          <nav className="mb-1 flex items-center gap-1.5 text-xs text-slate-500">
-            <Link to="/projects" className="hover:underline flex items-center gap-1 text-[#165B33] font-medium">
+          <nav className="mb-1 flex items-center gap-1.5 text-xs text-[#7B9586]">
+            <Link to="/projects" className="hover:underline flex items-center gap-1 text-[#A6F16A] font-semibold">
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>All Projects</span>
             </Link>
           </nav>
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-50 border border-orange-100 text-[#EA580C]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A]">
               <UserCheck className="h-4.5 w-4.5" />
             </div>
-            <h1 className="font-heading text-2xl font-semibold tracking-wide text-slate-900">
+            <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
               My Projects
             </h1>
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-[#B2C8BA]">
             Projects you have joined on this device
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function MyProjects() {
         <Link to="/projects">
           <Button
             variant="outline"
-            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-xl shadow-xs"
+            className="border-[#1C4D3C] bg-[#0D2D22] text-[#A6F16A] hover:bg-[#133D2F] text-xs font-semibold rounded-xl shadow-xs"
           >
             Browse All
           </Button>
@@ -104,20 +104,20 @@ export default function MyProjects() {
 
       {/* Projects List */}
       {isLoading ? (
-        <div className="py-12 text-center text-sm text-slate-500">
+        <div className="py-12 text-center text-sm text-[#7B9586]">
           <p>Loading your projects...</p>
         </div>
       ) : joinedProjects.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
-          <FolderGit2 className="mx-auto h-12 w-12 text-slate-300" />
-          <h2 className="mt-3 font-heading text-xl font-bold text-slate-900">
+        <div className="rounded-3xl border border-dashed border-[#1C4D3C] bg-[#0D2D22] p-8 text-center shadow-xl shadow-[#061812]/50">
+          <FolderGit2 className="mx-auto h-12 w-12 text-[#7B9586]" />
+          <h2 className="mt-3 text-xl font-bold text-white">
             No joined projects yet
           </h2>
-          <p className="mt-1.5 text-xs text-slate-500 max-w-xs mx-auto">
+          <p className="mt-1.5 text-xs text-[#B2C8BA] max-w-xs mx-auto">
             Browse available biodiversity survey projects and join the ones you are actively collecting data for.
           </p>
           <Link to="/projects" className="inline-block mt-5">
-            <Button className="min-h-[44px] bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] rounded-xl px-5 text-sm font-semibold shadow-xs">
+            <Button className="min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 rounded-2xl px-6 text-sm font-bold shadow-md shadow-[#20D6A0]/20">
               Browse Available Projects
             </Button>
           </Link>
@@ -127,36 +127,36 @@ export default function MyProjects() {
           {joinedProjects.map((proj) => (
             <div
               key={proj.id}
-              className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs text-slate-800"
+              className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 shadow-lg shadow-[#061812]/50 text-[#F0F5EF]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-heading text-lg font-bold text-slate-900 truncate">
+                    <h2 className="text-lg font-bold text-white truncate">
                       {proj.name}
                     </h2>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 border border-orange-200 px-2 py-0.5 text-[10px] font-semibold text-[#EA580C] uppercase">
-                      <CheckCircle2 className="h-3 w-3 text-[#EA580C]" />
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 text-[10px] font-semibold text-amber-300 uppercase">
+                      <CheckCircle2 className="h-3 w-3 text-amber-300" />
                       Joined
                     </span>
                   </div>
 
                   {proj.organization && (
-                    <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-600">
-                      <Building2 className="h-3.5 w-3.5 shrink-0 text-[#165B33]" />
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-[#B2C8BA]">
+                      <Building2 className="h-3.5 w-3.5 shrink-0 text-[#20D6A0]" />
                       <span className="truncate">{proj.organization}</span>
                     </p>
                   )}
 
                   {proj.targetRegion && (
-                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-600">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-[#165B33]" />
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#B2C8BA]">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-[#A6F16A]" />
                       <span className="truncate">{proj.targetRegion}</span>
                     </p>
                   )}
 
                   {proj.description && (
-                    <p className="mt-2 text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    <p className="mt-2 text-xs text-[#7B9586] line-clamp-2 leading-relaxed">
                       {proj.description}
                     </p>
                   )}
@@ -164,9 +164,9 @@ export default function MyProjects() {
               </div>
 
               {/* Action row */}
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-xs text-slate-500">
-                  <strong className="text-slate-900 font-bold">{observationCounts[proj.id] ?? 0}</strong>{' '}
+              <div className="mt-4 flex items-center justify-between border-t border-[#1C4D3C] pt-3">
+                <span className="text-xs text-[#7B9586]">
+                  <strong className="text-white font-bold">{observationCounts[proj.id] ?? 0}</strong>{' '}
                   {observationCounts[proj.id] === 1 ? 'observation' : 'observations'}
                 </span>
 
@@ -174,17 +174,17 @@ export default function MyProjects() {
                   <button
                     type="button"
                     onClick={() => handleLeaveProject(proj.id, proj.name)}
-                    className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded transition-colors"
+                    className="text-xs text-[#7B9586] hover:text-rose-400 px-2 py-1 rounded transition-colors"
                   >
                     Leave
                   </button>
 
                   <Button
                     onClick={() => navigate(`/projects/${proj.id}/wards`)}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-xs font-semibold px-4 shadow-xs active:scale-95 transition-all"
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-xs font-bold px-4 shadow-sm active:scale-95 transition-all"
                   >
                     <span>Open Project</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-emerald-100" />
+                    <ArrowRight className="h-3.5 w-3.5 text-[#061812]" />
                   </Button>
                 </div>
               </div>

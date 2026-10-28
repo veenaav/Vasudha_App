@@ -8,22 +8,17 @@
     --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    /* B-LIFFE Living Biodiversity Palette (Based on Official Logo) */
-    --color-forest: #165B33;
-    --color-forest-dark: #104426;
-    --color-forest-light: #1E7E46;
-    --color-saffron: #EA580C;
-    --color-saffron-dark: #C2410C;
-    --color-saffron-light: #FB923C;
-    --color-amber: #D97706;
-    --color-amber-light: #FBBF24;
-    --color-sky: #2563EB;
-    --color-sky-light: #60A5FA;
-    --color-emerald: #16A34A;
-    --color-cream: #FAF7F0;
-    --color-olive: #3D5A40;
-    --color-sage: #E2EBE2;
-    --color-terracotta: #EA580C;
+    /* Dark Nature Palette (Animap / Wildpedia Dribbble Reference) */
+    --color-forest-black: #061812;
+    --color-forest-deep: #08221A;
+    --color-forest-card: #0D2D22;
+    --color-forest-elevated: #133D2F;
+    --color-forest-border: #1C4D3C;
+    --color-lime-primary: #A6F16A;
+    --color-turquoise-secondary: #20D6A0;
+    --color-text-primary: #F0F5EF;
+    --color-text-secondary: #B2C8BA;
+    --color-text-muted: #7B9586;
 
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -61,34 +56,33 @@
 }
 
 :root {
-    --background: #F8FAF7;
-    --foreground: #1E293B;
-    --card: #FFFFFF;
-    --card-foreground: #1E293B;
-    --popover: #FFFFFF;
-    --popover-foreground: #1E293B;
-    --primary: #165B33;
-    --primary-foreground: #FFFFFF;
-    --secondary: #EFF6FF;
-    --secondary-foreground: #1E293B;
-    --muted: #F1F5F9;
-    --muted-foreground: #64748B;
-    --accent: #EA580C;
-    --accent-foreground: #FFFFFF;
-    --terracotta: #EA580C;
-    --destructive: #DC2626;
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #165B33;
+    --background: #08221A;
+    --foreground: #F0F5EF;
+    --card: #0D2D22;
+    --card-foreground: #F0F5EF;
+    --popover: #0D2D22;
+    --popover-foreground: #F0F5EF;
+    --primary: #A6F16A;
+    --primary-foreground: #061812;
+    --secondary: #133D2F;
+    --secondary-foreground: #F0F5EF;
+    --muted: #0D2D22;
+    --muted-foreground: #7B9586;
+    --accent: #20D6A0;
+    --accent-foreground: #061812;
+    --destructive: #FF6B6B;
+    --border: #1C4D3C;
+    --input: #1C4D3C;
+    --ring: #A6F16A;
     --radius: 1rem;
-    --sidebar: #FFFFFF;
-    --sidebar-foreground: #1E293B;
-    --sidebar-primary: #165B33;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #F1F5F9;
-    --sidebar-accent-foreground: #1E293B;
-    --sidebar-border: #E2E8F0;
-    --sidebar-ring: #165B33;
+    --sidebar: #08221A;
+    --sidebar-foreground: #F0F5EF;
+    --sidebar-primary: #A6F16A;
+    --sidebar-primary-foreground: #061812;
+    --sidebar-accent: #133D2F;
+    --sidebar-accent-foreground: #F0F5EF;
+    --sidebar-border: #1C4D3C;
+    --sidebar-ring: #A6F16A;
 }
 
 @layer base {
@@ -96,8 +90,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    background-color: #F8FAF7;
-    color: #1E293B;
+    background-color: #08221A;
+    color: #F0F5EF;
     font-family: var(--font-sans);
     min-height: 100vh;
     font-size: 16px;
@@ -107,6 +101,8 @@
   }
   html {
     @apply font-sans;
+    background-color: #08221A;
+    color-scheme: dark;
   }
   h1, h2, h3, .font-heading {
     font-family: var(--font-heading);
@@ -114,26 +110,29 @@
   }
 }
 
-/* Reusable Glassmorphism panels */
-.glass-panel {
-  background-color: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 1rem;
+/* Gradient CTA from Lime to Turquoise */
+.bg-gradient-cta {
+  background: linear-gradient(135deg, #A6F16A 0%, #20D6A0 100%);
+  color: #061812;
+  font-weight: 700;
 }
 
-.glass-panel-subtle {
-  background-color: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 1rem;
+.bg-gradient-cta:hover {
+  filter: brightness(1.08);
 }
 
-.glass-nav {
-  background-color: rgba(22, 37, 26, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.15);
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #08221A;
+}
+::-webkit-scrollbar-thumb {
+  background: #1C4D3C;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A6F16A;
 }

@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Navigation,
 } from 'lucide-react'
+import BrandName from '@/components/BrandName'
 
 interface FAQPageProps {
   onBack?: () => void
@@ -39,11 +40,11 @@ const FAQ_ITEMS: FAQItem[] = [
     statusLabel: 'Operational',
     icon: Navigation,
     answer:
-      'B LIFFE provides a clean, uncluttered interface tailored for handheld field recording.',
+      'B-LIFFE provides a clean, handheld field interface designed for outdoors and nature expeditions.',
     bulletPoints: [
-      'Bottom Navigation Bar: Always accessible at the bottom of the screen with four primary actions: "Home" (return to dashboard), "New Observation" (create new record), "Records" (browse saved observations), and "Menu" (open settings, guides, and project tools).',
-      'Branding Header: Displays the B-liffe logo and full subtitle, aligned to the left of the screen.',
-      'Breadcrumbs: When inside specific projects or survey visits, breadcrumbs at the top of the screen allow you to step back to the project overview.',
+      'Bottom Navigation Bar: Always accessible at the bottom of the screen with primary actions: "Home", "Records", "Sync", and quick drawer navigation.',
+      'Branding Header: Displays the B-LIFFE emblem, live online/offline network indicator, and direct access to Welcome Tour and Sign In.',
+      'Navigation Drawer: Open the menu to reach Projects, Surveys, Ward boundaries, About, Settings, and Field Guides.',
     ],
   },
   {
@@ -56,7 +57,7 @@ const FAQ_ITEMS: FAQItem[] = [
     answer:
       'Projects help organize field recordings into regional initiatives (e.g., Thiruvananthapuram City Biodiversity Register).',
     bulletPoints: [
-      'Tap "Projects" on the main dashboard or open the Menu and select "Projects & Field Visits".',
+      'Tap "Projects" on the main dashboard or open the menu and select "Projects & Campaigns".',
       'Select any active project card to view its scope, target region, guidelines, and recorded observations.',
       'Tap "+ Join Project" to pin it to your personal fieldwork list.',
       'To record an observation associated with that project, tap the prominent "Record Observation" button directly inside the project overview.',
@@ -70,11 +71,11 @@ const FAQ_ITEMS: FAQItem[] = [
     statusLabel: 'Operational',
     icon: Leaf,
     answer:
-      'The observation form allows capturing taxonomic details, vernacular folk names, and ecological context.',
+      'The observation form captures taxonomic details, vernacular folk names, and ecological context.',
     bulletPoints: [
       'Step 1 (Status): Choose whether the species is "Identified", "Needs verification", or "Unknown".',
-      'Step 2 (Names): Enter the common name, scientific name, and local vernacular name in regional Indian scripts (e.g. Malayalam).',
-      'Step 3 (Taxonomy & Habitat): Select the species group (Birds, Mammals, Plants, Butterflies, etc.), micro-habitat, life stage, and individual count.',
+      'Step 2 (Names): Enter the common name, scientific name, and local vernacular name in regional Indian scripts with the phonetic Malayalam keyboard.',
+      'Step 3 (Taxonomy & Habitat): Select the species group, micro-habitat, life stage, individual count, and basis of record (e.g. Human Observation).',
       'Step 4 (Traditional Knowledge): If you learned about this species from elders or traditional practitioners, toggle Traditional Knowledge to record the oral source.',
       'Step 5 (Field Notes): Add behavioural observations, surrounding weather, or habitat characteristics.',
     ],
@@ -92,23 +93,23 @@ const FAQ_ITEMS: FAQItem[] = [
       'Scroll to "2. Location & Ward" on the observation form.',
       'Tap "Acquire Coordinates". Your device browser will ask for location permission; select "Allow".',
       'The app captures high-precision latitude, longitude, and accuracy radius (in metres).',
-      'If location fails or you are under heavy tree canopy, wait a moment and tap "Retry GPS Location" to re-poll satellites.',
-      'Coordinates are stored locally alongside the timestamp of capture.',
+      'You can also fine-tune your position by dragging the pin on the interactive OpenStreetMap view.',
+      'Coordinates and raw hardware audit records are stored locally alongside the timestamp of capture.',
     ],
   },
   {
     id: 'auto-ward',
     number: 5,
-    question: 'How automatic ward identification is intended to work',
-    status: 'partial',
-    statusLabel: 'GIS Integration Planned',
+    question: 'How automatic ward identification works',
+    status: 'working',
+    statusLabel: 'Operational',
     icon: Compass,
     answer:
-      'B LIFFE is architected to eliminate manual ward selection by automatically identifying administrative divisions from GPS points.',
+      'B-LIFFE eliminates manual ward selection by automatically identifying administrative divisions from GPS points.',
     bulletPoints: [
-      'How it is designed: When an observation point is captured, the GPS coordinates are matched spatially against official municipal boundary polygons (starting with the 100 wards of Thiruvananthapuram Corporation).',
-      'Ordinary field workers do not need to create, search, or manually assign wards.',
-      'Current State: The dedicated read-only ward field displays an automated pending status ("Official boundary dataset integration pending"). Point-in-polygon GIS matching will become operational once official boundary shapefiles/GeoJSON files are loaded.',
+      'When an observation point is captured, the GPS coordinates are tested against official Corporation ward boundary polygons (100 wards of Thiruvananthapuram).',
+      'Ordinary field workers do not need to create, search, or manually guess wards.',
+      'If your location falls outside the boundary dataset, the system safely records "Outside designated wards" without interrupting your fieldwork.',
     ],
   },
   {
@@ -131,16 +132,17 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     id: 'offline-sync',
     number: 7,
-    question: 'How offline collection and synchronisation are intended to work',
+    question: 'How offline collection and synchronisation work',
     status: 'partial',
     statusLabel: 'Offline Active • Sync Planned',
     icon: WifiOff,
     answer:
-      'B LIFFE operates offline-first, ensuring zero data loss in wilderness areas without network coverage.',
+      'B-LIFFE operates offline-first, ensuring zero data loss in wilderness areas without network coverage.',
     bulletPoints: [
-      'Working Now: All observations, high-resolution photos, and coordinates save immediately to your browser IndexedDB database.',
+      'Working Now: All observations, photos, and coordinates save immediately to your browser IndexedDB database.',
       'You can conduct full day field visits in deep reserves with Airplane Mode enabled.',
-      'Planned Feature: Automated background synchronisation to institutional cloud registries (such as the Kerala State Biodiversity Board PBR portal) when your device reconnects to Wi-Fi or cellular networks.',
+      'Export at any time: Download your full observation dataset as Darwin Core-compliant JSON files from the Records screen.',
+      'Planned Feature: Automated background synchronisation to institutional cloud registries when your device reconnects to Wi-Fi.',
     ],
   },
   {
@@ -154,6 +156,7 @@ const FAQ_ITEMS: FAQItem[] = [
       'Scientific integrity requires expert peer review and taxonomic validation.',
     bulletPoints: [
       'Working Now: You can open "Records" at any time, filter by status (Identified, Needs Verification, Unknown), open full detail cards, and edit observation entries if corrections are needed.',
+      'Role Switcher: Switch between Field Worker, Project Expert, and Admin roles in Dev Mode to test validation workflows.',
       'Planned Feature: A dedicated Project Expert / Taxonomic Reviewer portal where qualified botanists, entomologists, and zoologists can review submitted photos, confirm scientific names, and upgrade statuses to "Verified".',
     ],
   },
@@ -167,18 +170,18 @@ export default function FAQPage({ onBack }: FAQPageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-slate-800">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F0F5EF]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+      <div className="flex items-center justify-between border-b border-[#1C4D3C]/70 pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#A6F16A]">
             Fieldwork Guidance & FAQ
           </span>
-          <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900 mt-0.5">
+          <h1 className="font-heading text-2xl sm:text-[28px] font-bold tracking-wide text-white mt-0.5">
             Field Guide & Help
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Recording instructions and FAQs
+          <p className="text-xs text-[#B2C8BA] mt-0.5">
+            Recording instructions and operational guides
           </p>
         </div>
 
@@ -186,24 +189,24 @@ export default function FAQPage({ onBack }: FAQPageProps) {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#F0F5EF] hover:bg-[#133D2F] transition-colors shadow-xs"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5 text-[#A6F16A]" />
             <span>Back</span>
           </button>
         ) : (
           <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+            to="/home"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-[#F0F5EF] hover:bg-[#133D2F] transition-colors shadow-xs"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5 text-[#A6F16A]" />
             <span>Dashboard</span>
           </Link>
         )}
       </div>
 
-      <p className="text-xs text-slate-600 leading-relaxed">
-        Step-by-step guidance for field workers and researchers using B-LIFFE. Features currently
+      <p className="text-xs text-[#B2C8BA] leading-relaxed">
+        Step-by-step guidance for field workers and researchers using <BrandName />. Features currently
         operational on this device are clearly marked alongside planned capabilities.
       </p>
 
@@ -216,56 +219,56 @@ export default function FAQPage({ onBack }: FAQPageProps) {
           return (
             <div
               key={item.id}
-              className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden transition-all shadow-xs"
+              className="rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] overflow-hidden transition-all shadow-xs"
             >
               <button
                 type="button"
                 onClick={() => toggleItem(item.id)}
-                className="w-full flex items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-slate-50 focus:outline-none"
+                className="w-full flex items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-[#133D2F]/60 focus:outline-none"
                 aria-expanded={isOpen}
               >
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-[#165B33]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A]">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-[#7B9586] uppercase tracking-wider">
                         Guide {item.number}
                       </span>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold border ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold border ${
                           item.status === 'working'
-                            ? 'bg-emerald-50 text-[#165B33] border-emerald-200'
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                            ? 'bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]'
+                            : 'bg-[#2D2410] text-[#F4D06F] border-[#685320]'
                         }`}
                       >
                         {item.status === 'working' ? (
-                          <CheckCircle2 className="h-2.5 w-2.5 text-[#165B33]" />
+                          <CheckCircle2 className="h-2.5 w-2.5 text-[#A6F16A]" />
                         ) : (
-                          <Clock className="h-2.5 w-2.5 text-amber-700" />
+                          <Clock className="h-2.5 w-2.5 text-[#F4D06F]" />
                         )}
                         <span>{item.statusLabel}</span>
                       </span>
                     </div>
-                    <h2 className="font-heading text-base font-semibold text-slate-900 truncate mt-0.5">
+                    <h2 className="font-heading text-base font-semibold text-white truncate mt-0.5">
                       {item.question}
                     </h2>
                   </div>
                 </div>
 
-                <div className="shrink-0 text-slate-400">
-                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <div className="shrink-0 text-[#7B9586]">
+                  {isOpen ? <ChevronUp className="h-4 w-4 text-[#A6F16A]" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
 
               {isOpen && (
-                <div className="border-t border-slate-100 bg-slate-50/70 p-4 text-xs sm:text-sm text-slate-700 space-y-2.5 leading-relaxed">
+                <div className="border-t border-[#1C4D3C]/70 bg-[#061812]/70 p-4 text-xs sm:text-sm text-[#B2C8BA] space-y-2.5 leading-relaxed">
                   <p>{item.answer}</p>
                   {item.bulletPoints && (
-                    <ul className="space-y-1.5 pl-3 list-disc marker:text-[#165B33]">
+                    <ul className="space-y-1.5 pl-3 list-disc marker:text-[#A6F16A]">
                       {item.bulletPoints.map((pt, idx) => (
-                        <li key={idx} className="text-xs text-slate-800">
+                        <li key={idx} className="text-xs text-[#F0F5EF]">
                           {pt}
                         </li>
                       ))}

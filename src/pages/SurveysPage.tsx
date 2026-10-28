@@ -137,64 +137,64 @@ function SurveysPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 text-slate-800">
+    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 text-[#F0F5EF] space-y-5">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 flex-wrap">
-        <Link to="/projects" className="text-[#165B33] font-semibold hover:underline">
+      <nav className="flex items-center gap-1.5 text-xs text-[#7B9586] flex-wrap">
+        <Link to="/projects" className="text-[#A6F16A] font-semibold hover:underline">
           Projects
         </Link>
         <span>/</span>
         <Link
           to={`/projects/${projectId}/wards`}
-          className="inline-flex items-center gap-1 text-[#165B33] font-semibold hover:underline truncate max-w-[200px]"
+          className="inline-flex items-center gap-1 text-[#A6F16A] font-semibold hover:underline truncate max-w-[200px]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>{ward ? `Ward ${ward.wardNumber}` : 'Wards'}</span>
         </Link>
         <span>/</span>
-        <span className="font-semibold text-slate-900">Field Visits</span>
+        <span className="font-semibold text-white">Field Visits</span>
       </nav>
 
       {/* Ward Context Header */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs mb-6 text-slate-800">
+      <div className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-md bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-3 py-0.5 text-xs font-semibold text-[#A6F16A]">
                 Ward {ward?.wardNumber}
               </span>
-              <h1 className="font-heading text-xl sm:text-2xl font-semibold text-slate-900">{ward?.wardName}</h1>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white">{ward?.wardName}</h1>
             </div>
             {project && (
-              <p className="mt-1 text-xs text-slate-500">
-                Project: <span className="text-slate-800 font-medium">{project.name}</span>
+              <p className="mt-1 text-xs text-[#B2C8BA]">
+                Project: <span className="text-white font-medium">{project.name}</span>
               </p>
             )}
           </div>
 
           <Button
             onClick={() => setShowAddForm((prev) => !prev)}
-            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] font-medium text-sm shadow-xs rounded-xl active:scale-95 transition-all"
+            className="inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm shadow-md shadow-[#20D6A0]/20 rounded-2xl active:scale-95 transition-all"
           >
-            <Plus className="h-4 w-4 text-white" />
+            <Plus className="h-4 w-4 text-[#061812]" />
             <span>{showAddForm ? 'Cancel' : 'Start Field Visit'}</span>
           </Button>
         </div>
       </div>
 
-      {/* Start Survey Visit Form (Collapsible) - MOYA Warm Cream Style */}
+      {/* Start Survey Visit Form (Collapsible) */}
       {showAddForm && (
-        <form onSubmit={handleCreateSurvey} className="mb-6 rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-1">
+        <form onSubmit={handleCreateSurvey} className="mb-6 rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-2">
             Start New Survey / Field Visit
           </h2>
-          <p className="mt-1 text-xs text-[#414B32]">
+          <p className="mt-1.5 text-xs text-[#B2C8BA]">
             Set parameters for this field session. All observations logged will link to this visit.
           </p>
 
           <div className="mt-4">
-            <label htmlFor="leadObserver" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-              Lead Observer / Surveyor Name <span className="text-[#B87555]">*</span>
+            <label htmlFor="leadObserver" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              Lead Observer / Surveyor Name <span className="text-[#A6F16A]">*</span>
             </label>
             <input
               id="leadObserver"
@@ -203,20 +203,20 @@ function SurveysPage() {
               value={leadObserver}
               onChange={(e) => setLeadObserver(e.target.value)}
               placeholder="e.g. Dr. Anitha / Team Palayam"
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
             />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="surveyMethod" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+              <label htmlFor="surveyMethod" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
                 Survey Method
               </label>
               <select
                 id="surveyMethod"
                 value={surveyMethod}
                 onChange={(e) => setSurveyMethod(e.target.value)}
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
               >
                 {SURVEY_METHODS.map((m) => (
                   <option key={m} value={m}>
@@ -227,14 +227,14 @@ function SurveysPage() {
             </div>
 
             <div>
-              <label htmlFor="habitatType" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+              <label htmlFor="habitatType" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
                 Broad Habitat Type
               </label>
               <select
                 id="habitatType"
                 value={habitatType}
                 onChange={(e) => setHabitatType(e.target.value)}
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
               >
                 {HABITAT_TYPES.map((h) => (
                   <option key={h} value={h}>
@@ -246,14 +246,14 @@ function SurveysPage() {
           </div>
 
           <div className="mt-4">
-            <label htmlFor="targetGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="targetGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Survey Focus / Target Group
             </label>
             <select
               id="targetGroup"
               value={targetGroup}
               onChange={(e) => setTargetGroup(e.target.value)}
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
             >
               {TARGET_GROUPS.map((t) => (
                 <option key={t} value={t}>
@@ -264,7 +264,7 @@ function SurveysPage() {
           </div>
 
           <div className="mt-4">
-            <label htmlFor="weather" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="weather" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Weather & Site Notes (optional)
             </label>
             <input
@@ -273,7 +273,7 @@ function SurveysPage() {
               value={weatherNotes}
               onChange={(e) => setWeatherNotes(e.target.value)}
               placeholder="e.g. Sunny morning, 28°C, post-monsoon flowering season"
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
             />
           </div>
 
@@ -281,7 +281,7 @@ function SurveysPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="min-h-[48px] min-w-40 bg-[#263D2B] text-[#F5F0E4] hover:bg-[#1E3022] font-medium text-sm tracking-wider uppercase shadow-sm rounded-full sm:rounded-xl active:scale-95 transition-all"
+              className="min-h-[48px] min-w-40 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wider uppercase shadow-md rounded-xl active:scale-95 transition-all"
             >
               {isSubmitting ? 'Starting...' : 'Start Session & Log'}
             </Button>
@@ -289,7 +289,7 @@ function SurveysPage() {
               type="button"
               variant="outline"
               onClick={() => setShowAddForm(false)}
-              className="min-h-[48px] border-[#C5D1BD] bg-white text-[#263D2B] hover:bg-[#EDE7DA] text-sm font-medium tracking-wider uppercase rounded-full sm:rounded-xl transition-all"
+              className="min-h-[48px] border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-sm font-semibold tracking-wider uppercase rounded-xl transition-all"
             >
               Cancel
             </Button>
@@ -303,40 +303,40 @@ function SurveysPage() {
           surveys.map((survey) => (
             <div
               key={survey.id}
-              className="group rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 text-slate-800"
+              className="group rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 shadow-lg shadow-[#061812]/50 transition-all hover:border-[#A6F16A]/50 text-[#F0F5EF]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="flex items-center gap-1.5 font-heading text-lg font-bold text-slate-900">
-                      <User className="h-4 w-4 text-[#165B33]" />
+                    <span className="flex items-center gap-1.5 text-lg font-bold text-white">
+                      <User className="h-4 w-4 text-[#A6F16A]" />
                       {survey.leadObserver}
                     </span>
-                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-[#165B33]">
+                    <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold text-[#A6F16A]">
                       {survey.surveyMethod}
                     </span>
                   </div>
 
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
-                    <Calendar className="h-3.5 w-3.5 text-[#165B33]" />
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#B2C8BA]">
+                    <Calendar className="h-3.5 w-3.5 text-[#20D6A0]" />
                     <span>Started: {formatDateTime(survey.startTime)}</span>
                   </p>
 
-                  <div className="mt-2.5 flex items-center gap-2 text-xs text-slate-700 flex-wrap">
+                  <div className="mt-2.5 flex items-center gap-2 text-xs text-[#F0F5EF] flex-wrap">
                     {survey.habitatType && (
-                      <span className="bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-0.5 font-medium">
+                      <span className="bg-[#061812] border border-[#1C4D3C] rounded-lg px-2.5 py-0.5 font-medium text-[#B2C8BA]">
                         Habitat: {survey.habitatType}
                       </span>
                     )}
                     {survey.targetGroup && (
-                      <span className="bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-0.5 font-medium">
+                      <span className="bg-[#061812] border border-[#1C4D3C] rounded-lg px-2.5 py-0.5 font-medium text-[#B2C8BA]">
                         Focus: {survey.targetGroup}
                       </span>
                     )}
                   </div>
 
                   {survey.weatherNotes && (
-                    <p className="mt-2 text-xs text-slate-500 italic">
+                    <p className="mt-2 text-xs text-[#7B9586] italic">
                       &ldquo;{survey.weatherNotes}&rdquo;
                     </p>
                   )}
@@ -345,7 +345,7 @@ function SurveysPage() {
                 <button
                   type="button"
                   onClick={() => handleDeleteSurvey(survey.id)}
-                  className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                  className="rounded-lg p-2 text-[#7B9586] hover:bg-rose-950/60 hover:text-rose-400 transition-colors"
                   title="Delete field visit"
                   aria-label="Delete field visit"
                 >
@@ -354,9 +354,9 @@ function SurveysPage() {
               </div>
 
               {/* Action row */}
-              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                <span className="text-xs text-slate-500">
-                  <strong className="text-slate-900 font-bold">{observationCounts[survey.id] ?? 0}</strong>{' '}
+              <div className="mt-4 flex items-center justify-between border-t border-[#1C4D3C] pt-3">
+                <span className="text-xs text-[#7B9586]">
+                  <strong className="text-white font-bold">{observationCounts[survey.id] ?? 0}</strong>{' '}
                   {observationCounts[survey.id] === 1 ? 'observation' : 'observations'} logged
                 </span>
 
@@ -364,25 +364,25 @@ function SurveysPage() {
                   onClick={() =>
                     navigate(`/projects/${projectId}/wards/${wardId}/surveys/${survey.id}/observations`)
                   }
-                  className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-sm font-semibold px-4 shadow-xs transition-all active:scale-95"
+                  className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-xs font-bold px-4 shadow-sm transition-all active:scale-95"
                 >
-                  <Leaf className="h-4 w-4 text-emerald-100" />
+                  <Leaf className="h-4 w-4 text-[#061812]" />
                   <span>Log Species</span>
-                  <ArrowRight className="h-4 w-4 ml-0.5 text-emerald-100" />
+                  <ArrowRight className="h-4 w-4 ml-0.5 text-[#061812]" />
                 </Button>
               </div>
             </div>
           ))
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center bg-white shadow-xs">
-            <Layers className="mx-auto h-12 w-12 text-[#165B33]/60" />
-            <h3 className="mt-3 font-heading text-xl font-bold text-slate-900">No field visits recorded yet</h3>
-            <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
+          <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
+            <Layers className="mx-auto h-12 w-12 text-[#A6F16A]/60" />
+            <h3 className="mt-3 text-xl font-bold text-white">No field visits recorded yet</h3>
+            <p className="mt-1 text-sm text-[#B2C8BA] max-w-sm mx-auto">
               Start a field visit in Ward {ward?.wardNumber || ''} to log species observations.
             </p>
             <Button
               onClick={() => setShowAddForm(true)}
-              className="mt-5 bg-gradient-to-r from-[#165B33] to-[#1E7B46] text-white hover:from-[#134D2C] hover:to-[#17663A] text-sm font-semibold min-h-[46px] px-6 rounded-xl active:scale-95 shadow-xs"
+              className="mt-5 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold min-h-[46px] px-6 rounded-2xl active:scale-95 shadow-md"
             >
               + Start Field Visit
             </Button>

@@ -657,40 +657,40 @@ function Home() {
       {/* Header Context */}
       {surveyId ? (
         <div className="mb-6">
-          <nav className="mb-2.5 flex items-center gap-1.5 text-xs tracking-wider uppercase text-slate-500">
+          <nav className="mb-2.5 flex items-center gap-1.5 text-xs tracking-wider uppercase text-[#7B9586]">
             <Link
               to={`/projects/${projectId}/wards/${wardId}/surveys`}
-              className="inline-flex items-center gap-1 text-[#165B33] font-medium hover:underline"
+              className="inline-flex items-center gap-1 text-[#A6F16A] font-medium hover:underline"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Field Visits</span>
             </Link>
             <span>/</span>
-            <span className="font-semibold text-slate-800">Log Observation</span>
+            <span className="font-semibold text-[#F0F5EF]">Log Observation</span>
           </nav>
 
-          <div className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-4 sm:p-5 shadow-xl text-[#263D2B]">
+          <div className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-4 sm:p-5 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-[#165B33] px-3 py-0.5 text-xs font-semibold tracking-wider uppercase text-white">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-3 py-0.5 text-xs font-semibold tracking-wider uppercase text-[#A6F16A]">
                 Ward {activeWard?.wardNumber}
               </span>
-              <span className="text-xs text-[#414B32] font-medium">
+              <span className="text-xs text-[#B2C8BA] font-medium">
                 {activeSurvey?.leadObserver ? `Lead: ${activeSurvey.leadObserver}` : 'Survey Session'}
               </span>
             </div>
-            <p className="mt-1.5 font-heading text-lg font-normal tracking-wide text-[#263D2B]">
+            <p className="mt-1.5 text-lg font-bold text-white tracking-tight">
               {activeWard?.wardName || 'Ward'}
               {activeProject?.name ? ` • ${activeProject.name}` : ''}
             </p>
           </div>
         </div>
       ) : (
-        <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+        <div className="mb-6 flex items-center justify-between border-b border-[#1C4D3C] pb-4">
           <div>
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#165B33]">
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A6F16A]">
               {isEditMode ? 'Update Observation' : 'Field Recording'}
             </span>
-            <h1 className="font-heading text-2xl sm:text-[28px] font-semibold tracking-wide text-slate-900">
+            <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
               {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
           </div>
@@ -702,7 +702,7 @@ function Home() {
                   navigate('/observations')
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-1.5 text-xs font-medium tracking-wider uppercase text-[#B2C8BA] hover:text-white hover:border-[#A6F16A]/50 transition-colors shadow-xs"
             >
               <X className="h-3.5 w-3.5" />
               <span>Cancel</span>
@@ -711,16 +711,16 @@ function Home() {
         </div>
       )}
 
-      {/* Observation Form Container — MOYA-Inspired Warm Cream / Oatmeal Sections for Outdoor Contrast */}
+      {/* Observation Form Container — Dark Forest-Green Cards */}
       <div className="space-y-5">
         {/* 1. Photographs */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
-            <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
-              1. Photographs {isUnknown && <span className="text-[#B87555] text-base">*</span>}
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
+            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
+              1. Photographs {isUnknown && <span className="text-[#A6F16A] text-base">*</span>}
             </h2>
             {photos.length > 0 && (
-              <span className="rounded-full bg-[#263D2B] px-2.5 py-0.5 text-[11px] font-semibold text-[#F5F0E4]">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-[11px] font-semibold text-[#A6F16A]">
                 {photos.length} {photos.length === 1 ? 'photo' : 'photos'}
               </span>
             )}
@@ -730,25 +730,25 @@ function Home() {
           <div className="mt-4 grid grid-cols-2 gap-3">
             <label
               htmlFor={saved ? undefined : 'camera-photo-input'}
-              className={`flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-dashed border-[#C5D1BD] p-3 text-center text-sm font-medium transition ${
+              className={`flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-dashed border-[#1C4D3C] p-3 text-center text-sm font-medium transition ${
                 saved
-                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                  : 'cursor-pointer bg-white text-[#263D2B] hover:bg-[#EDE7DA] active:scale-98 shadow-xs'
+                  ? 'cursor-not-allowed bg-[#061812]/50 text-[#7B9586]'
+                  : 'cursor-pointer bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/50 active:scale-98 shadow-sm'
               }`}
             >
-              <Camera className="h-4.5 w-4.5 shrink-0 text-[#263D2B]" />
+              <Camera className="h-4.5 w-4.5 shrink-0 text-[#A6F16A]" />
               <span>Take Photo</span>
             </label>
 
             <label
               htmlFor={saved ? undefined : 'gallery-photo-input'}
-              className={`flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-dashed border-[#C5D1BD] p-3 text-center text-sm font-medium transition ${
+              className={`flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border border-dashed border-[#1C4D3C] p-3 text-center text-sm font-medium transition ${
                 saved
-                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                  : 'cursor-pointer bg-white text-[#263D2B] hover:bg-[#EDE7DA] active:scale-98 shadow-xs'
+                  ? 'cursor-not-allowed bg-[#061812]/50 text-[#7B9586]'
+                  : 'cursor-pointer bg-[#061812] text-[#20D6A0] hover:bg-[#133D2F] hover:border-[#20D6A0]/50 active:scale-98 shadow-sm'
               }`}
             >
-              <ImageIcon className="h-4.5 w-4.5 shrink-0 text-[#263D2B]" />
+              <ImageIcon className="h-4.5 w-4.5 shrink-0 text-[#20D6A0]" />
               <span>Choose Gallery</span>
             </label>
           </div>
@@ -783,7 +783,7 @@ function Home() {
           {photoPreviews.length > 0 && (
             <div className="mt-4 grid grid-cols-3 gap-2.5">
               {photoPreviews.map((url, idx) => (
-                <div key={idx} className="relative aspect-square overflow-hidden rounded-2xl border border-[#C5D1BD] bg-[#EDE7DA]">
+                <div key={idx} className="relative aspect-square overflow-hidden rounded-2xl border border-[#1C4D3C] bg-[#061812]">
                   <img
                     src={url}
                     alt={`Preview ${idx + 1}`}
@@ -793,7 +793,7 @@ function Home() {
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(idx)}
-                      className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#B87555] text-white shadow-md hover:bg-[#9F5F41] active:scale-95"
+                      className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-red-600/90 text-white shadow-md hover:bg-red-700 active:scale-95"
                       aria-label="Remove photo"
                     >
                       <X className="h-4 w-4" />
@@ -806,23 +806,23 @@ function Home() {
         </section>
 
         {/* 2. Location & Administrative Ward (Interactive Map & GPS) */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3 flex-wrap gap-2">
-            <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
-              2. Location & Ward <span className="text-[#B87555] text-base">*</span>
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3 flex-wrap gap-2">
+            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
+              2. Location & Ward <span className="text-[#A6F16A] text-base">*</span>
             </h2>
             {location && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {locationSource === 'Manual Pin Adjustment' ? (
-                  <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold border bg-amber-50 text-amber-800 border-amber-300">
+                  <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold border bg-amber-950/60 text-amber-300 border-amber-800/60">
                     Manual Pin Adjustment
                   </span>
                 ) : locationSource === 'GPS' ? (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
                       locationAccuracy !== null && locationAccuracy <= 10
-                        ? 'bg-[#E5EFE4] text-[#263D2B] border-[#C5D1BD]'
-                        : 'bg-[#B87555]/20 text-[#B87555] border-[#B87555]/40'
+                        ? 'bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]'
+                        : 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                     }`}
                   >
                     GPS Fix {locationAccuracy !== null ? `(±${Math.round(locationAccuracy)}m)` : ''}
@@ -836,28 +836,28 @@ function Home() {
           <div className="mt-4 flex gap-2">
             <Button
               type="button"
-              className="min-h-[50px] flex-1 bg-[#263D2B] text-[#F5F0E4] border border-[#C5D1BD]/40 hover:bg-[#344F3A] font-medium text-base shadow-sm rounded-2xl transition-all active:scale-98 tracking-wide"
+              className="min-h-[50px] flex-1 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-base shadow-lg shadow-[#20D6A0]/20 rounded-2xl transition-all active:scale-98 tracking-wide"
               disabled={saved || isGettingLocation}
               onClick={getLocation}
             >
               {isGettingLocation ? (
                 <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#C5D1BD]" />
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#061812]" />
                   <span>Acquiring Coordinates...</span>
                 </>
               ) : location ? (
                 <>
-                  <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <MapPin className="h-5 w-5 mr-2 text-[#061812]" />
                   <span>Get My Location</span>
                 </>
               ) : locationError ? (
                 <>
-                  <RotateCcw className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <RotateCcw className="h-5 w-5 mr-2 text-[#061812]" />
                   <span>Retry Get My Location</span>
                 </>
               ) : (
                 <>
-                  <MapPin className="h-5 w-5 mr-2 text-[#C5D1BD]" />
+                  <MapPin className="h-5 w-5 mr-2 text-[#061812]" />
                   <span>Get My Location</span>
                 </>
               )}
@@ -872,43 +872,43 @@ function Home() {
           />
 
           {/* Coordinates and Time Readout */}
-          <div className="mt-3 rounded-2xl bg-[#EDE7DA] px-4 py-3 border border-[#DCD5C5] text-sm space-y-2">
+          <div className="mt-3 rounded-2xl bg-[#061812] px-4 py-3 border border-[#1C4D3C] text-sm space-y-2 text-[#F0F5EF]">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 font-mono text-sm sm:text-base font-medium text-[#263D2B]">
-                <MapPin className="h-4 w-4 text-[#263D2B] shrink-0" />
+              <div className="flex items-center gap-2 font-mono text-sm sm:text-base font-medium text-[#A6F16A]">
+                <MapPin className="h-4 w-4 text-[#20D6A0] shrink-0" />
                 <span>
                   {location
                     ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
                     : 'Coordinates not selected yet'}
                 </span>
                 {locationSource && (
-                  <span className="ml-1 text-[11px] font-sans font-semibold text-[#414B32] bg-white/70 px-2 py-0.5 rounded-full border border-[#DCD5C5]">
+                  <span className="ml-1 text-[11px] font-sans font-semibold text-[#B2C8BA] bg-[#133D2F] px-2 py-0.5 rounded-full border border-[#1C4D3C]">
                     {locationSource}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-[#414B32]">
-                <Clock className="h-3.5 w-3.5 text-[#414B32]" />
+              <div className="flex items-center gap-1.5 text-xs text-[#7B9586]">
+                <Clock className="h-3.5 w-3.5 text-[#7B9586]" />
                 <span>{displayObservationTime}</span>
               </div>
             </div>
 
             {/* Audit display: Raw GPS coordinates preserved when adjusted */}
             {gpsLocation && (
-              <div className="pt-2 border-t border-[#DCD5C5]/60 flex flex-wrap items-center justify-between gap-2 text-xs text-[#414B32]">
+              <div className="pt-2 border-t border-[#1C4D3C] flex flex-wrap items-center justify-between gap-2 text-xs text-[#B2C8BA]">
                 <div className="flex items-center gap-1.5 font-mono">
-                  <Compass className="h-3.5 w-3.5 text-[#263D2B] shrink-0" />
+                  <Compass className="h-3.5 w-3.5 text-[#20D6A0] shrink-0" />
                   <span>
                     Raw GPS: {gpsLocation.latitude.toFixed(5)}, {gpsLocation.longitude.toFixed(5)}
                   </span>
                   {locationAccuracy !== null && (
-                    <span className="text-[11px] text-[#414B32]/80">
+                    <span className="text-[11px] text-[#7B9586]">
                       (±{Math.round(locationAccuracy)}m sensor accuracy)
                     </span>
                   )}
                 </div>
                 {locationSource === 'Manual Pin Adjustment' && (
-                  <span className="text-[11px] text-amber-900 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  <span className="text-[11px] text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800/60">
                     Original GPS preserved • Final adjusted on map
                   </span>
                 )}
@@ -916,19 +916,19 @@ function Home() {
             )}
 
             {locationSource === 'Manual Pin Adjustment' && !gpsLocation && (
-              <div className="pt-2 border-t border-[#DCD5C5]/60 text-xs text-[#414B32]/90">
+              <div className="pt-2 border-t border-[#1C4D3C] text-xs text-[#7B9586]">
                 <span>📍 Manual pin placement without GPS acquisition. Raw GPS fields are null.</span>
               </div>
             )}
           </div>
 
           {/* Dedicated Read-Only Administrative Ward Information Field */}
-          <div className="mt-4 pt-4 border-t border-[#DCD5C5]">
+          <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+              <label className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
                 Administrative Ward
               </label>
-              <span className="rounded-full bg-white/80 border border-[#C5D1BD] px-2 py-0.5 text-[10px] font-semibold text-[#414B32] uppercase tracking-wider">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] uppercase tracking-wider">
                 Automatic GPS • Read-Only
               </span>
             </div>
@@ -937,30 +937,30 @@ function Home() {
             <div
               className={`rounded-2xl border p-4 transition-all ${
                 wardStatus === 'ward_identified'
-                  ? 'border-[#C5D1BD] bg-[#E5EFE4] text-[#263D2B]'
+                  ? 'border-[#A6F16A]/50 bg-[#133D2F] text-white'
                   : wardStatus === 'identifying_ward' || wardStatus === 'requesting_location'
-                  ? 'border-[#C5D1BD] bg-white text-[#263D2B]'
+                  ? 'border-[#1C4D3C] bg-[#061812] text-[#F0F5EF]'
                   : wardStatus === 'location_unavailable'
-                  ? 'border-red-300 bg-red-50 text-red-900'
-                  : 'border-[#DCD5C5] bg-white/70 text-[#414B32]'
+                  ? 'border-red-800/80 bg-red-950/40 text-red-200'
+                  : 'border-[#1C4D3C] bg-[#061812] text-[#B2C8BA]'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0">
                   {wardStatus === 'ward_identified' ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-700" />
+                    <CheckCircle2 className="h-5 w-5 text-[#A6F16A]" />
                   ) : wardStatus === 'identifying_ward' || wardStatus === 'requesting_location' ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-[#263D2B]" />
+                    <Loader2 className="h-5 w-5 animate-spin text-[#A6F16A]" />
                   ) : wardStatus === 'location_unavailable' ? (
-                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <AlertCircle className="h-5 w-5 text-red-400" />
                   ) : (
-                    <Compass className="h-5 w-5 text-[#414B32]/70" />
+                    <Compass className="h-5 w-5 text-[#7B9586]" />
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-heading text-base font-medium">
+                    <span className="text-base font-bold text-white">
                       {wardStatus === 'ward_identified' && autoWardName
                         ? `Ward ${autoWardNumber ? autoWardNumber + ' – ' : ''}${autoWardName}`
                         : wardStatus === 'location_not_obtained'
@@ -975,13 +975,13 @@ function Home() {
                     </span>
 
                     {autoWardId && (
-                      <span className="rounded bg-[#263D2B] px-1.5 py-0.5 font-mono text-[10px] text-[#F5F0E4]">
+                      <span className="rounded bg-[#061812] border border-[#1C4D3C] px-1.5 py-0.5 font-mono text-[10px] text-[#A6F16A]">
                         ID: {autoWardId}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-1 text-xs leading-relaxed text-[#414B32]/85">
+                  <p className="mt-1 text-xs leading-relaxed text-[#B2C8BA]">
                     {wardStatusMessage}
                   </p>
 
@@ -991,7 +991,7 @@ function Home() {
                       type="button"
                       onClick={getLocation}
                       disabled={isGettingLocation}
-                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-800 hover:underline"
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-300 hover:underline"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
                       <span>Retry acquiring GPS</span>
@@ -1004,13 +1004,13 @@ function Home() {
         </section>
 
         {/* 3. Identification Status */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-3">
-            3. Identification Status <span className="text-[#B87555] text-base">*</span>
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
+            3. Identification Status <span className="text-[#A6F16A] text-base">*</span>
           </h2>
 
           <div className="mt-4">
-            <label htmlFor="identificationStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="identificationStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Select Status
             </label>
             <select
@@ -1018,11 +1018,11 @@ function Home() {
               value={identificationStatus}
               disabled={saved}
               onChange={(e) => handleStatusChange(e.target.value as IdentificationStatus | '')}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base font-medium outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                !identificationStatus ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base font-medium outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
+                !identificationStatus ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
               }`}
             >
-              <option value="" disabled className="text-gray-400">Select status...</option>
+              <option value="" disabled className="text-gray-500">Select status...</option>
               <option value="Identified">Identified (Known species)</option>
               <option value="Unknown">Unknown (Photo required for ID)</option>
               <option value="Needs verification">Needs verification (Tentative)</option>
@@ -1031,15 +1031,15 @@ function Home() {
         </section>
 
         {/* 4. Species Details */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-3">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
             4. Species Details
           </h2>
 
           {/* Common Name */}
           <div className="mt-4">
-            <label htmlFor="speciesName" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-              Common Name {!isUnknown && <span className="text-[#B87555]">*</span>}
+            <label htmlFor="speciesName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              Common Name {!isUnknown && <span className="text-[#A6F16A]">*</span>}
             </label>
             <input
               id="speciesName"
@@ -1048,7 +1048,7 @@ function Home() {
               disabled={saved || isUnknown}
               onChange={(e) => setSpeciesName(e.target.value)}
               placeholder={isUnknown ? 'Locked for Unknown species' : 'e.g. Indian Peafowl, Cinnamon Tree'}
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
@@ -1066,7 +1066,7 @@ function Home() {
 
           {/* Scientific Name */}
           <div className="mt-4">
-            <label htmlFor="scientificName" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="scientificName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Scientific Name (optional)
             </label>
             <input
@@ -1076,13 +1076,13 @@ function Home() {
               disabled={saved || isUnknown}
               onChange={(e) => setScientificName(e.target.value)}
               placeholder="e.g. Pavo cristatus"
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base italic text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base italic text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           {/* Species Group */}
           <div className="mt-4">
-            <label htmlFor="speciesGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="speciesGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Species Group
             </label>
             <select
@@ -1093,8 +1093,8 @@ function Home() {
                 setSpeciesGroup(e.target.value)
                 if (e.target.value !== 'Other') setOtherSpeciesGroup('')
               }}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                !speciesGroup ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
+                !speciesGroup ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
               }`}
             >
               <option value="">Select Species Group...</option>
@@ -1112,19 +1112,19 @@ function Home() {
                   disabled={saved}
                   onChange={(event) => setOtherSpeciesGroup(event.target.value)}
                   placeholder="Specify other group..."
-                  className="w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+                  className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                 />
               </div>
             )}
           </div>
 
           {/* Basis of Record (Darwin Core standard evidence nature) */}
-          <div className="mt-4 pt-4 border-t border-[#DCD5C5]">
+          <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
             <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-              <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-                Basis of Record <span className="text-[#B87555]">*</span>
+              <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                Basis of Record <span className="text-[#A6F16A]">*</span>
               </label>
-              <span className="rounded-full bg-white/80 border border-[#C5D1BD] px-2 py-0.5 text-[10px] font-semibold text-[#414B32] uppercase tracking-wider">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] uppercase tracking-wider">
                 Darwin Core Standard
               </span>
             </div>
@@ -1133,7 +1133,7 @@ function Home() {
               value={basisOfRecord}
               disabled={saved}
               onChange={(e) => setBasisOfRecord(e.target.value as BasisOfRecord)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base font-medium outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 text-[#263D2B]"
+              className="mt-1 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base font-medium outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 text-[#F0F5EF]"
             >
               {BASIS_OF_RECORD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -1141,7 +1141,7 @@ function Home() {
                 </option>
               ))}
             </select>
-            <p className="mt-1.5 text-[11px] text-[#414B32]/75 leading-relaxed">
+            <p className="mt-1.5 text-[11px] text-[#7B9586] leading-relaxed">
               {BASIS_OF_RECORD_OPTIONS.find((o) => o.value === basisOfRecord)?.description ||
                 'Identifies the nature of the biological evidence (e.g. human sighting, camera trap machine, or museum specimen).'}
             </p>
@@ -1149,15 +1149,15 @@ function Home() {
         </section>
 
         {/* 5. Ecological Details */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-3">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
             5. Ecological Details
           </h2>
 
           <div className="mt-4 grid grid-cols-2 gap-3.5">
             <div>
-              <label htmlFor="individualCount" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
-                Count <span className="text-[#B87555]">*</span>
+              <label htmlFor="individualCount" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                Count <span className="text-[#A6F16A]">*</span>
               </label>
               <input
                 id="individualCount"
@@ -1170,12 +1170,12 @@ function Home() {
                   const val = parseInt(e.target.value, 10)
                   setIndividualCount(Number.isNaN(val) ? 1 : val)
                 }}
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base font-semibold text-[#263D2B] outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base font-semibold text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
               />
             </div>
 
             <div>
-              <label htmlFor="lifeStage" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+              <label htmlFor="lifeStage" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
                 Life Stage (optional)
               </label>
               <select
@@ -1183,8 +1183,8 @@ function Home() {
                 value={lifeStage}
                 disabled={saved}
                 onChange={(e) => setLifeStage(e.target.value)}
-                className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] ${
-                  !lifeStage ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+                className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
+                  !lifeStage ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
                 }`}
               >
                 <option value="">Select stage...</option>
@@ -1196,7 +1196,7 @@ function Home() {
           </div>
 
           <div className="mt-4">
-            <label htmlFor="microHabitat" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="microHabitat" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Micro-habitat / Substrate (optional)
             </label>
             <select
@@ -1204,8 +1204,8 @@ function Home() {
               value={microHabitat}
               disabled={saved}
               onChange={(e) => handleMicroHabitatChange(e.target.value)}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] ${
-                !microHabitat ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
+                !microHabitat ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
               }`}
             >
               <option value="">Select substrate...</option>
@@ -1223,7 +1223,7 @@ function Home() {
                   disabled={saved}
                   onChange={(e) => setOtherMicroHabitat(e.target.value)}
                   placeholder="Specify other micro-habitat..."
-                  className="w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base text-[#263D2B] placeholder-[#414B32]/40 outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B]"
+                  className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                 />
               </div>
             )}
@@ -1231,7 +1231,7 @@ function Home() {
 
           {/* Organism Status */}
           <div className="mt-4">
-            <label htmlFor="organismStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="organismStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Organism Status (optional)
             </label>
             <select
@@ -1239,8 +1239,8 @@ function Home() {
               value={organismStatus}
               disabled={saved}
               onChange={(e) => setOrganismStatus(e.target.value as OrganismStatus | '')}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] disabled:cursor-not-allowed disabled:bg-gray-100 ${
-                !organismStatus ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
+                !organismStatus ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
               }`}
             >
               <option value="">Select organism status...</option>
@@ -1248,20 +1248,20 @@ function Home() {
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
-            <p className="mt-1.5 text-[11px] text-[#414B32]/70 leading-relaxed">
+            <p className="mt-1.5 text-[11px] text-[#7B9586] leading-relaxed">
               Is this organism wild (free-living), captive (kept by humans), or cultivated (planted/farmed)?
             </p>
           </div>
         </section>
 
         {/* 6. Traditional Knowledge */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-3">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
             6. Traditional Knowledge
           </h2>
 
           <div className="mt-4">
-            <label htmlFor="hasTraditionalKnowledge" className="block text-xs font-semibold tracking-wider uppercase text-[#414B32]">
+            <label htmlFor="hasTraditionalKnowledge" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
               Is traditional knowledge associated?
             </label>
             <select
@@ -1269,8 +1269,8 @@ function Home() {
               value={hasTraditionalKnowledge}
               disabled={saved}
               onChange={(e) => handleTraditionalKnowledgeChange(e.target.value as YesNo | '')}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-4 py-3 text-base outline-none focus:border-[#263D2B] focus:ring-1 focus:ring-[#263D2B] ${
-                !hasTraditionalKnowledge ? 'text-[#414B32]/60' : 'text-[#263D2B]'
+              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
+                !hasTraditionalKnowledge ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
               }`}
             >
               <option value="">Select Yes or No...</option>
@@ -1279,17 +1279,17 @@ function Home() {
             </select>
 
             {hasTraditionalKnowledge === 'Yes' && (
-              <div className="mt-3 space-y-3 rounded-2xl bg-[#EDE7DA] border border-[#DCD5C5] p-4 text-base">
+              <div className="mt-3 space-y-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-4 text-base">
                 <div>
-                  <label htmlFor="traditionalKnowledgeSource" className="block text-xs font-semibold tracking-wider uppercase text-[#263D2B]">
-                    Source of Knowledge <span className="text-[#B87555]">*</span>
+                  <label htmlFor="traditionalKnowledgeSource" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                    Source of Knowledge <span className="text-[#A6F16A]">*</span>
                   </label>
                   <select
                     id="traditionalKnowledgeSource"
                     value={traditionalKnowledgeSource}
                     disabled={saved}
                     onChange={(e) => handleTraditionalKnowledgeSourceChange(e.target.value)}
-                    className="mt-2 w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-3.5 py-2.5 text-base text-[#263D2B]"
+                    className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-2.5 text-base text-[#F0F5EF]"
                   >
                     <option value="" disabled>Select source...</option>
                     {TRADITIONAL_KNOWLEDGE_SOURCES.map((source) => (
@@ -1307,12 +1307,12 @@ function Home() {
                       disabled={saved}
                       onChange={(e) => setOtherTraditionalKnowledgeSource(e.target.value)}
                       placeholder="Specify other source..."
-                      className="w-full min-h-[48px] rounded-xl border border-[#C5D1BD] bg-white px-3.5 py-2.5 text-base text-[#263D2B] placeholder-[#414B32]/40"
+                      className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586]"
                     />
                   </div>
                 )}
 
-                <p className="text-xs text-[#414B32]/80 leading-relaxed pt-1">
+                <p className="text-xs text-[#7B9586] leading-relaxed pt-1">
                   Community consent: Do not record private phone numbers or personal identifying details.
                 </p>
               </div>
@@ -1321,8 +1321,8 @@ function Home() {
         </section>
 
         {/* 7. Notes */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B] border-b border-[#DCD5C5] pb-3">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
             7. Notes
           </h2>
 
@@ -1342,7 +1342,7 @@ function Home() {
         </section>
 
         {/* 8. Additional Details & Classification Tags (Optional Collapsible Section) */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <button
             type="button"
             onClick={() => setShowTagsSection((v) => !v)}
@@ -1351,27 +1351,27 @@ function Home() {
           >
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-2">
-                <TagIcon className="h-5 w-5 text-[#263D2B]" />
-                <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
+                <TagIcon className="h-5 w-5 text-[#A6F16A]" />
+                <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
                   8. Classification Tags
                 </h2>
               </div>
-              <span className="text-xs font-sans text-[#414B32]/70 lowercase">(optional)</span>
+              <span className="text-xs font-sans text-[#7B9586] lowercase">(optional)</span>
               {tags.length > 0 && (
-                <span className="rounded-full bg-[#165B33] text-white px-2 py-0.5 text-[10px] font-semibold">
+                <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold">
                   {tags.length} selected
                 </span>
               )}
             </div>
             <ChevronDown
-              className={`h-5 w-5 text-[#263D2B] transition-transform duration-200 shrink-0 ${
+              className={`h-5 w-5 text-[#A6F16A] transition-transform duration-200 shrink-0 ${
                 showTagsSection ? 'rotate-180' : ''
               }`}
             />
           </button>
 
           {showTagsSection && (
-            <div className="mt-4 pt-3 border-t border-[#DCD5C5]">
+            <div className="mt-4 pt-3 border-t border-[#1C4D3C]">
               <TagSelector
                 selectedTagIds={tags}
                 onChange={(newTags) => setTags(newTags)}
@@ -1382,15 +1382,15 @@ function Home() {
         </section>
 
         {/* 9. Location Visibility */}
-        <section className="rounded-3xl border border-[#DCD5C5] bg-[#FAF7F0] p-5 sm:p-6 shadow-xl text-[#263D2B]">
-          <div className="flex items-center justify-between border-b border-[#DCD5C5] pb-3">
-            <h2 className="font-heading text-base sm:text-lg font-normal tracking-wider uppercase text-[#263D2B]">
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
+            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
               9. Location Visibility
             </h2>
             <button
               type="button"
               onClick={() => setShowVisibilityHelp((v) => !v)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white border border-[#C5D1BD] text-[#414B32] hover:bg-[#EDE7DA] transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] transition-colors"
               aria-label={showVisibilityHelp ? 'Hide location visibility help' : 'Show location visibility help'}
               aria-expanded={showVisibilityHelp}
             >
@@ -1400,16 +1400,16 @@ function Home() {
 
           {/* Collapsible help panel — descriptions for each option live here */}
           {showVisibilityHelp && (
-            <div className="mt-3 rounded-2xl bg-[#EDE7DA] border border-[#DCD5C5] px-4 py-3 text-xs text-[#414B32] leading-relaxed space-y-2">
-              <p className="font-semibold text-[#263D2B]">What does each option mean?</p>
+            <div className="mt-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] px-4 py-3 text-xs text-[#B2C8BA] leading-relaxed space-y-2">
+              <p className="font-semibold text-white">What does each option mean?</p>
               {LOCATION_VISIBILITIES.map((opt) => (
                 <div key={opt.value} className="flex gap-2">
-                  <span className="font-semibold text-[#263D2B] shrink-0">{opt.label}:</span>
+                  <span className="font-semibold text-[#A6F16A] shrink-0">{opt.label}:</span>
                   <span>{opt.description}</span>
                 </div>
               ))}
-              <p className="font-semibold text-[#263D2B] pt-0.5">Current status</p>
-              <p className="text-[#B87555]">⚠ This app is currently offline-only. No backend or public sharing pathway exists yet. "Obscured" and "Private" settings are stored and displayed faithfully, but coordinate restriction is not yet enforced. Enforcement will require a future server-side access system.</p>
+              <p className="font-semibold text-white pt-0.5">Current status</p>
+              <p className="text-amber-300">⚠ This app is currently offline-only. No backend or public sharing pathway exists yet. "Obscured" and "Private" settings are stored and displayed faithfully, but coordinate restriction is not yet enforced. Enforcement will require a future server-side access system.</p>
             </div>
           )}
 
@@ -1434,23 +1434,23 @@ function Home() {
                     }
                   }}
                   className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-4 transition-all select-none ${
-                    saved ? 'cursor-not-allowed opacity-60' : ''
+                    saved ? 'cursor-not-allowed opacity-50' : ''
                   } ${
                     isSelected
-                      ? 'border-[#263D2B] bg-[#E5EFE4]'
-                      : 'border-[#C5D1BD] bg-white hover:border-[#263D2B]/50 hover:bg-[#EDE7DA]'
+                      ? 'border-[#A6F16A] bg-[#133D2F] shadow-md shadow-[#061812]/50'
+                      : 'border-[#1C4D3C] bg-[#061812] hover:border-[#A6F16A]/40 hover:bg-[#0D2D22]'
                   }`}
                 >
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
                       isSelected
-                        ? 'border-[#263D2B] bg-[#263D2B]'
-                        : 'border-[#C5D1BD] bg-white'
+                        ? 'border-[#A6F16A] bg-[#A6F16A]'
+                        : 'border-[#1C4D3C] bg-[#061812]'
                     }`}
                   >
-                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-[#FAF7F0]" />}
+                    {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-[#061812]" />}
                   </span>
-                  <span className={`text-sm font-semibold ${isSelected ? 'text-[#165B33]' : 'text-[#263D2B]'}`}>
+                  <span className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-[#B2C8BA]'}`}>
                     {opt.label}
                   </span>
                 </div>
@@ -1459,22 +1459,22 @@ function Home() {
           </div>
         </section>
 
-        {/* 9. Save Observation Button (MOYA Checkout Style) */}
+        {/* 10. Save Observation Button (Lime-to-Turquoise Gradient) */}
         <section className="pt-2">
           <Button
             type="button"
-            className="min-h-[52px] w-full bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white border border-emerald-600/30 font-medium text-base sm:text-lg tracking-wider uppercase shadow-md rounded-full sm:rounded-2xl active:scale-[0.98] transition-all"
+            className="min-h-[54px] w-full bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] hover:opacity-95 text-[#061812] font-extrabold text-base sm:text-lg tracking-wider uppercase shadow-xl shadow-[#20D6A0]/25 rounded-2xl active:scale-[0.98] transition-all"
             disabled={saved || isSaving}
             onClick={handleSaveObservation}
           >
             {isSaving ? (
               <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin text-white" />
+                <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#061812]" />
                 <span>{isEditMode ? 'Updating Record...' : 'Saving Record...'}</span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-5 w-5 mr-2 text-white" />
+                <CheckCircle2 className="h-5 w-5 mr-2 text-[#061812]" />
                 <span>{isEditMode ? 'Save Changes' : 'Save Observation'}</span>
               </>
             )}
@@ -1482,21 +1482,21 @@ function Home() {
 
           {/* Saved Confirmation Banner */}
           {saved && (
-            <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-center shadow-xs text-emerald-950">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#165B33] text-white mb-2 shadow-xs">
+            <div className="mt-4 rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 text-center shadow-xl shadow-[#061812] text-[#F0F5EF]">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A] mb-2 shadow-xs">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
-              <p className="text-base font-bold text-[#165B33]">
+              <p className="text-base font-bold text-white">
                 {isEditMode ? 'Observation updated successfully!' : 'Observation saved to local database!'}
               </p>
-              <p className="text-xs text-emerald-800 mt-0.5">
+              <p className="text-xs text-[#B2C8BA] mt-0.5">
                 Stored offline in IndexedDB on this device.
               </p>
               <div className="mt-4 flex gap-2.5">
                 {isEditMode ? (
                   <Button
                     type="button"
-                    className="flex-1 min-h-[46px] bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-xs"
+                    className="flex-1 min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold tracking-wider uppercase rounded-xl transition-all shadow-xs"
                     onClick={() => navigate('/observations')}
                   >
                     <span>Back to Records</span>
@@ -1504,10 +1504,10 @@ function Home() {
                 ) : (
                   <Button
                     type="button"
-                    className="w-full min-h-[46px] bg-gradient-to-r from-[#165B33] to-[#1E7B46] hover:from-[#134D2C] hover:to-[#17663A] text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all shadow-xs"
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold tracking-wider uppercase rounded-xl transition-all shadow-xs"
                     onClick={resetForm}
                   >
-                    <RotateCcw className="h-4 w-4 mr-1.5 text-white" />
+                    <RotateCcw className="h-4 w-4 mr-1.5 text-[#061812]" />
                     <span>+ Record Next Observation</span>
                   </Button>
                 )}
