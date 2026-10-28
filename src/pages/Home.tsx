@@ -36,13 +36,14 @@ import {
   Info,
   ChevronDown,
   Tag as TagIcon,
+  Leaf,
+  BookOpen,
 } from 'lucide-react'
 import {
   identifyWardFromCoordinates,
   type WardIdentificationStatus,
 } from '@/lib/wardService'
 import LocationPickerMap from '@/components/LocationPickerMap'
-import MalayalamTransliterationInput from '@/components/MalayalamTransliterationInput'
 import TagSelector from '@/components/TagSelector'
 import { generateId } from '@/lib/utils'
 
@@ -117,6 +118,9 @@ function Home() {
   const [locationSource, setLocationSource] = useState<LocationSource | null>(null)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const [showLocationTips, setShowLocationTips] = useState(false)
+  const [showEcologyTips, setShowEcologyTips] = useState(false)
+  const [showTkTips, setShowTkTips] = useState(false)
 
   // Dedicated Automatic Ward Identification state (read-only for ordinary field workers)
   const [autoWardId, setAutoWardId] = useState<string | null>(null)
@@ -130,6 +134,7 @@ function Home() {
   // Photo attachments state
   const [photos, setPhotos] = useState<Blob[]>([])
   const [photoCapturedAt, setPhotoCapturedAt] = useState<string | null>(null)
+  const [showPhotoTips, setShowPhotoTips] = useState(false)
 
   // Submission state
   const [saved, setSaved] = useState(false)
@@ -688,9 +693,6 @@ function Home() {
       ) : (
         <div className="mb-6 flex items-center justify-between border-b border-[#1C4D3C] pb-4">
           <div>
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A6F16A]">
-              {isEditMode ? 'Update Observation' : 'Field Recording'}
-            </span>
             <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
               {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
@@ -714,12 +716,23 @@ function Home() {
 
       {/* Observation Form Container — Dark Forest-Green Cards */}
       <div className="space-y-5">
-        {/* 1. Photographs */}
+        {/* Photographs */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
-            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
-              1. Photographs {isUnknown && <span className="text-[#A6F16A] text-base">*</span>}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Photographs {isUnknown && <span className="text-red-500 font-bold text-base">*</span>}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowPhotoTips(true)}
+                className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/60 hover:text-white transition-colors cursor-pointer"
+                aria-label="Tips for Great Field Photos"
+                title="Tips for Great Field Photos"
+              >
+                <Info className="h-3 w-3" />
+              </button>
+            </div>
             {photos.length > 0 && (
               <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-[11px] font-semibold text-[#A6F16A]">
                 {photos.length} {photos.length === 1 ? 'photo' : 'photos'}
@@ -804,14 +817,123 @@ function Home() {
               ))}
             </div>
           )}
+
+          {/* Tips for Great Field Photos Modal */}
+          {showPhotoTips && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="photo-tips-title"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+              onClick={() => setShowPhotoTips(false)}
+            >
+              <div
+                className="relative w-full max-w-md rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-2xl shadow-black/80 text-[#F0F5EF]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A]">
+                      <Camera className="h-4.5 w-4.5" />
+                    </div>
+                    <h3 id="photo-tips-title" className="text-base sm:text-lg font-bold text-white">
+                      Tips for Great Field Photos
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPhotoTips(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                    aria-label="Close photo tips"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Modal Body / Guidelines */}
+                <div className="mt-4 space-y-3 text-xs sm:text-sm">
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Get Close & Clear</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Take sharp, in-focus photos of the organism without standing too far away.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Show Key Parts</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Capture multiple angles or important features (like flowers, leaves, feathers, or patterns).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Good Lighting</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Ensure natural daylight illuminates the subject clearly; avoid dark silhouettes or heavy shadows.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      4
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Clear Background</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Keep the focus on the subject and avoid blurry or cluttered shots.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer / Dismiss Action */}
+                <div className="mt-5">
+                  <Button
+                    type="button"
+                    onClick={() => setShowPhotoTips(false)}
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wide rounded-2xl active:scale-98 transition-all shadow-md"
+                  >
+                    Got It
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* 2. Location & Administrative Ward (Interactive Map & GPS) */}
+        {/* Location & Administrative Ward (Interactive Map & GPS) */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3 flex-wrap gap-2">
-            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
-              2. Location & Ward <span className="text-[#A6F16A] text-base">*</span>
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Location & Ward <span className="text-red-500 font-bold text-base">*</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowLocationTips(true)}
+                className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/60 hover:text-white transition-colors cursor-pointer"
+                aria-label="Tips for Accurate Location"
+                title="Tips for Accurate Location"
+              >
+                <Info className="h-3 w-3" />
+              </button>
+            </div>
             {location && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {locationSource === 'Manual Pin Adjustment' ? (
@@ -1002,12 +1124,98 @@ function Home() {
               </div>
             </div>
           </div>
+
+          {/* Tips for Accurate Location Modal */}
+          {showLocationTips && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="location-tips-title"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+              onClick={() => setShowLocationTips(false)}
+            >
+              <div
+                className="relative w-full max-w-md rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-2xl shadow-black/80 text-[#F0F5EF]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A]">
+                      <MapPin className="h-4.5 w-4.5" />
+                    </div>
+                    <h3 id="location-tips-title" className="text-base sm:text-lg font-bold text-white">
+                      Tips for Accurate Location
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationTips(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                    aria-label="Close location tips"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Modal Body / Guidelines */}
+                <div className="mt-4 space-y-3 text-xs sm:text-sm">
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Use GPS for Precision</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Tap &ldquo;Get My Location&rdquo; when standing right at the observation spot for accurate coordinates.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Fine-Tune on Map</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        If you are logging later or the GPS marker is slightly off, tap anywhere on the map or drag the pin directly to the correct spot.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Automatic Ward Lookup</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Once your location pin is set, the system will automatically match and identify your administrative ward.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer / Dismiss Action */}
+                <div className="mt-5">
+                  <Button
+                    type="button"
+                    onClick={() => setShowLocationTips(false)}
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wide rounded-2xl active:scale-98 transition-all shadow-md"
+                  >
+                    Got It
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* 3. Identification Status */}
+        {/* Identification Status */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
-            3. Identification Status <span className="text-[#A6F16A] text-base">*</span>
+          <h2 className="text-base sm:text-lg font-bold text-white border-b border-[#1C4D3C] pb-3">
+            Identification Status <span className="text-red-500 font-bold text-base">*</span>
           </h2>
 
           <div className="mt-4">
@@ -1024,23 +1232,23 @@ function Home() {
               }`}
             >
               <option value="" disabled className="text-gray-500">Select status...</option>
-              <option value="Identified">Identified (Known species)</option>
-              <option value="Unknown">Unknown (Photo required for ID)</option>
-              <option value="Needs verification">Needs verification (Tentative)</option>
+              <option value="Identified">Identified</option>
+              <option value="Unknown">Unknown</option>
+              <option value="Needs verification">Needs verification</option>
             </select>
           </div>
         </section>
 
-        {/* 4. Species Details */}
+        {/* Species Details */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
-            4. Species Details
+          <h2 className="text-base sm:text-lg font-bold text-white border-b border-[#1C4D3C] pb-3">
+            Species Details
           </h2>
 
           {/* Common Name */}
           <div className="mt-4">
             <label htmlFor="speciesName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Common Name {!isUnknown && <span className="text-[#A6F16A]">*</span>}
+              Common Name {!isUnknown && <span className="text-red-500 font-bold">*</span>}
             </label>
             <input
               id="speciesName"
@@ -1053,22 +1261,26 @@ function Home() {
             />
           </div>
 
-          {/* Local Name / Vernacular Name with Malayalam Transliteration */}
+          {/* Local Name */}
           <div className="mt-4">
-            <MalayalamTransliterationInput
+            <label htmlFor="localName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              Local Name
+            </label>
+            <input
               id="localName"
+              type="text"
               value={localName}
               disabled={saved || isUnknown}
-              onChange={(val) => setLocalName(val)}
-              label="Local Name / Vernacular Name (optional)"
-              placeholder="e.g. നാട്ടുമയിൽ, തുളസി, കണിക്കൊന്ന"
+              onChange={(e) => setLocalName(e.target.value)}
+              placeholder={isUnknown ? 'Locked for Unknown species' : 'e.g., Naattu Mayil, Thulasi'}
+              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           {/* Scientific Name */}
           <div className="mt-4">
             <label htmlFor="scientificName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Scientific Name (optional)
+              Scientific Name
             </label>
             <input
               id="scientificName"
@@ -1123,7 +1335,7 @@ function Home() {
           <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
             <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
               <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Basis of Record <span className="text-[#A6F16A]">*</span>
+                Basis of Record <span className="text-red-500 font-bold">*</span>
               </label>
               <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] uppercase tracking-wider">
                 Darwin Core Standard
@@ -1142,23 +1354,32 @@ function Home() {
                 </option>
               ))}
             </select>
-            <p className="mt-1.5 text-[11px] text-[#7B9586] leading-relaxed">
-              {BASIS_OF_RECORD_OPTIONS.find((o) => o.value === basisOfRecord)?.description ||
-                'Identifies the nature of the biological evidence (e.g. human sighting, camera trap machine, or museum specimen).'}
-            </p>
           </div>
         </section>
 
-        {/* 5. Ecological Details */}
+        {/* Ecological Details */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
-            5. Ecological Details
-          </h2>
+          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Ecological Details
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowEcologyTips(true)}
+                className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/60 hover:text-white transition-colors cursor-pointer"
+                aria-label="Tips for Ecological Details"
+                title="Tips for Ecological Details"
+              >
+                <Info className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3.5">
             <div>
               <label htmlFor="individualCount" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Count <span className="text-[#A6F16A]">*</span>
+                Count <span className="text-red-500 font-bold">*</span>
               </label>
               <input
                 id="individualCount"
@@ -1177,7 +1398,7 @@ function Home() {
 
             <div>
               <label htmlFor="lifeStage" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Life Stage (optional)
+                Life Stage
               </label>
               <select
                 id="lifeStage"
@@ -1198,7 +1419,7 @@ function Home() {
 
           <div className="mt-4">
             <label htmlFor="microHabitat" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Micro-habitat / Substrate (optional)
+              Micro-habitat / Substrate
             </label>
             <select
               id="microHabitat"
@@ -1233,7 +1454,7 @@ function Home() {
           {/* Organism Status */}
           <div className="mt-4">
             <label htmlFor="organismStatus" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Organism Status (optional)
+              Organism Status
             </label>
             <select
               id="organismStatus"
@@ -1249,17 +1470,125 @@ function Home() {
                 <option key={status} value={status}>{status}</option>
               ))}
             </select>
-            <p className="mt-1.5 text-[11px] text-[#7B9586] leading-relaxed">
-              Is this organism wild (free-living), captive (kept by humans), or cultivated (planted/farmed)?
-            </p>
           </div>
+
+          {/* Tips for Ecological Details Modal */}
+          {showEcologyTips && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="ecology-tips-title"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+              onClick={() => setShowEcologyTips(false)}
+            >
+              <div
+                className="relative w-full max-w-md rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-2xl shadow-black/80 text-[#F0F5EF]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A]">
+                      <Leaf className="h-4.5 w-4.5" />
+                    </div>
+                    <h3 id="ecology-tips-title" className="text-base sm:text-lg font-bold text-white">
+                      Tips for Ecological Details
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowEcologyTips(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                    aria-label="Close ecological tips"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Modal Body / Guidelines */}
+                <div className="mt-4 space-y-3 text-xs sm:text-sm">
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Accurate Count</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Enter the exact number of individuals observed, or a reasonable estimate for large groups.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Life Stage</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Select the developmental stage (e.g., Adult, Juvenile, Flowering, Fruiting) to track population cycles.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Micro-Habitat</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Specify the exact micro-habitat or substrate where the organism was found (e.g., Tree Canopy, Ground, Leaf Undersurface).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      4
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Organism Status</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Note whether the individual is Wild, Captive, or Cultivated.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer / Dismiss Action */}
+                <div className="mt-5">
+                  <Button
+                    type="button"
+                    onClick={() => setShowEcologyTips(false)}
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wide rounded-2xl active:scale-98 transition-all shadow-md"
+                  >
+                    Got It
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* 6. Traditional Knowledge */}
+        {/* Traditional Knowledge */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
-            6. Traditional Knowledge
-          </h2>
+          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Traditional Knowledge
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowTkTips(true)}
+                className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/60 hover:text-white transition-colors cursor-pointer"
+                aria-label="What is Traditional Knowledge?"
+                title="What is Traditional Knowledge?"
+              >
+                <Info className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
 
           <div className="mt-4">
             <label htmlFor="hasTraditionalKnowledge" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
@@ -1283,7 +1612,7 @@ function Home() {
               <div className="mt-3 space-y-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-4 text-base">
                 <div>
                   <label htmlFor="traditionalKnowledgeSource" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                    Source of Knowledge <span className="text-[#A6F16A]">*</span>
+                    Source of Knowledge <span className="text-red-500 font-bold">*</span>
                   </label>
                   <select
                     id="traditionalKnowledgeSource"
@@ -1319,30 +1648,118 @@ function Home() {
               </div>
             )}
           </div>
+
+          {/* What is Traditional Knowledge Modal */}
+          {showTkTips && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="tk-tips-title"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+              onClick={() => setShowTkTips(false)}
+            >
+              <div
+                className="relative w-full max-w-md rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-2xl shadow-black/80 text-[#F0F5EF]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A]">
+                      <BookOpen className="h-4.5 w-4.5" />
+                    </div>
+                    <h3 id="tk-tips-title" className="text-base sm:text-lg font-bold text-white">
+                      What is Traditional Knowledge?
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTkTips(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                    aria-label="Close traditional knowledge information"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Modal Body / Guidelines */}
+                <div className="mt-4 space-y-3 text-xs sm:text-sm">
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      1
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">What it is</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Cumulative ecological wisdom, traditional medicinal uses, and indigenous practices passed down through generations.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      2
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Community Consent</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Ensure information from local community members or elders is gathered with their explicit consent.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#133D2F] text-[#A6F16A] text-xs font-bold border border-[#1C4D3C]">
+                      3
+                    </span>
+                    <div>
+                      <h4 className="font-bold text-white text-sm">Privacy & Accuracy</h4>
+                      <p className="mt-0.5 text-xs text-[#B2C8BA] leading-relaxed">
+                        Do not record personal identifying details (like phone numbers or home addresses), and accurately note the source category (e.g., Elder, PBR record).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer / Dismiss Action */}
+                <div className="mt-5">
+                  <Button
+                    type="button"
+                    onClick={() => setShowTkTips(false)}
+                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wide rounded-2xl active:scale-98 transition-all shadow-md"
+                  >
+                    Got It
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* 7. Notes */}
+        {/* Notes */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-3">
-            7. Notes
+          <h2 className="text-base sm:text-lg font-bold text-white border-b border-[#1C4D3C] pb-3">
+            Notes
           </h2>
 
-          {/* Field Notes (supports optional Malayalam transliteration) */}
+          {/* Field Notes */}
           <div className="mt-4">
-            <MalayalamTransliterationInput
+            <label htmlFor="notes" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              Field Notes
+            </label>
+            <textarea
               id="notes"
+              rows={3}
               value={notes}
               disabled={saved}
-              isTextarea
-              rows={3}
-              onChange={(val) => setNotes(val)}
-              label="Field Notes (optional)"
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Habit, weather, host plant, landmarks..."
+              className="mt-2 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </section>
 
-        {/* 8. Additional Details & Classification Tags (Optional Collapsible Section) */}
+        {/* Classification Tags (Collapsible Accordion) */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <button
             type="button"
@@ -1350,16 +1767,13 @@ function Home() {
             className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
             aria-expanded={showTagsSection}
           >
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-2">
-                <TagIcon className="h-5 w-5 text-[#A6F16A]" />
-                <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
-                  8. Classification Tags
-                </h2>
-              </div>
-              <span className="text-xs font-sans text-[#7B9586] lowercase">(optional)</span>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <TagIcon className="h-5 w-5 text-[#A6F16A]" />
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Classification Tags
+              </h2>
               {tags.length > 0 && (
-                <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold">
+                <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold">
                   {tags.length} selected
                 </span>
               )}
@@ -1382,11 +1796,11 @@ function Home() {
           )}
         </section>
 
-        {/* 9. Location Visibility */}
+        {/* Location Visibility */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
-            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
-              9. Location Visibility
+            <h2 className="text-base sm:text-lg font-bold text-white">
+              Location Visibility
             </h2>
             <button
               type="button"
@@ -1460,7 +1874,7 @@ function Home() {
           </div>
         </section>
 
-        {/* 10. Save Observation Button (Lime-to-Turquoise Gradient) */}
+        {/* Save Observation Button (Lime-to-Turquoise Gradient) */}
         <section className="pt-2">
           <Button
             type="button"
