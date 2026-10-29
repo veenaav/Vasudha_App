@@ -323,23 +323,31 @@ function Home() {
     )
   }
 
-  // Handle manual correction or tap/drag on the interactive map
+  // Handle manual correction or tap/drag on the interactive map, as well as GPS recenter
   const handleManualLocationChange = async (
     newLocation: { latitude: number; longitude: number },
-    _source: 'manual'
+    source: 'manual' | 'gps' = 'manual'
   ) => {
-    // 1. Update only final latitude and longitude
+    // 1. Update final latitude and longitude
     setLocation(newLocation)
     // 2. Preserve original GPS coordinates (gpsLocation) unchanged!
-    // 3. Set location_source to Manual Pin Adjustment
-    setLocationSource('Manual Pin Adjustment')
-    // Clear GPS accuracy radius since manual pin positioning has no device-measured error radius
-    setLocationAccuracy(null)
+    // 3. Set location_source to GPS or Manual Pin Adjustment
+    if (source === 'gps') {
+      setLocationSource('GPS')
+    } else {
+      setLocationSource('Manual Pin Adjustment')
+      // Clear GPS accuracy radius since manual pin positioning has no device-measured error radius
+      setLocationAccuracy(null)
+    }
     setLocationError(null)
 
     // Trigger automatic ward identification with the updated coordinates
     setWardStatus('identifying_ward')
-    setWardStatusMessage('Matching corrected coordinates against ward boundaries...')
+    setWardStatusMessage(
+      source === 'gps'
+        ? 'Matching GPS coordinates against ward boundaries...'
+        : 'Matching corrected coordinates against ward boundaries...'
+    )
 
     try {
       const result = await identifyWardFromCoordinates(newLocation.latitude, newLocation.longitude)
@@ -990,6 +998,7 @@ function Home() {
           {/* Interactive OpenStreetMap */}
           <LocationPickerMap
             location={location}
+            rawGPS={gpsLocation}
             onLocationChange={handleManualLocationChange}
             disabled={saved}
           />

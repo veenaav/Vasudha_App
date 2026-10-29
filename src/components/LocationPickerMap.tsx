@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { AlertTriangle, MapPin } from 'lucide-react'
+import { AlertTriangle, LocateFixed, MapPin } from 'lucide-react'
 
 // Custom SVG Pin Icon for Leaflet to eliminate broken asset image paths in Vite/React
 const createPinIcon = () => {
@@ -31,19 +31,69 @@ const createPinIcon = () => {
 
 interface LocationPickerMapProps {
   location: { latitude: number; longitude: number } | null
-  onLocationChange: (newLocation: { latitude: number; longitude: number }, source: 'manual') => void
+  rawGPS?: { latitude: number; longitude: number } | null
+  onLocationChange: (
+    newLocation: { latitude: number; longitude: number },
+    source: 'manual' | 'gps'
+  ) => void
   disabled?: boolean
 }
 
 export default function LocationPickerMap({
   location,
+  rawGPS,
   onLocationChange,
   disabled = false,
 }: LocationPickerMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
-  const mapInstanceRef = useRef<L.Map | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const [tileError, setTileError] = useState(false)
+  const [isManuallyMoved, setIsManuallyMoved] = useState(false)
+
+  // Keep latest onLocationChange in a ref for event handlers
+  const onLocationChangeRef = useRef(onLocationChange)
+  useEffect(() => {
+    onLocationChangeRef.current = onLocationChange
+  }, [onLocationChange])
+
+  // Sync isManuallyMoved based on whether current location differs from rawGPS
+  useEffect(() => {
+    if (!rawGPS || !location) {
+      setIsManuallyMoved(false)
+      return
+    }
+    const isAtGps =
+      Math.abs(location.latitude - rawGPS.latitude) < 0.000001 &&
+      Math.abs(location.longitude - rawGPS.longitude) < 0.000001
+
+    if (isAtGps) {
+      setIsManuallyMoved(false)
+    } else {
+      setIsManuallyMoved(true)
+    }
+  }, [rawGPS, location])
+
+  // Recenter map and marker back to raw GPS coordinates
+  const handleRecenter = () => {
+    if (!rawGPS) return
+    const lat = rawGPS.latitude
+    const lng = rawGPS.longitude
+
+    // 1. Smoothly animate the map view back to the rawGPS coordinates
+    if (mapRef.current) {
+      mapRef.current.setView([lat, lng], 18, { animate: true })
+    }
+
+    // 2. Reset the pin position back to the raw GPS coordinates
+    if (markerRef.current) {
+      markerRef.current.setLatLng([lat, lng])
+    }
+    onLocationChangeRef.current({ latitude: lat, longitude: lng }, 'gps')
+
+    // 3. Set isManuallyMoved back to false so the button hides itself again
+    setIsManuallyMoved(false)
+  }
 
   // Default initial viewport (Thiruvananthapuram, Kerala) if no coordinates yet
   // We do NOT invent coordinates or select this location; it only frames the map initial view.
@@ -52,7 +102,7 @@ export default function LocationPickerMap({
 
   // Initialize Leaflet Map
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return
+    if (!mapContainerRef.current || mapRef.current) return
 
     const initialCenter = location
       ? [location.latitude, location.longitude] as [number, number]
@@ -80,7 +130,7 @@ export default function LocationPickerMap({
     })
 
     tileLayer.addTo(map)
-    mapInstanceRef.current = map
+    mapRef.current = map
 
     // Ensure map tiles render accurately inside responsive containers
     const timer = setTimeout(() => {
@@ -90,19 +140,20 @@ export default function LocationPickerMap({
     return () => {
       clearTimeout(timer)
       map.remove()
-      mapInstanceRef.current = null
+      mapRef.current = null
       markerRef.current = null
     }
   }, [])
 
   // Handle map click events to place/move marker manually
   useEffect(() => {
-    const map = mapInstanceRef.current
+    const map = mapRef.current
     if (!map) return
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       if (disabled) return
-      onLocationChange(
+      setIsManuallyMoved(true)
+      onLocationChangeRef.current(
         {
           latitude: Number(e.latlng.lat.toFixed(6)),
           longitude: Number(e.latlng.lng.toFixed(6)),
@@ -116,11 +167,11 @@ export default function LocationPickerMap({
     return () => {
       map.off('click', handleMapClick)
     }
-  }, [disabled, onLocationChange])
+  }, [disabled])
 
   // Sync marker and map center whenever `location` prop changes
   useEffect(() => {
-    const map = mapInstanceRef.current
+    const map = mapRef.current
     if (!map) return
 
     if (!location) {
@@ -145,7 +196,8 @@ export default function LocationPickerMap({
       marker.on('dragend', () => {
         if (disabled) return
         const pos = marker.getLatLng()
-        onLocationChange(
+        setIsManuallyMoved(true)
+        onLocationChangeRef.current(
           {
             latitude: Number(pos.lat.toFixed(6)),
             longitude: Number(pos.lng.toFixed(6)),
@@ -173,16 +225,35 @@ export default function LocationPickerMap({
         animate: true,
       })
     }
-  }, [location, disabled, onLocationChange])
+  }, [location, disabled])
 
   return (
     <div className="relative mt-3 w-full">
       <div
         ref={mapContainerRef}
-        className="h-64 sm:h-72 w-full rounded-2xl border border-[#DCD5C5] overflow-hidden shadow-inner bg-[#EDE7DA] z-0"
+        className="h-64 sm:h-72 w-full rounded-2xl border border-[#1C4D3C] overflow-hidden shadow-inner bg-[#061812] z-0"
         style={{ touchAction: 'pan-x pan-y' }}
         aria-label="Interactive map for selecting and adjusting observation coordinates"
       />
+
+      {/* Floating 'Recenter GPS' button over the map container */}
+      {isManuallyMoved && rawGPS && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleRecenter()
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+          className="absolute top-3 right-3 z-[1000] inline-flex items-center gap-1.5 rounded-full bg-[#0D2D22]/95 hover:bg-[#133D2F] text-[#A6F16A] border border-[#20D6A0]/50 hover:border-[#A6F16A] px-3.5 py-1.5 text-xs font-semibold shadow-lg shadow-black/60 backdrop-blur-md transition-all active:scale-95 cursor-pointer animate-in fade-in zoom-in-95 duration-200"
+          title="Recenter map and pin back to raw GPS coordinates"
+          aria-label="Recenter GPS"
+        >
+          <LocateFixed className="h-3.5 w-3.5 text-[#20D6A0] animate-pulse" />
+          <span>Recenter GPS</span>
+        </button>
+      )}
 
       {/* Offline tile loading notice banner */}
       {tileError && (
@@ -197,13 +268,13 @@ export default function LocationPickerMap({
       )}
 
       {/* Helpful usage hint below map */}
-      <div className="mt-2 flex items-center justify-between text-[11px] text-[#414B32]">
+      <div className="mt-2 flex items-center justify-between text-[11px] text-[#7B9586]">
         <span className="flex items-center gap-1.5 font-medium">
-          <MapPin className="h-3.5 w-3.5 text-[#263D2B]" />
+          <MapPin className="h-3.5 w-3.5 text-[#20D6A0]" />
           <span>Tap anywhere on the map or drag the pin to fine-tune location</span>
         </span>
         {location && (
-          <span className="text-[10px] text-[#263D2B]/75 bg-white/70 px-2 py-0.5 rounded-full border border-[#DCD5C5]">
+          <span className="text-[10px] text-[#A6F16A] bg-[#061812] px-2 py-0.5 rounded-full border border-[#1C4D3C]">
             Pin placed
           </span>
         )}
@@ -211,3 +282,4 @@ export default function LocationPickerMap({
     </div>
   )
 }
+
