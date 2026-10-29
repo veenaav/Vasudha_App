@@ -129,25 +129,23 @@ function ProjectsPage() {
       : projects
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 text-[#F0F5EF]">
-      {/* Header section */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#1C4D3C] pb-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] shadow-md">
-              <FolderGit2 className="h-5 w-5" />
-            </div>
-            <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
-              Projects
-            </h1>
+    <div className="mx-auto w-full max-w-lg h-full max-h-full flex flex-col overflow-hidden px-4 pt-3 pb-2 sm:px-6 text-[#F0F5EF]">
+      {/* Header section (fixed at top of page view) */}
+      <div className="shrink-0 flex items-center justify-between border-b border-[#1C4D3C] pb-3 pt-1">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] shadow-md shrink-0">
+            <FolderGit2 className="h-5 w-5" />
           </div>
+          <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white leading-tight">
+            Projects
+          </h1>
         </div>
 
         {/* Top-right + New Project / Cancel button */}
         {(hasProjects || showAddForm) && (
           <Button
             onClick={() => setShowAddForm((prev) => !prev)}
-            className={`inline-flex min-h-[44px] items-center gap-2 self-start sm:self-auto font-bold text-sm shadow-md rounded-2xl transition-all active:scale-95 ${
+            className={`inline-flex min-h-[40px] items-center gap-2 font-bold text-sm shadow-md rounded-2xl transition-all active:scale-95 shrink-0 ${
               showAddForm
                 ? 'border border-[#1C4D3C] bg-[#0D2D22] text-[#B2C8BA] hover:text-white hover:bg-[#133D2F]'
                 : 'bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 shadow-[#20D6A0]/20'
@@ -169,105 +167,118 @@ function ProjectsPage() {
       </div>
 
       {showAddForm ? (
-        /* Exclusively show the Create New Project form */
-        <form onSubmit={handleCreateProject} className="mt-5 rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
-            <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
-              Create New Project
-            </h2>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="rounded-lg p-1.5 text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-colors"
-              title="Close form"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="mt-4">
-            <label htmlFor="projectName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Project Name <span className="text-[#A6F16A]">*</span>
-            </label>
-            <input
-              id="projectName"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Palayam Ward Biodiversity Survey"
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-            />
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="org" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Organization / Institution (optional)
-              </label>
-              <input
-                id="org"
-                type="text"
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
-                placeholder="e.g. KSBB, College Botany Dept"
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-              />
+        /* Exclusively show the Create New Project form / view (fixed to screen, internal scrolling) */
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden py-3">
+          <form
+            onSubmit={handleCreateProject}
+            className="flex-1 min-h-0 flex flex-col rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-4 sm:p-5 shadow-xl shadow-[#061812]/50 text-[#F0F5EF] overflow-hidden"
+          >
+            {/* Form Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-[#1C4D3C] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-[#A6F16A]" />
+                <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase">
+                  Create New Project
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                className="rounded-lg p-1.5 text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-colors"
+                title="Close form"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            <div>
-              <label htmlFor="region" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Target Region / District (optional)
-              </label>
-              <input
-                id="region"
-                type="text"
-                value={targetRegion}
-                onChange={(e) => setTargetRegion(e.target.value)}
-                placeholder="e.g. Thiruvananthapuram District"
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-              />
+            {/* Scrollable form content */}
+            <div className="flex-1 min-h-0 overflow-y-auto py-3 space-y-3.5 pr-1 overscroll-contain">
+              <div>
+                <label htmlFor="projectName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  Project Name <span className="text-[#A6F16A]">*</span>
+                </label>
+                <input
+                  id="projectName"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Palayam Ward Biodiversity Survey"
+                  className="mt-1.5 w-full min-h-[46px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="org" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                    Organization / Institution (optional)
+                  </label>
+                  <input
+                    id="org"
+                    type="text"
+                    value={organization}
+                    onChange={(e) => setOrganization(e.target.value)}
+                    placeholder="e.g. KSBB, College Botany Dept"
+                    className="mt-1.5 w-full min-h-[46px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="region" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                    Target Region / District (optional)
+                  </label>
+                  <input
+                    id="region"
+                    type="text"
+                    value={targetRegion}
+                    onChange={(e) => setTargetRegion(e.target.value)}
+                    placeholder="e.g. Thiruvananthapuram District"
+                    className="mt-1.5 w-full min-h-[46px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="projDesc" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  Description (optional)
+                </label>
+                <textarea
+                  id="projDesc"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of the biodiversity assessment scope..."
+                  className="mt-1.5 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="mt-4">
-            <label htmlFor="projDesc" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-              Description (optional)
-            </label>
-            <textarea
-              id="projDesc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the biodiversity assessment scope..."
-              className="mt-2 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-            />
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="min-h-[48px] min-w-36 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wider uppercase shadow-md rounded-xl active:scale-95 transition-all"
-            >
-              {isSubmitting ? 'Creating...' : 'Save Project'}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowAddForm(false)}
-              className="min-h-[48px] border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-sm font-semibold tracking-wider uppercase rounded-xl transition-all"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+            {/* Pinned Form Action Buttons */}
+            <div className="shrink-0 pt-3 border-t border-[#1C4D3C] flex flex-wrap gap-2.5">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="min-h-[46px] min-w-36 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-sm tracking-wider uppercase shadow-md rounded-xl active:scale-95 transition-all"
+              >
+                {isSubmitting ? 'Creating...' : 'Save Project'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddForm(false)}
+                className="min-h-[46px] border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-sm font-semibold tracking-wider uppercase rounded-xl transition-all"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
       ) : (
         /* Main projects view: tabs + project cards / empty state */
-        <>
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {/* Tabs: All Projects vs My Projects (only visible when projects exist) */}
           {hasProjects && (
-            <div className="mt-4 flex items-center gap-2 border-b border-[#1C4D3C] pb-3">
+            <div className="shrink-0 mt-3 flex items-center gap-2 border-b border-[#1C4D3C] pb-3">
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
@@ -294,10 +305,10 @@ function ProjectsPage() {
             </div>
           )}
 
-          {/* Projects List or Empty State */}
-          <div className="mt-6 space-y-4">
+          {/* Projects List or Empty State (Independently scrolling) */}
+          <div className="flex-1 min-h-0 overflow-y-auto py-3 space-y-4 pr-1 overscroll-contain">
             {!hasProjects ? (
-              <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
+              <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50 my-auto">
                 <FolderPlus className="mx-auto h-12 w-12 text-[#A6F16A]/70" />
                 <h3 className="mt-2 text-xl font-bold text-white">No projects yet</h3>
                 <p className="mt-1 text-sm text-[#B2C8BA] max-w-sm mx-auto">
@@ -431,7 +442,7 @@ function ProjectsPage() {
                 )
               })
             ) : (
-              <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50">
+              <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50 my-auto">
                 <FolderGit2 className="mx-auto h-12 w-12 text-[#7B9586]" />
                 <h3 className="mt-2 text-xl font-bold text-white">No joined projects</h3>
                 <p className="mt-1 text-xs text-[#B2C8BA] max-w-sm mx-auto">
@@ -445,8 +456,10 @@ function ProjectsPage() {
                 </Button>
               </div>
             )}
+            {/* Safe bottom spacer so last card is completely visible when scrolled to bottom */}
+            <div className="h-4 shrink-0" />
           </div>
-        </>
+        </div>
       )}
     </div>
   )
