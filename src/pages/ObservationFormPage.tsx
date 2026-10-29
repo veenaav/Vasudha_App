@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import LocationPickerMap from '@/components/LocationPickerMap'
 import TagSelector from '@/components/TagSelector'
+import { AppSelect } from '@/components/ui/select'
 import {
   SPECIES_GROUPS,
   useObservationForm,
@@ -473,28 +474,24 @@ export default function ObservationFormPage() {
           <div className="mt-4">
             <label
               htmlFor="identificationStatus"
-              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
             >
               Select Status
             </label>
-            <select
+            <AppSelect
               id="identificationStatus"
               value={form.identificationStatus}
               disabled={form.saved}
-              onChange={(e) =>
-                form.handleStatusChange(e.target.value as IdentificationStatus | '')
+              onChange={(val) =>
+                form.handleStatusChange(val as IdentificationStatus | '')
               }
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base font-medium outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
-                !form.identificationStatus ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-              }`}
-            >
-              <option value="" disabled className="text-gray-500">
-                Select status...
-              </option>
-              <option value="Identified">Identified</option>
-              <option value="Unknown">Unknown</option>
-              <option value="Needs verification">Needs verification</option>
-            </select>
+              placeholder="Select status..."
+              options={[
+                { value: 'Identified', label: 'Identified', hint: 'Species is clearly recognized and confirmed' },
+                { value: 'Unknown', label: 'Unknown', hint: 'Requires photo to aid identification' },
+                { value: 'Needs verification', label: 'Needs verification', hint: 'Needs expert or peer confirmation' },
+              ]}
+            />
           </div>
         </section>
 
@@ -571,29 +568,21 @@ export default function ObservationFormPage() {
           <div className="mt-4">
             <label
               htmlFor="speciesGroup"
-              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
             >
               Species Group
             </label>
-            <select
+            <AppSelect
               id="speciesGroup"
               value={form.speciesGroup}
               disabled={form.saved}
-              onChange={(e) => {
-                form.setSpeciesGroup(e.target.value)
-                if (e.target.value !== 'Other') form.setOtherSpeciesGroup('')
+              onChange={(val) => {
+                form.setSpeciesGroup(val)
+                if (val !== 'Other') form.setOtherSpeciesGroup('')
               }}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
-                !form.speciesGroup ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-              }`}
-            >
-              <option value="">Select Species Group...</option>
-              {SPECIES_GROUPS.map((group) => (
-                <option key={group} value={group}>
-                  {group}
-                </option>
-              ))}
-            </select>
+              placeholder="Select Species Group..."
+              options={SPECIES_GROUPS.map((group) => ({ value: group, label: group }))}
+            />
 
             {form.speciesGroup === 'Other' && (
               <div className="mt-3">
@@ -614,23 +603,18 @@ export default function ObservationFormPage() {
           <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
             <label
               htmlFor="basisOfRecord"
-              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-1.5"
+              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
             >
               Basis of Record <span className="text-red-500 font-bold">*</span>
             </label>
-            <select
+            <AppSelect
               id="basisOfRecord"
               value={form.basisOfRecord}
               disabled={form.saved}
-              onChange={(e) => form.setBasisOfRecord(e.target.value as BasisOfRecord)}
-              className="mt-1 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base font-medium outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 text-[#F0F5EF]"
-            >
-              {BASIS_OF_RECORD_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => form.setBasisOfRecord(val as BasisOfRecord)}
+              placeholder="Select Basis of Record..."
+              options={BASIS_OF_RECORD_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+            />
           </div>
         </section>
 
@@ -679,52 +663,36 @@ export default function ObservationFormPage() {
             <div>
               <label
                 htmlFor="lifeStage"
-                className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
               >
                 Life Stage
               </label>
-              <select
+              <AppSelect
                 id="lifeStage"
                 value={form.lifeStage}
                 disabled={form.saved}
-                onChange={(e) => form.setLifeStage(e.target.value)}
-                className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
-                  !form.lifeStage ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-                }`}
-              >
-                <option value="">Select stage...</option>
-                {LIFE_STAGES.map((stage) => (
-                  <option key={stage} value={stage}>
-                    {stage}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => form.setLifeStage(val)}
+                placeholder="Select stage..."
+                options={LIFE_STAGES.map((stage) => ({ value: stage, label: stage }))}
+              />
             </div>
           </div>
 
           <div className="mt-4">
             <label
               htmlFor="microHabitat"
-              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
             >
               Micro-habitat / Substrate
             </label>
-            <select
+            <AppSelect
               id="microHabitat"
               value={form.microHabitat}
               disabled={form.saved}
-              onChange={(e) => form.handleMicroHabitatChange(e.target.value)}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
-                !form.microHabitat ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-              }`}
-            >
-              <option value="">Select substrate...</option>
-              {MICRO_HABITATS.map((habitat) => (
-                <option key={habitat} value={habitat}>
-                  {habitat}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => form.handleMicroHabitatChange(val)}
+              placeholder="Select substrate..."
+              options={MICRO_HABITATS.map((habitat) => ({ value: habitat, label: habitat }))}
+            />
 
             {form.microHabitat === 'Other' && (
               <div className="mt-3">
@@ -749,22 +717,14 @@ export default function ObservationFormPage() {
             >
               Organism Status
             </label>
-            <select
+            <AppSelect
               id="organismStatus"
               value={form.organismStatus}
               disabled={form.saved}
-              onChange={(e) => form.setOrganismStatus(e.target.value as OrganismStatus | '')}
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50 ${
-                !form.organismStatus ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-              }`}
-            >
-              <option value="">Select organism status...</option>
-              {ORGANISM_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => form.setOrganismStatus(val as OrganismStatus | '')}
+              placeholder="Select organism status..."
+              options={ORGANISM_STATUSES.map((status) => ({ value: status, label: status }))}
+            />
           </div>
 
           {/* Tips for Ecological Details Modal */}
@@ -796,51 +756,41 @@ export default function ObservationFormPage() {
           <div className="mt-4">
             <label
               htmlFor="hasTraditionalKnowledge"
-              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+              className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
             >
               Is traditional knowledge associated?
             </label>
-            <select
+            <AppSelect
               id="hasTraditionalKnowledge"
               value={form.hasTraditionalKnowledge}
               disabled={form.saved}
-              onChange={(e) =>
-                form.handleTraditionalKnowledgeChange(e.target.value as YesNo | '')
+              onChange={(val) =>
+                form.handleTraditionalKnowledgeChange(val as YesNo | '')
               }
-              className={`mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] ${
-                !form.hasTraditionalKnowledge ? 'text-[#7B9586]' : 'text-[#F0F5EF]'
-              }`}
-            >
-              <option value="">Select Yes or No...</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
+              placeholder="Select Yes or No..."
+              options={[
+                { value: 'Yes', label: 'Yes' },
+                { value: 'No', label: 'No' },
+              ]}
+            />
 
             {form.hasTraditionalKnowledge === 'Yes' && (
               <div className="mt-3 space-y-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-4 text-base">
                 <div>
                   <label
                     htmlFor="traditionalKnowledgeSource"
-                    className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                    className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2"
                   >
                     Source of Knowledge <span className="text-red-500 font-bold">*</span>
                   </label>
-                  <select
+                  <AppSelect
                     id="traditionalKnowledgeSource"
                     value={form.traditionalKnowledgeSource}
                     disabled={form.saved}
-                    onChange={(e) => form.handleTraditionalKnowledgeSourceChange(e.target.value)}
-                    className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-2.5 text-base text-[#F0F5EF]"
-                  >
-                    <option value="" disabled>
-                      Select source...
-                    </option>
-                    {TRADITIONAL_KNOWLEDGE_SOURCES.map((source) => (
-                      <option key={source} value={source}>
-                        {source}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => form.handleTraditionalKnowledgeSourceChange(val)}
+                    placeholder="Select source..."
+                    options={TRADITIONAL_KNOWLEDGE_SOURCES.map((source) => ({ value: source, label: source }))}
+                  />
                 </div>
 
                 {form.traditionalKnowledgeSource === 'Other' && (

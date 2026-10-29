@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { AppSelect } from '@/components/ui/select'
 import {
   ArrowLeft,
   MapPin,
@@ -335,19 +336,19 @@ function WardsPage() {
               </div>
 
               <div>
-                <label htmlFor="editStatusSelect" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                <label htmlFor="editStatusSelect" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2">
                   Project Status
                 </label>
-                <select
+                <AppSelect
                   id="editStatusSelect"
                   value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value as 'active' | 'completed' | 'archived')}
-                  className="mt-1.5 w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-sm text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-                >
-                  <option value="active">Active</option>
-                  <option value="completed">Completed</option>
-                  <option value="archived">Archived</option>
-                </select>
+                  onChange={(val) => setEditStatus(val as 'active' | 'completed' | 'archived')}
+                  options={[
+                    { value: 'active', label: 'Active' },
+                    { value: 'completed', label: 'Completed' },
+                    { value: 'archived', label: 'Archived' },
+                  ]}
+                />
               </div>
 
               <div>

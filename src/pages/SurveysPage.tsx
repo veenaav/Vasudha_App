@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { AppSelect } from '@/components/ui/select'
 import { Plus, ArrowRight, Trash2, ArrowLeft, Calendar, User, Layers, Leaf } from 'lucide-react'
 import {
   useSurveys,
@@ -116,58 +117,40 @@ export default function SurveysPage() {
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="surveyMethod" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              <label htmlFor="surveyMethod" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2">
                 Survey Method
               </label>
-              <select
+              <AppSelect
                 id="surveyMethod"
                 value={surveyMethod}
-                onChange={(e) => setSurveyMethod(e.target.value)}
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-              >
-                {SURVEY_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSurveyMethod(val)}
+                options={SURVEY_METHODS.map((m) => ({ value: m, label: m }))}
+              />
             </div>
 
             <div>
-              <label htmlFor="habitatType" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+              <label htmlFor="habitatType" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2">
                 Broad Habitat Type
               </label>
-              <select
+              <AppSelect
                 id="habitatType"
                 value={habitatType}
-                onChange={(e) => setHabitatType(e.target.value)}
-                className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-              >
-                {HABITAT_TYPES.map((h) => (
-                  <option key={h} value={h}>
-                    {h}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setHabitatType(val)}
+                options={HABITAT_TYPES.map((h) => ({ value: h, label: h }))}
+              />
             </div>
           </div>
 
           <div className="mt-4">
-            <label htmlFor="targetGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+            <label htmlFor="targetGroup" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-2">
               Survey Focus / Target Group
             </label>
-            <select
+            <AppSelect
               id="targetGroup"
               value={targetGroup}
-              onChange={(e) => setTargetGroup(e.target.value)}
-              className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-            >
-              {TARGET_GROUPS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setTargetGroup(val)}
+              options={TARGET_GROUPS.map((t) => ({ value: t, label: t }))}
+            />
           </div>
 
           <div className="mt-4">
