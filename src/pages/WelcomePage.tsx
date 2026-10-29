@@ -12,8 +12,8 @@ export default function WelcomePage() {
       {/* Full-bleed Nature Image Card with blended text overlay */}
       <div className="relative flex-1 min-h-0 w-full rounded-3xl overflow-hidden border border-[#1C4D3C] shadow-2xl shadow-[#061812]/70">
         <img
-          src="/nature-welcome.jpg"
-          alt="Forest Cup Fungi Microhabitat"
+          src="/nature-welcome-test.jpg"
+          alt="Orange Fungi Microhabitat"
           className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.05] saturate-[1.1]"
         />
 
