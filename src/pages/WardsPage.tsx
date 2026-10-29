@@ -13,6 +13,9 @@ import {
   Compass,
   Info,
   Trash2,
+  Edit3,
+  X,
+  UserCheck,
 } from 'lucide-react'
 import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
 
@@ -33,9 +36,20 @@ function WardsPage() {
     return 'field_worker'
   })
 
-  // Administrative project-level permission (Admin / Expert can delete the project)
+  // Administrative project-level permission (Admin / Expert can edit and delete the project)
   const canManageProject = userRole === 'admin' || userRole === 'project_expert'
   const [isJoined, setIsJoined] = useState(false)
+
+  // Project editing modal state
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editOrganization, setEditOrganization] = useState('')
+  const [editTargetRegion, setEditTargetRegion] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editStatus, setEditStatus] = useState<'active' | 'completed' | 'archived'>('active')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
+
+  const isAuthorizedContributor = isJoined || canManageProject
 
   const loadData = async () => {
     if (!projectId) return
@@ -46,10 +60,20 @@ function WardsPage() {
       const proj = await db.projects.get(projectId)
       if (proj) {
         setProject(proj)
+        setEditName(proj.name)
+        setEditOrganization(proj.organization || '')
+        setEditTargetRegion(proj.targetRegion || '')
+        setEditDescription(proj.description || '')
+        setEditStatus(proj.status || 'active')
       }
 
-      // Load observations associated with this project
-      const obsList = await db.observations.where('projectId').equals(projectId).toArray()
+      // Load all observations belonging to this project (supporting both scalar projectId and multi-project array projectIds)
+      const allObs = await db.observations.toArray()
+      const obsList = allObs.filter(
+        (obs) =>
+          obs.projectId === projectId ||
+          (obs.projectIds && obs.projectIds.includes(projectId))
+      )
       const sortedObs = [...obsList].sort((a, b) => {
         const tA = new Date(b.createdAt || b.recordedAt || 0).getTime() || 0
         const tB = new Date(a.createdAt || a.recordedAt || 0).getTime() || 0
@@ -69,6 +93,50 @@ function WardsPage() {
     if (!projectId) return
     const updated = toggleJoinedProject(projectId)
     setIsJoined(updated.includes(projectId))
+  }
+
+  const handleRecordObservationClick = () => {
+    if (!projectId) return
+    if (!isAuthorizedContributor) {
+      const confirmJoin = window.confirm(
+        'You need to be a project member to record observations for this project. Would you like to join now and proceed?'
+      )
+      if (confirmJoin) {
+        toggleJoinedProject(projectId)
+        setIsJoined(true)
+        navigate(`/new-observation?projectId=${projectId}`)
+      }
+      return
+    }
+    navigate(`/new-observation?projectId=${projectId}`)
+  }
+
+  const handleSaveProjectEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!project || !editName.trim()) {
+      alert('Please provide a valid project name.')
+      return
+    }
+
+    setIsSavingEdit(true)
+    try {
+      const now = new Date().toISOString()
+      await db.projects.update(project.id, {
+        name: editName.trim(),
+        organization: editOrganization.trim() || undefined,
+        targetRegion: editTargetRegion.trim() || undefined,
+        description: editDescription.trim() || undefined,
+        status: editStatus,
+        updatedAt: now,
+        syncStatus: 'pending',
+      })
+      setShowEditModal(false)
+      await loadData()
+    } catch (err) {
+      alert(`Failed to update project: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setIsSavingEdit(false)
+    }
   }
 
   const handleDeleteProject = async () => {
@@ -166,10 +234,25 @@ function WardsPage() {
           <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-3 py-0.5 text-xs font-semibold text-[#A6F16A]">
             Project Hub
           </span>
-          {isJoined && (
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize border ${
+              project.status === 'completed'
+                ? 'bg-emerald-950/60 border-emerald-800/60 text-emerald-300'
+                : project.status === 'archived'
+                ? 'bg-zinc-800/60 border-zinc-700 text-zinc-300'
+                : 'bg-[#133D2F] border-[#1C4D3C] text-[#A6F16A]'
+            }`}
+          >
+            {project.status || 'Active'}
+          </span>
+          {isJoined ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-800/60 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300 uppercase">
               <CheckCircle2 className="h-3 w-3 text-amber-300" />
               Joined
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#061812] border border-[#1C4D3C] px-2.5 py-0.5 text-[10px] font-semibold text-[#7B9586] uppercase">
+              Not Joined
             </span>
           )}
         </div>
@@ -204,16 +287,41 @@ function WardsPage() {
           )}
         </div>
 
+        {/* Project Summary Metrics */}
+        <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-[#1C4D3C] text-center">
+          <div className="rounded-2xl bg-[#061812] border border-[#1C4D3C] p-2.5">
+            <span className="block text-[10px] uppercase tracking-wider text-[#7B9586] font-semibold">Status</span>
+            <span className="text-xs sm:text-sm font-bold text-white capitalize">{project.status || 'Active'}</span>
+          </div>
+          <div className="rounded-2xl bg-[#061812] border border-[#1C4D3C] p-2.5">
+            <span className="block text-[10px] uppercase tracking-wider text-[#7B9586] font-semibold">Members</span>
+            <span className="text-xs sm:text-sm font-bold text-[#A6F16A]">
+              {isJoined ? '1 (You)' : '0'}
+            </span>
+          </div>
+          <div className="rounded-2xl bg-[#061812] border border-[#1C4D3C] p-2.5">
+            <span className="block text-[10px] uppercase tracking-wider text-[#7B9586] font-semibold">Observations</span>
+            <span className="text-xs sm:text-sm font-bold text-[#20D6A0]">
+              {projectObservations.length}
+            </span>
+          </div>
+        </div>
+
         {/* Action Buttons Row */}
         <div className="pt-3 border-t border-[#1C4D3C] flex items-center justify-between gap-2.5 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Primary Action: Direct New Observation */}
             <Button
-              onClick={() => navigate(`/new-observation?projectId=${projectId}`)}
-              className="inline-flex min-h-[42px] items-center gap-1.5 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-xs sm:text-sm shadow-md shadow-[#20D6A0]/20 rounded-xl active:scale-95 transition-all"
+              onClick={handleRecordObservationClick}
+              className={`inline-flex min-h-[42px] items-center gap-1.5 font-bold text-xs sm:text-sm rounded-xl active:scale-95 transition-all shadow-md ${
+                isAuthorizedContributor
+                  ? 'bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 shadow-[#20D6A0]/20'
+                  : 'bg-[#133D2F] border border-[#1C4D3C] hover:border-[#A6F16A]/50 text-[#A6F16A]'
+              }`}
+              title={isAuthorizedContributor ? 'Record observation' : 'Join project to record observation'}
             >
-              <Plus className="h-4 w-4 text-[#061812]" />
-              <span>Record Observation</span>
+              <Plus className="h-4 w-4" />
+              <span>{isAuthorizedContributor ? 'Record Observation' : 'Join to Record'}</span>
             </Button>
 
             {/* Join / Leave Project toggle */}
@@ -232,25 +340,164 @@ function WardsPage() {
                   <span>Joined</span>
                 </>
               ) : (
-                <span>+ Join Project</span>
+                <>
+                  <UserCheck className="h-4 w-4 text-[#A6F16A]" />
+                  <span>+ Join Project</span>
+                </>
               )}
             </button>
           </div>
 
-          {/* Delete Project button (Admin & Project Expert only) */}
+          {/* Administrative actions (Admin & Project Expert only) */}
           {canManageProject && (
-            <button
-              type="button"
-              onClick={handleDeleteProject}
-              className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900/80 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 ml-auto sm:ml-0"
-              title="Delete Project"
-            >
-              <Trash2 className="h-4 w-4 text-rose-400" />
-              <span>Delete</span>
-            </button>
+            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-[#061812] border border-[#1C4D3C] hover:border-[#A6F16A]/50 text-[#B2C8BA] hover:text-white px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95"
+                title="Edit Project"
+              >
+                <Edit3 className="h-4 w-4 text-[#A6F16A]" />
+                <span>Edit</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900/80 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95"
+                title="Delete Project"
+              >
+                <Trash2 className="h-4 w-4 text-rose-400" />
+                <span>Delete</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Edit Project Modal */}
+      {showEditModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-project-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className="relative w-full max-w-lg rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-2xl shadow-black/80 text-[#F0F5EF]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3.5">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-[#A6F16A]" />
+                <h3 id="edit-project-title" className="text-base sm:text-lg font-bold text-white">
+                  Edit Project Details
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                aria-label="Close edit modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProjectEdit} className="mt-4 space-y-3.5 text-xs sm:text-sm">
+              <div>
+                <label htmlFor="editProjName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  Project Name <span className="text-red-500 font-bold">*</span>
+                </label>
+                <input
+                  id="editProjName"
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="mt-1.5 w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-base text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="editOrg" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                    Organization
+                  </label>
+                  <input
+                    id="editOrg"
+                    type="text"
+                    value={editOrganization}
+                    onChange={(e) => setEditOrganization(e.target.value)}
+                    className="mt-1.5 w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-sm text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="editRegion" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                    Target Region
+                  </label>
+                  <input
+                    id="editRegion"
+                    type="text"
+                    value={editTargetRegion}
+                    onChange={(e) => setEditTargetRegion(e.target.value)}
+                    className="mt-1.5 w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-sm text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="editStatusSelect" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  Project Status
+                </label>
+                <select
+                  id="editStatusSelect"
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value as 'active' | 'completed' | 'archived')}
+                  className="mt-1.5 w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-sm text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                >
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="editDesc" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  Description & Scope
+                </label>
+                <textarea
+                  id="editDesc"
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-3.5 py-2.5 text-sm text-[#F0F5EF] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEditModal(false)}
+                  className="border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-xs font-semibold rounded-xl"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-xs font-bold rounded-xl shadow-md"
+                >
+                  {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Ward Boundary Information */}
       <div className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
@@ -364,3 +611,4 @@ function WardsPage() {
 }
 
 export default WardsPage
+

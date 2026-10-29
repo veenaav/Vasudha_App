@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
   db,
@@ -38,6 +38,8 @@ import {
   Tag as TagIcon,
   Leaf,
   BookOpen,
+  FolderGit2,
+  Search,
 } from 'lucide-react'
 import {
   identifyWardFromCoordinates,
@@ -73,6 +75,9 @@ function Home() {
     surveyId?: string
     id?: string
   }>()
+  const [searchParams] = useSearchParams()
+  const queryProjectId = searchParams.get('projectId') || undefined
+  const initialProjectId = projectId || queryProjectId || undefined
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
   const [existingRecord, setExistingRecord] = useState<Observation | null>(null)
@@ -82,6 +87,12 @@ function Home() {
   const [activeProject, setActiveProject] = useState<Project | null>(null)
   const [activeWard, setActiveWard] = useState<Ward | null>(null)
   const [activeSurvey, setActiveSurvey] = useState<Survey | null>(null)
+
+  // Project association state (optional multi-project linkage)
+  const [allProjects, setAllProjects] = useState<Project[]>([])
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
+  const [projectSearchQuery, setProjectSearchQuery] = useState('')
+  const [showProjectsSection, setShowProjectsSection] = useState(false)
 
   // Form field state
   const [speciesName, setSpeciesName] = useState('')
@@ -140,7 +151,7 @@ function Home() {
   const [saved, setSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Load parent Project, Ward, and Survey if route params exist
+  // Load parent Project, Ward, and Survey if route params or query params exist
   useEffect(() => {
     if (surveyId) {
       db.surveys.get(surveyId).then((s) => s && setActiveSurvey(s))
@@ -148,10 +159,23 @@ function Home() {
     if (wardId) {
       db.wards.get(wardId).then((w) => w && setActiveWard(w))
     }
-    if (projectId) {
-      db.projects.get(projectId).then((p) => p && setActiveProject(p))
+    if (initialProjectId) {
+      db.projects.get(initialProjectId).then((p) => {
+        if (p) {
+          setActiveProject(p)
+          setSelectedProjectIds((prev) => (prev.includes(p.id) ? prev : [...prev, p.id]))
+          setShowProjectsSection(true)
+        }
+      })
     }
-  }, [projectId, wardId, surveyId])
+  }, [initialProjectId, wardId, surveyId])
+
+  // Load all available projects for optional project association
+  useEffect(() => {
+    db.projects.toArray().then((list) => {
+      setAllProjects(list)
+    })
+  }, [])
 
   // Load existing observation if in edit mode
   useEffect(() => {
@@ -232,6 +256,14 @@ function Home() {
           : []
         setPhotos(attached)
         setPhotoCapturedAt(existing.observationAt || null)
+
+        if (existing.projectIds && existing.projectIds.length > 0) {
+          setSelectedProjectIds(existing.projectIds)
+          setShowProjectsSection(true)
+        } else if (existing.projectId) {
+          setSelectedProjectIds([existing.projectId])
+          setShowProjectsSection(true)
+        }
       })
       .catch((err) => {
         console.error('Failed to load observation for editing:', err)
@@ -249,6 +281,30 @@ function Home() {
 
   // Derive photo preview URLs synchronously from attached blobs
   const photoPreviews = useMemo(() => photos.map((blob) => URL.createObjectURL(blob)), [photos])
+
+  // Project selection helpers
+  const handleToggleProject = (projId: string) => {
+    if (saved) return
+    setSelectedProjectIds((prev) =>
+      prev.includes(projId) ? prev.filter((id) => id !== projId) : [...prev, projId]
+    )
+  }
+
+  const handleRemoveProject = (projId: string) => {
+    if (saved) return
+    setSelectedProjectIds((prev) => prev.filter((id) => id !== projId))
+  }
+
+  const filteredProjects = useMemo(() => {
+    const q = projectSearchQuery.trim().toLowerCase()
+    if (!q) return allProjects
+    return allProjects.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.organization && p.organization.toLowerCase().includes(q)) ||
+        (p.targetRegion && p.targetRegion.toLowerCase().includes(q))
+    )
+  }, [allProjects, projectSearchQuery])
 
   // Revoke preview object URLs from browser memory when photos change or on unmount
   useEffect(() => {
@@ -405,6 +461,9 @@ function Home() {
     setIsGettingLocation(false)
     setIsSaving(false)
     setSaved(false)
+    setSelectedProjectIds(initialProjectId ? [initialProjectId] : [])
+    setProjectSearchQuery('')
+    setShowProjectsSection(Boolean(initialProjectId))
   }
 
   // Handle identification status changes; auto-clear species names if set to Unknown
@@ -544,7 +603,8 @@ function Home() {
           surveyId: existingRecord.surveyId,
           wardId: autoWardId ?? existingRecord.wardId,
           wardName: autoWardName ?? existingRecord.wardName,
-          projectId: existingRecord.projectId,
+          projectId: selectedProjectIds[0] || existingRecord.projectId,
+          projectIds: selectedProjectIds.length > 0 ? selectedProjectIds : undefined,
 
           speciesName: speciesName.trim(),
           localName: localName.trim() || undefined,
@@ -596,7 +656,8 @@ function Home() {
           surveyId: surveyId || undefined,
           wardId: autoWardId || undefined,
           wardName: autoWardName || undefined,
-          projectId: projectId || undefined,
+          projectId: selectedProjectIds[0] || initialProjectId || undefined,
+          projectIds: selectedProjectIds.length > 0 ? selectedProjectIds : undefined,
 
           // Core Taxonomy & Identification
           speciesName: speciesName.trim(),
@@ -1801,6 +1862,156 @@ function Home() {
                 onChange={(newTags) => setTags(newTags)}
                 disabled={saved}
               />
+            </div>
+          )}
+        </section>
+
+        {/* Add to project(s) (Optional Collapsible Section) */}
+        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+          <button
+            type="button"
+            onClick={() => setShowProjectsSection((v) => !v)}
+            className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
+            aria-expanded={showProjectsSection}
+          >
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <FolderGit2 className="h-5 w-5 text-[#A6F16A]" />
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Add to project(s)
+              </h2>
+              {selectedProjectIds.length > 0 && (
+                <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold">
+                  {selectedProjectIds.length} selected
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              className={`h-5 w-5 text-[#A6F16A] transition-transform duration-200 shrink-0 ${
+                showProjectsSection ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {showProjectsSection && (
+            <div className="mt-4 pt-3 border-t border-[#1C4D3C] space-y-3.5">
+              <p className="text-xs text-[#B2C8BA] leading-relaxed">
+                Associate this observation with one or more community biodiversity projects. Adding to projects is optional.
+              </p>
+
+              {/* Selected Projects as Chips */}
+              {selectedProjectIds.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#7B9586]">
+                    Selected Projects ({selectedProjectIds.length})
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProjectIds.map((pId) => {
+                      const proj = allProjects.find((p) => p.id === pId)
+                      return (
+                        <span
+                          key={pId}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[#133D2F] border border-[#A6F16A]/50 px-3 py-1 text-xs font-medium text-[#F0F5EF] shadow-xs"
+                        >
+                          <span className="truncate max-w-[200px]">{proj ? proj.name : pId}</span>
+                          {!saved && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveProject(pId)}
+                              className="rounded-full p-0.5 hover:bg-[#061812] text-[#A6F16A] hover:text-rose-400 transition-colors"
+                              aria-label={`Remove project ${proj ? proj.name : pId}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Search projects input */}
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B9586]" />
+                <input
+                  type="text"
+                  value={projectSearchQuery}
+                  disabled={saved}
+                  onChange={(e) => setProjectSearchQuery(e.target.value)}
+                  placeholder="Search projects by name, organization, or region..."
+                  className="w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-10 pr-9 py-2.5 text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                />
+                {projectSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setProjectSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B9586] hover:text-white"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Available Projects List */}
+              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-xl">
+                {allProjects.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
+                    <p>No projects available yet.</p>
+                  </div>
+                ) : filteredProjects.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
+                    <p>No projects match &quot;{projectSearchQuery}&quot;.</p>
+                  </div>
+                ) : (
+                  filteredProjects.map((proj) => {
+                    const isSelected = selectedProjectIds.includes(proj.id)
+                    return (
+                      <div
+                        key={proj.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleToggleProject(proj.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleToggleProject(proj.id)
+                          }
+                        }}
+                        className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#133D2F]/70 border-[#A6F16A] text-white shadow-xs'
+                            : 'bg-[#061812] border-[#1C4D3C] text-[#B2C8BA] hover:border-[#A6F16A]/40'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm truncate text-white">
+                              {proj.name}
+                            </span>
+                            <span className="text-[10px] capitalize px-2 py-0.5 rounded-full bg-[#0D2D22] border border-[#1C4D3C] text-[#7B9586]">
+                              {proj.status || 'Active'}
+                            </span>
+                          </div>
+                          {(proj.organization || proj.targetRegion) && (
+                            <p className="text-xs text-[#7B9586] truncate mt-0.5">
+                              {[proj.organization, proj.targetRegion].filter(Boolean).join(' • ')}
+                            </p>
+                          )}
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                            isSelected
+                              ? 'bg-[#A6F16A] text-[#061812] font-bold'
+                              : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C]'
+                          }`}
+                        >
+                          {isSelected ? 'Selected ✓' : '+ Select'}
+                        </span>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
             </div>
           )}
         </section>

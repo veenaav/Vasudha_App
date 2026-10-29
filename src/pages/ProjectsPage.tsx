@@ -28,10 +28,13 @@ function ProjectsPage() {
     const list = await db.projects.toArray()
     setProjects(list.reverse())
 
-    // Load observation counts per project
+    // Load observation counts per project (checking both scalar projectId and multi-project array projectIds)
+    const allObservations = await db.observations.toArray()
     const obsCounts: Record<string, number> = {}
     for (const p of list) {
-      obsCounts[p.id] = await db.observations.where('projectId').equals(p.id).count()
+      obsCounts[p.id] = allObservations.filter(
+        (obs) => obs.projectId === p.id || (obs.projectIds && obs.projectIds.includes(p.id))
+      ).length
     }
     setObservationCounts(obsCounts)
   }
@@ -320,8 +323,16 @@ function ProjectsPage() {
                       <h2 className="text-xl font-bold text-white group-hover:text-[#A6F16A] transition-colors truncate">
                         {proj.name}
                       </h2>
-                      <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold text-[#A6F16A]">
-                        Active
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize border ${
+                          proj.status === 'completed'
+                            ? 'bg-emerald-950/60 border-emerald-800/60 text-emerald-300'
+                            : proj.status === 'archived'
+                            ? 'bg-zinc-800/60 border-zinc-700 text-zinc-300'
+                            : 'bg-[#133D2F] border-[#1C4D3C] text-[#A6F16A]'
+                        }`}
+                      >
+                        {proj.status || 'Active'}
                       </span>
                       {isJoined && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 text-[10px] font-semibold text-amber-300 uppercase">

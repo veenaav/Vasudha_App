@@ -240,7 +240,8 @@ export interface Observation {
   surveyId?: string // Foreign key -> Survey.id (optional for standalone observations)
   wardId?: string // Foreign key -> Ward.id (optional, preferred identifier from GIS boundary)
   wardName?: string // Administrative ward name for display (e.g. "Ward 14 – Palayam")
-  projectId?: string // Foreign key -> Project.id (optional)
+  projectId?: string // Foreign key -> Project.id (optional legacy / primary association)
+  projectIds?: string[] // Optional multi-project association IDs
 
   // Species details
   speciesName: string // Common / English vernacular name
@@ -387,6 +388,27 @@ export class ShrishtiDatabase extends Dexie {
             }
             if (!obs.tags) {
               obs.tags = []
+            }
+          })
+      })
+
+    // Version 7: Index multi-entry *projectIds for multiple project associations
+    this.version(7)
+      .stores({
+        projects: 'id, name, status, syncStatus',
+        wards: 'id, projectId, wardNumber, syncStatus',
+        surveys: 'id, projectId, wardId, leadObserver, syncStatus',
+        observations:
+          'id, surveyId, wardId, projectId, *projectIds, speciesName, speciesGroup, syncStatus, verificationStatus, organismStatus, locationVisibility, location_source, basis_of_record, *tags',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('observations')
+          .toCollection()
+          .modify((obs: Observation) => {
+            // Safe backward-compatible population of projectIds array from legacy projectId
+            if (!obs.projectIds) {
+              obs.projectIds = obs.projectId ? [obs.projectId] : []
             }
           })
       })
