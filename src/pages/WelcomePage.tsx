@@ -22,7 +22,7 @@ export default function WelcomePage() {
           {/* Bigger Logo & B-Liffe Badge */}
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-[#061812]/75 backdrop-blur-md border border-[#1C4D3C]/70 shadow-lg">
             <img
-              src="/logo.png"
+              src="/splash-logo.png"
               alt="B-Liffe Logo"
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#061812] border border-[#1C4D3C] p-1 object-contain"
             />

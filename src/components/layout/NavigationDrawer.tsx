@@ -136,7 +136,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
             <div className="relative z-10 flex items-center justify-between border-b border-[#1C4D3C] bg-[#08221A] px-4 py-3.5 sm:px-5">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0D2D22] border border-[#1C4D3C] p-0.5 shadow-xs overflow-hidden">
-                  <img src="/logo.png" alt="B-LIFFE" className="h-full w-full object-contain" />
+                  <img src="/splash-logo.png" alt="B-LIFFE" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
                   <BrandName className="text-lg" />
