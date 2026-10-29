@@ -78,6 +78,7 @@ function Home() {
   const [searchParams] = useSearchParams()
   const queryProjectId = searchParams.get('projectId') || undefined
   const initialProjectId = projectId || queryProjectId || undefined
+  const isProjectContext = Boolean(initialProjectId)
   const navigate = useNavigate()
   const isEditMode = Boolean(id)
   const [existingRecord, setExistingRecord] = useState<Observation | null>(null)
@@ -90,9 +91,12 @@ function Home() {
 
   // Project association state (optional multi-project linkage)
   const [allProjects, setAllProjects] = useState<Project[]>([])
-  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([])
+  const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>(
+    initialProjectId ? [initialProjectId] : []
+  )
   const [projectSearchQuery, setProjectSearchQuery] = useState('')
   const [showProjectsSection, setShowProjectsSection] = useState(false)
+  const [showProjectTips, setShowProjectTips] = useState(false)
 
   // Form field state
   const [speciesName, setSpeciesName] = useState('')
@@ -164,7 +168,6 @@ function Home() {
         if (p) {
           setActiveProject(p)
           setSelectedProjectIds((prev) => (prev.includes(p.id) ? prev : [...prev, p.id]))
-          setShowProjectsSection(true)
         }
       })
     }
@@ -463,7 +466,8 @@ function Home() {
     setSaved(false)
     setSelectedProjectIds(initialProjectId ? [initialProjectId] : [])
     setProjectSearchQuery('')
-    setShowProjectsSection(Boolean(initialProjectId))
+    setShowProjectsSection(false)
+    setShowProjectTips(false)
   }
 
   // Handle identification status changes; auto-clear species names if set to Unknown
@@ -597,14 +601,21 @@ function Home() {
 
       if (isEditMode && existingRecord && id) {
         // Update existing record: preserve original ID, createdAt, and recordedAt
+        const finalProjectId = isProjectContext
+          ? initialProjectId
+          : (selectedProjectIds[0] || existingRecord.projectId)
+        const finalProjectIds = isProjectContext
+          ? (initialProjectId ? [initialProjectId] : existingRecord.projectIds)
+          : (selectedProjectIds.length > 0 ? selectedProjectIds : undefined)
+
         const updatedObservation: Observation = {
           ...existingRecord,
           id: existingRecord.id,
           surveyId: existingRecord.surveyId,
           wardId: autoWardId ?? existingRecord.wardId,
           wardName: autoWardName ?? existingRecord.wardName,
-          projectId: selectedProjectIds[0] || existingRecord.projectId,
-          projectIds: selectedProjectIds.length > 0 ? selectedProjectIds : undefined,
+          projectId: finalProjectId,
+          projectIds: finalProjectIds,
 
           speciesName: speciesName.trim(),
           localName: localName.trim() || undefined,
@@ -650,14 +661,21 @@ function Home() {
         await db.observations.put(updatedObservation)
         setSaved(true)
       } else {
+        const finalProjectId = isProjectContext
+          ? initialProjectId
+          : (selectedProjectIds[0] || undefined)
+        const finalProjectIds = isProjectContext
+          ? (initialProjectId ? [initialProjectId] : undefined)
+          : (selectedProjectIds.length > 0 ? selectedProjectIds : undefined)
+
         const newObservation: Observation = {
           id: generateId(),
           // Link to parent Project / Survey session if active; ward is automatically identified
           surveyId: surveyId || undefined,
           wardId: autoWardId || undefined,
           wardName: autoWardName || undefined,
-          projectId: selectedProjectIds[0] || initialProjectId || undefined,
-          projectIds: selectedProjectIds.length > 0 ? selectedProjectIds : undefined,
+          projectId: finalProjectId,
+          projectIds: finalProjectIds,
 
           // Core Taxonomy & Identification
           speciesName: speciesName.trim(),
@@ -765,6 +783,17 @@ function Home() {
             <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
               {isEditMode ? 'Edit Observation' : 'New Observation'}
             </h1>
+            {isProjectContext && (
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#A6F16A]">
+                <FolderGit2 className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  Adding to project:{' '}
+                  <span className="text-white">
+                    {activeProject?.name || 'Project'}
+                  </span>
+                </span>
+              </p>
+            )}
           </div>
           {isEditMode && (
             <button
@@ -1866,156 +1895,6 @@ function Home() {
           )}
         </section>
 
-        {/* Add to project(s) (Optional Collapsible Section) */}
-        <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
-          <button
-            type="button"
-            onClick={() => setShowProjectsSection((v) => !v)}
-            className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
-            aria-expanded={showProjectsSection}
-          >
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <FolderGit2 className="h-5 w-5 text-[#A6F16A]" />
-              <h2 className="text-base sm:text-lg font-bold text-white">
-                Add to project(s)
-              </h2>
-              {selectedProjectIds.length > 0 && (
-                <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold">
-                  {selectedProjectIds.length} selected
-                </span>
-              )}
-            </div>
-            <ChevronDown
-              className={`h-5 w-5 text-[#A6F16A] transition-transform duration-200 shrink-0 ${
-                showProjectsSection ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-
-          {showProjectsSection && (
-            <div className="mt-4 pt-3 border-t border-[#1C4D3C] space-y-3.5">
-              <p className="text-xs text-[#B2C8BA] leading-relaxed">
-                Associate this observation with one or more community biodiversity projects. Adding to projects is optional.
-              </p>
-
-              {/* Selected Projects as Chips */}
-              {selectedProjectIds.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#7B9586]">
-                    Selected Projects ({selectedProjectIds.length})
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProjectIds.map((pId) => {
-                      const proj = allProjects.find((p) => p.id === pId)
-                      return (
-                        <span
-                          key={pId}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-[#133D2F] border border-[#A6F16A]/50 px-3 py-1 text-xs font-medium text-[#F0F5EF] shadow-xs"
-                        >
-                          <span className="truncate max-w-[200px]">{proj ? proj.name : pId}</span>
-                          {!saved && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveProject(pId)}
-                              className="rounded-full p-0.5 hover:bg-[#061812] text-[#A6F16A] hover:text-rose-400 transition-colors"
-                              aria-label={`Remove project ${proj ? proj.name : pId}`}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
-                        </span>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Search projects input */}
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B9586]" />
-                <input
-                  type="text"
-                  value={projectSearchQuery}
-                  disabled={saved}
-                  onChange={(e) => setProjectSearchQuery(e.target.value)}
-                  placeholder="Search projects by name, organization, or region..."
-                  className="w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-10 pr-9 py-2.5 text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
-                />
-                {projectSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setProjectSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B9586] hover:text-white"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Available Projects List */}
-              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-xl">
-                {allProjects.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
-                    <p>No projects available yet.</p>
-                  </div>
-                ) : filteredProjects.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
-                    <p>No projects match &quot;{projectSearchQuery}&quot;.</p>
-                  </div>
-                ) : (
-                  filteredProjects.map((proj) => {
-                    const isSelected = selectedProjectIds.includes(proj.id)
-                    return (
-                      <div
-                        key={proj.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleToggleProject(proj.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleToggleProject(proj.id)
-                          }
-                        }}
-                        className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#133D2F]/70 border-[#A6F16A] text-white shadow-xs'
-                            : 'bg-[#061812] border-[#1C4D3C] text-[#B2C8BA] hover:border-[#A6F16A]/40'
-                        }`}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-sm truncate text-white">
-                              {proj.name}
-                            </span>
-                            <span className="text-[10px] capitalize px-2 py-0.5 rounded-full bg-[#0D2D22] border border-[#1C4D3C] text-[#7B9586]">
-                              {proj.status || 'Active'}
-                            </span>
-                          </div>
-                          {(proj.organization || proj.targetRegion) && (
-                            <p className="text-xs text-[#7B9586] truncate mt-0.5">
-                              {[proj.organization, proj.targetRegion].filter(Boolean).join(' • ')}
-                            </p>
-                          )}
-                        </div>
-                        <span
-                          className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                            isSelected
-                              ? 'bg-[#A6F16A] text-[#061812] font-bold'
-                              : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C]'
-                          }`}
-                        >
-                          {isSelected ? 'Selected ✓' : '+ Select'}
-                        </span>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-
         {/* Location Visibility */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
@@ -2094,6 +1973,199 @@ function Home() {
           </div>
         </section>
 
+        {/* Add to project(s) (Optional Collapsible Section - hidden when inside a project context) */}
+        {!isProjectContext && (
+          <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+            <div className="flex items-center justify-between">
+              <div
+                className="flex items-center gap-2 flex-wrap cursor-pointer select-none"
+                onClick={() => setShowProjectsSection((v) => !v)}
+              >
+                <FolderGit2 className="h-5 w-5 text-[#A6F16A]" />
+                <h2 className="text-base sm:text-lg font-bold text-white">
+                  Add to project(s)
+                </h2>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowProjectTips((v) => !v)
+                  }}
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] hover:border-[#A6F16A]/60 hover:text-white transition-colors cursor-pointer shrink-0"
+                  aria-label={showProjectTips ? 'Hide project information' : 'About adding to projects'}
+                  aria-expanded={showProjectTips}
+                  title="About adding to projects"
+                >
+                  <Info className="h-3 w-3" />
+                </button>
+                {selectedProjectIds.length > 0 && (
+                  <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold">
+                    {selectedProjectIds.length} selected
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProjectsSection((v) => !v)}
+                className="p-1 text-[#A6F16A] hover:text-white transition-colors cursor-pointer"
+                aria-label={showProjectsSection ? 'Collapse project section' : 'Expand project section'}
+                aria-expanded={showProjectsSection}
+              >
+                <ChevronDown
+                  className={`h-5 w-5 text-[#A6F16A] transition-transform duration-200 shrink-0 ${
+                    showProjectsSection ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Accessible Info Panel for Project Explanation */}
+            {showProjectTips && (
+              <div
+                role="region"
+                aria-label="Project association information"
+                className="mt-3 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3.5 text-xs text-[#B2C8BA] leading-relaxed flex items-start gap-2.5"
+              >
+                <Info className="h-4 w-4 text-[#A6F16A] shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-white">About Project Association</p>
+                  <p className="mt-0.5 text-[#B2C8BA]">
+                    Associate this observation with one or more community biodiversity projects. Adding to projects is optional.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProjectTips(false)}
+                  className="text-[#7B9586] hover:text-white p-0.5 transition-colors cursor-pointer"
+                  aria-label="Close information"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {showProjectsSection && (
+              <div className="mt-4 pt-3 border-t border-[#1C4D3C] space-y-3.5">
+                {/* Selected Projects as Chips */}
+                {selectedProjectIds.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-semibold tracking-wider uppercase text-[#7B9586]">
+                      Selected Projects ({selectedProjectIds.length})
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProjectIds.map((pId) => {
+                        const proj = allProjects.find((p) => p.id === pId)
+                        return (
+                          <span
+                            key={pId}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#133D2F] border border-[#A6F16A]/50 px-3 py-1 text-xs font-medium text-[#F0F5EF] shadow-xs"
+                          >
+                            <span className="truncate max-w-[200px]">{proj ? proj.name : pId}</span>
+                            {!saved && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProject(pId)}
+                                className="rounded-full p-0.5 hover:bg-[#061812] text-[#A6F16A] hover:text-rose-400 transition-colors cursor-pointer"
+                                aria-label={`Remove project ${proj ? proj.name : pId}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search projects input */}
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7B9586]" />
+                  <input
+                    type="text"
+                    value={projectSearchQuery}
+                    disabled={saved}
+                    onChange={(e) => setProjectSearchQuery(e.target.value)}
+                    placeholder="Search projects by name, organization, or region..."
+                    className="w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-10 pr-9 py-2.5 text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
+                  />
+                  {projectSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setProjectSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B9586] hover:text-white cursor-pointer"
+                      aria-label="Clear project search"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Available Projects List */}
+                <div className="max-h-56 overflow-y-auto space-y-2 pr-1 rounded-xl">
+                  {allProjects.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
+                      <p>No projects available yet.</p>
+                    </div>
+                  ) : filteredProjects.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-[#1C4D3C] p-4 text-center text-xs text-[#7B9586]">
+                      <p>No projects match &quot;{projectSearchQuery}&quot;.</p>
+                    </div>
+                  ) : (
+                    filteredProjects.map((proj) => {
+                      const isSelected = selectedProjectIds.includes(proj.id)
+                      return (
+                        <div
+                          key={proj.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleToggleProject(proj.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              handleToggleProject(proj.id)
+                            }
+                          }}
+                          className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#133D2F]/70 border-[#A6F16A] text-white shadow-xs'
+                              : 'bg-[#061812] border-[#1C4D3C] text-[#B2C8BA] hover:border-[#A6F16A]/40'
+                          }`}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm truncate text-white">
+                                {proj.name}
+                              </span>
+                              <span className="text-[10px] capitalize px-2 py-0.5 rounded-full bg-[#0D2D22] border border-[#1C4D3C] text-[#7B9586]">
+                                {proj.status || 'Active'}
+                              </span>
+                            </div>
+                            {(proj.organization || proj.targetRegion) && (
+                              <p className="text-xs text-[#7B9586] truncate mt-0.5">
+                                {[proj.organization, proj.targetRegion].filter(Boolean).join(' • ')}
+                              </p>
+                            )}
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                              isSelected
+                                ? 'bg-[#A6F16A] text-[#061812] font-bold'
+                                : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C]'
+                            }`}
+                          >
+                            {isSelected ? 'Selected ✓' : '+ Select'}
+                          </span>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Save Observation Button (Lime-to-Turquoise Gradient) */}
         <section className="pt-2">
           <Button
@@ -2127,7 +2199,7 @@ function Home() {
               <p className="text-xs text-[#B2C8BA] mt-0.5">
                 Stored offline in IndexedDB on this device.
               </p>
-              <div className="mt-4 flex gap-2.5">
+              <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
                 {isEditMode ? (
                   <Button
                     type="button"
@@ -2137,14 +2209,26 @@ function Home() {
                     <span>Back to Records</span>
                   </Button>
                 ) : (
-                  <Button
-                    type="button"
-                    className="w-full min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold tracking-wider uppercase rounded-xl transition-all shadow-xs"
-                    onClick={resetForm}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-1.5 text-[#061812]" />
-                    <span>+ Record Next Observation</span>
-                  </Button>
+                  <>
+                    {isProjectContext && (
+                      <Button
+                        type="button"
+                        className="flex-1 min-h-[46px] border border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] text-sm font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer"
+                        onClick={() => navigate(`/projects/${initialProjectId}`)}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-1.5" />
+                        <span>Return to Project</span>
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      className="flex-1 min-h-[46px] bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold tracking-wider uppercase rounded-xl transition-all shadow-xs cursor-pointer"
+                      onClick={resetForm}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1.5 text-[#061812]" />
+                      <span>+ Record Next Observation</span>
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
