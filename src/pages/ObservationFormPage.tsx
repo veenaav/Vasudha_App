@@ -21,7 +21,6 @@ import {
   RotateCcw,
   Loader2,
   X,
-  Clock,
   AlertCircle,
   Compass,
   Info,
@@ -282,8 +281,19 @@ export default function ObservationFormPage() {
             )}
           </div>
 
-          {/* GPS Acquire / Retry Button (Get My Location) */}
-          <div className="mt-4 flex gap-2">
+          {/* Interactive OpenStreetMap with Centered Marker and Application-Themed Details Popup */}
+          <LocationPickerMap
+            location={geo.location}
+            rawGPS={geo.gpsLocation}
+            locationSource={geo.locationSource}
+            locationAccuracy={geo.locationAccuracy}
+            observationTime={form.displayObservationTime}
+            onLocationChange={geo.handleManualLocationChange}
+            disabled={form.saved}
+          />
+
+          {/* GPS Acquire / Retry Button (Get My Location) - Positioned below map */}
+          <div className="mt-3 flex gap-2">
             <Button
               type="button"
               className="min-h-[50px] flex-1 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-base shadow-lg shadow-[#20D6A0]/20 rounded-2xl transition-all active:scale-98 tracking-wide cursor-pointer"
@@ -312,66 +322,6 @@ export default function ObservationFormPage() {
                 </>
               )}
             </Button>
-          </div>
-
-          {/* Interactive OpenStreetMap */}
-          <LocationPickerMap
-            location={geo.location}
-            rawGPS={geo.gpsLocation}
-            onLocationChange={geo.handleManualLocationChange}
-            disabled={form.saved}
-          />
-
-          {/* Coordinates and Time Readout */}
-          <div className="mt-3 rounded-2xl bg-[#061812] px-4 py-3 border border-[#1C4D3C] text-sm space-y-2 text-[#F0F5EF]">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 font-mono text-sm sm:text-base font-medium text-[#A6F16A]">
-                <MapPin className="h-4 w-4 text-[#20D6A0] shrink-0" />
-                <span>
-                  {geo.location
-                    ? `${geo.location.latitude.toFixed(5)}, ${geo.location.longitude.toFixed(5)}`
-                    : 'Coordinates not selected yet'}
-                </span>
-                {geo.locationSource && (
-                  <span className="ml-1 text-[11px] font-sans font-semibold text-[#B2C8BA] bg-[#133D2F] px-2 py-0.5 rounded-full border border-[#1C4D3C]">
-                    {geo.locationSource}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-[#7B9586]">
-                <Clock className="h-3.5 w-3.5 text-[#7B9586]" />
-                <span>{form.displayObservationTime}</span>
-              </div>
-            </div>
-
-            {/* Audit display: Raw GPS coordinates preserved when adjusted */}
-            {geo.gpsLocation && (
-              <div className="pt-2 border-t border-[#1C4D3C] flex flex-wrap items-center justify-between gap-2 text-xs text-[#B2C8BA]">
-                <div className="flex items-center gap-1.5 font-mono">
-                  <Compass className="h-3.5 w-3.5 text-[#20D6A0] shrink-0" />
-                  <span>
-                    Raw GPS: {geo.gpsLocation.latitude.toFixed(5)},{' '}
-                    {geo.gpsLocation.longitude.toFixed(5)}
-                  </span>
-                  {geo.locationAccuracy !== null && (
-                    <span className="text-[11px] text-[#7B9586]">
-                      (±{Math.round(geo.locationAccuracy)}m sensor accuracy)
-                    </span>
-                  )}
-                </div>
-                {geo.locationSource === 'Manual Pin Adjustment' && (
-                  <span className="text-[11px] text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800/60">
-                    Original GPS preserved • Final adjusted on map
-                  </span>
-                )}
-              </div>
-            )}
-
-            {geo.locationSource === 'Manual Pin Adjustment' && !geo.gpsLocation && (
-              <div className="pt-2 border-t border-[#1C4D3C] text-xs text-[#7B9586]">
-                <span>📍 Manual pin placement without GPS acquisition. Raw GPS fields are null.</span>
-              </div>
-            )}
           </div>
 
           {/* Dedicated Read-Only Administrative Ward Information Field */}
