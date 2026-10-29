@@ -11,12 +11,13 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const location = useLocation()
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/'
   const staticRoutes = ['/', '/splash', '/welcome', '/login', '/create-account', '/register']
-  const isStaticRoute = staticRoutes.includes(location.pathname)
+  const isStaticRoute = staticRoutes.includes(normalizedPath)
 
   if (isStaticRoute) {
     return (
-      <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#08221A] text-[#F0F5EF] antialiased selection:bg-[#A6F16A] selection:text-[#061812]">
+      <div className="fixed inset-0 h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#08221A] text-[#F0F5EF] antialiased selection:bg-[#A6F16A] selection:text-[#061812]">
         {children}
       </div>
     )
