@@ -7,6 +7,7 @@
 @theme inline {
     --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-modern: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
     /* Dark Nature Palette (Animap / Wildpedia Dribbble Reference) */
     --color-forest-black: #061812;
@@ -138,4 +139,8 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #A6F16A;
+}
+
+.font-modern {
+  font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
