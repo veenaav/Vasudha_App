@@ -1,5 +1,4 @@
-import React, { useState, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
   Edit3,
@@ -15,164 +14,33 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react'
-import { useProfile } from '@/context/ProfileContext'
 import AvatarDisplay from '@/components/profile/AvatarDisplay'
 import { AVATAR_PRESETS, renderPresetIcon } from '@/lib/avatarPresets'
-import type { AvatarPresetId, AvatarType } from '@/lib/profileTypes'
+import type { AvatarPresetId } from '@/lib/profileTypes'
+import { useProfileForm } from '@/features/profile/hooks/useProfileForm'
 
 export default function ProfilePage() {
-  const navigate = useNavigate()
-  const { profile, updateProfile, signOut } = useProfile()
-
-  // View vs Edit Mode
-  const [isEditing, setIsEditing] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-
-  // Edit Form State
-  const [formData, setFormData] = useState({
-    fullName: profile.fullName,
-    displayName: profile.displayName,
-    bio: profile.bio,
-    avatarType: profile.avatarType,
-    avatarPresetId: profile.avatarPresetId,
-    avatarCustomUrl: profile.avatarCustomUrl || null,
-  })
-
-  // Validation & Dirty state tracking
-  const [errors, setErrors] = useState<{ fullName?: string }>({})
-  const [showDiscardModal, setShowDiscardModal] = useState(false)
-  const [showSignOutModal, setShowSignOutModal] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Calculate if form is dirty
-  const isDirty =
-    formData.fullName !== profile.fullName ||
-    formData.displayName !== profile.displayName ||
-    formData.bio !== profile.bio ||
-    formData.avatarType !== profile.avatarType ||
-    formData.avatarPresetId !== profile.avatarPresetId ||
-    formData.avatarCustomUrl !== profile.avatarCustomUrl
-
-  // Open Edit Mode
-  const handleStartEditing = () => {
-    setFormData({
-      fullName: profile.fullName,
-      displayName: profile.displayName,
-      bio: profile.bio,
-      avatarType: profile.avatarType,
-      avatarPresetId: profile.avatarPresetId,
-      avatarCustomUrl: profile.avatarCustomUrl || null,
-    })
-    setErrors({})
-    setSaveSuccess(false)
-    setIsEditing(true)
-  }
-
-  // Handle Cancel with dirty protection
-  const handleCancel = () => {
-    if (isDirty) {
-      setShowDiscardModal(true)
-    } else {
-      setIsEditing(false)
-    }
-  }
-
-  const confirmDiscard = () => {
-    setShowDiscardModal(false)
-    setIsEditing(false)
-    setFormData({
-      fullName: profile.fullName,
-      displayName: profile.displayName,
-      bio: profile.bio,
-      avatarType: profile.avatarType,
-      avatarPresetId: profile.avatarPresetId,
-      avatarCustomUrl: profile.avatarCustomUrl || null,
-    })
-    setErrors({})
-  }
-
-  // Handle Image Upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Quick size validation (max 5MB for local prototype)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Photo must be less than 5MB.')
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string
-      if (dataUrl) {
-        setFormData((prev) => ({
-          ...prev,
-          avatarType: 'upload' as AvatarType,
-          avatarCustomUrl: dataUrl,
-        }))
-      }
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const handleRemovePhoto = () => {
-    setFormData((prev) => ({
-      ...prev,
-      avatarType: 'preset',
-      avatarCustomUrl: null,
-    }))
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  // Save changes
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validate required fields
-    const newErrors: { fullName?: string } = {}
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required'
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
-    setErrors({})
-    setIsSubmitting(true)
-
-    try {
-      await updateProfile({
-        fullName: formData.fullName,
-        displayName: formData.displayName,
-        bio: formData.bio,
-        avatarType: formData.avatarType,
-        avatarPresetId: formData.avatarPresetId,
-        avatarCustomUrl: formData.avatarCustomUrl,
-      })
-
-      setIsEditing(false)
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3500)
-    } catch (err) {
-      console.error('Failed to update profile:', err)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Sign out handler
-  const handleConfirmSignOut = () => {
-    setShowSignOutModal(false)
-    signOut()
-    navigate('/welcome', { replace: true })
-  }
+  const {
+    profile,
+    isEditing,
+    saveSuccess,
+    formData,
+    setFormData,
+    errors,
+    showDiscardModal,
+    setShowDiscardModal,
+    showSignOutModal,
+    setShowSignOutModal,
+    isSubmitting,
+    fileInputRef,
+    handleStartEditing,
+    handleCancel,
+    confirmDiscard,
+    handleFileChange,
+    handleRemovePhoto,
+    handleSave,
+    handleConfirmSignOut,
+  } = useProfileForm()
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-5 sm:px-6 sm:py-8 space-y-6">
@@ -284,7 +152,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={handleStartEditing}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] px-5 py-2.5 text-sm font-bold text-[#061812] shadow-md shadow-[#20D6A0]/15 hover:shadow-[#A6F16A]/25 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#A6F16A]"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] px-5 py-2.5 text-sm font-bold text-[#061812] shadow-md shadow-[#20D6A0]/15 hover:shadow-[#A6F16A]/25 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#A6F16A] cursor-pointer"
                   >
                     <Edit3 className="h-4 w-4" />
                     <span>Edit Profile</span>
@@ -334,7 +202,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowSignOutModal(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-950/20 px-4 py-2.5 text-xs sm:text-sm font-semibold text-red-300 hover:bg-red-900/30 hover:border-red-500/60 transition-all active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-950/20 px-4 py-2.5 text-xs sm:text-sm font-semibold text-red-300 hover:bg-red-900/30 hover:border-red-500/60 transition-all active:scale-95 cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
@@ -373,7 +241,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1C4D3C] bg-[#08221A] text-[#B2C8BA] hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#1C4D3C] bg-[#08221A] text-[#B2C8BA] hover:text-white cursor-pointer"
                 aria-label="Close edit mode"
               >
                 <X className="h-4 w-4" />
@@ -487,7 +355,7 @@ export default function ProfilePage() {
                             avatarPresetId: presetId,
                           }))
                         }
-                        className={`flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all ${
+                        className={`flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all cursor-pointer ${
                           isSelected
                             ? 'border-[#A6F16A] bg-[#133D2F] shadow-sm shadow-[#A6F16A]/20'
                             : 'border-[#1C4D3C] bg-[#08221A] hover:border-[#20D6A0]/50 hover:bg-[#0D2D22]'
@@ -541,7 +409,7 @@ export default function ProfilePage() {
                   onChange={(e) => {
                     setFormData({ ...formData, fullName: e.target.value })
                     if (errors.fullName) {
-                      setErrors((prev) => ({ ...prev, fullName: undefined }))
+                      setFormData({ ...formData, fullName: e.target.value })
                     }
                   }}
                   placeholder="e.g. Veena V"
@@ -637,7 +505,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="w-full sm:w-auto rounded-xl border border-[#1C4D3C] bg-[#08221A] px-5 py-2.5 text-sm font-semibold text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-all active:scale-95"
+                className="w-full sm:w-auto rounded-xl border border-[#1C4D3C] bg-[#08221A] px-5 py-2.5 text-sm font-semibold text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-all active:scale-95 cursor-pointer"
               >
                 Cancel
               </button>
@@ -645,7 +513,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] px-6 py-2.5 text-sm font-bold text-[#061812] shadow-md shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] px-6 py-2.5 text-sm font-bold text-[#061812] shadow-md shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 <Check className="h-4 w-4" />
                 <span>{isSubmitting ? 'Saving...' : 'Save Changes'}</span>
@@ -683,14 +551,14 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowDiscardModal(false)}
-                className="flex-1 rounded-xl border border-[#1C4D3C] bg-[#0D2D22] py-2.5 text-xs font-semibold text-white hover:bg-[#133D2F]"
+                className="flex-1 rounded-xl border border-[#1C4D3C] bg-[#0D2D22] py-2.5 text-xs font-semibold text-white hover:bg-[#133D2F] cursor-pointer"
               >
                 Keep Editing
               </button>
               <button
                 type="button"
                 onClick={confirmDiscard}
-                className="flex-1 rounded-xl bg-red-600 py-2.5 text-xs font-bold text-white hover:bg-red-700 active:scale-95 shadow-md"
+                className="flex-1 rounded-xl bg-red-600 py-2.5 text-xs font-bold text-white hover:bg-red-700 active:scale-95 shadow-md cursor-pointer"
               >
                 Discard
               </button>
@@ -728,14 +596,14 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowSignOutModal(false)}
-                className="flex-1 rounded-xl border border-[#1C4D3C] bg-[#0D2D22] py-2.5 text-xs font-semibold text-white hover:bg-[#133D2F]"
+                className="flex-1 rounded-xl border border-[#1C4D3C] bg-[#0D2D22] py-2.5 text-xs font-semibold text-white hover:bg-[#133D2F] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmSignOut}
-                className="flex-1 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 py-2.5 text-xs font-bold text-white hover:from-red-700 hover:to-rose-700 active:scale-95 shadow-md"
+                className="flex-1 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 py-2.5 text-xs font-bold text-white hover:from-red-700 hover:to-rose-700 active:scale-95 shadow-md cursor-pointer"
               >
                 Yes, Sign Out
               </button>

@@ -3,33 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { db, type Project } from '@/db/database'
 import { ArrowLeft, ArrowRight, Building2, MapPin, FolderGit2, CheckCircle2, UserCheck } from 'lucide-react'
+import {
+  getJoinedProjectIds,
+  toggleJoinedProject,
+  countProjectObservations,
+} from '@/lib/projectStorage'
 
-const STORAGE_KEY = 'shrishti_joined_project_ids'
-
-export const getJoinedProjectIds = (): string[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-export const toggleJoinedProject = (projectId: string): string[] => {
-  try {
-    const current = getJoinedProjectIds()
-    let updated: string[]
-    if (current.includes(projectId)) {
-      updated = current.filter((id) => id !== projectId)
-    } else {
-      updated = [...current, projectId]
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    return updated
-  } catch {
-    return []
-  }
-}
 
 export default function MyProjects() {
   const navigate = useNavigate()
@@ -45,9 +24,10 @@ export default function MyProjects() {
       const filtered = allProjects.filter((p) => joinedIds.includes(p.id))
       setJoinedProjects(filtered)
 
+      const allObservations = await db.observations.toArray()
       const counts: Record<string, number> = {}
       for (const p of filtered) {
-        counts[p.id] = await db.observations.where('projectId').equals(p.id).count()
+        counts[p.id] = countProjectObservations(p.id, allObservations)
       }
       setObservationCounts(counts)
     } catch (err) {

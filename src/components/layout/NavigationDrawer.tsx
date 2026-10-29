@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   X,
@@ -11,6 +11,7 @@ import {
   Database,
   ShieldCheck,
   User,
+  type LucideIcon,
 } from 'lucide-react'
 import { db } from '@/db/database'
 import SettingsPage from '@/pages/SettingsPage'
@@ -26,6 +27,27 @@ interface NavigationDrawerProps {
 }
 
 type DrawerSubView = 'menu' | 'settings' | 'about' | 'faq' | 'sync' | 'privacy'
+
+interface BaseMenuItem {
+  title: string | React.ReactNode
+  description: string
+  icon: LucideIcon
+  iconColor: string
+  badge?: React.ReactNode
+}
+
+interface LinkMenuItem extends BaseMenuItem {
+  kind: 'link'
+  to: string
+  activeColor?: string
+}
+
+interface ActionMenuItem extends BaseMenuItem {
+  kind: 'subview'
+  subView: DrawerSubView
+}
+
+type MenuItemConfig = LinkMenuItem | ActionMenuItem
 
 export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
   const [subView, setSubView] = useState<DrawerSubView>('menu')
@@ -60,10 +82,10 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
     }
   }, [isOpen])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setSubView('menu')
     onClose()
-  }
+  }, [onClose])
 
   // Support Escape key to close the drawer or go back to main menu
   useEffect(() => {
@@ -78,9 +100,141 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, subView, onClose])
+  }, [isOpen, subView, handleClose])
 
   if (!isOpen) return null
+
+  const menuItems: MenuItemConfig[] = [
+    {
+      kind: 'link',
+      to: '/projects',
+      title: 'Projects & Field Hub',
+      description: 'Explore and join biodiversity projects.',
+      icon: FolderGit2,
+      iconColor: 'text-[#A6F16A]',
+      activeColor: 'text-[#A6F16A]',
+    },
+    {
+      kind: 'link',
+      to: '/my-projects',
+      title: 'My Joined Projects',
+      description: 'Access your project activities.',
+      icon: BookmarkCheck,
+      iconColor: 'text-[#20D6A0]',
+      activeColor: 'text-[#20D6A0]',
+    },
+    {
+      kind: 'subview',
+      subView: 'faq',
+      title: 'Field Guide & Help',
+      description: 'Recording instructions and FAQs.',
+      icon: BookOpen,
+      iconColor: 'text-[#A6F16A]',
+    },
+    {
+      kind: 'subview',
+      subView: 'about',
+      title: (
+        <span className="flex items-center gap-1.5">
+          About <BrandName className="text-sm" />
+        </span>
+      ),
+      description: 'Mission, features and conservation goals.',
+      icon: Leaf,
+      iconColor: 'text-[#20D6A0]',
+    },
+    {
+      kind: 'subview',
+      subView: 'settings',
+      title: 'Settings',
+      description: 'Preferences and appearance.',
+      icon: Sliders,
+      iconColor: 'text-[#A6F16A]',
+    },
+    {
+      kind: 'subview',
+      subView: 'sync',
+      title: 'Offline Data & Sync',
+      description: 'Saved data and synchronisation status.',
+      icon: Database,
+      iconColor: 'text-[#20D6A0]',
+      badge:
+        localObservationCount !== null ? (
+          <span className="rounded-full bg-[#133D2F] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] border border-[#1C4D3C]">
+            {localObservationCount} on device
+          </span>
+        ) : null,
+    },
+    {
+      kind: 'subview',
+      subView: 'privacy',
+      title: 'Privacy & Data Sharing',
+      description: 'Understand how observation data is handled.',
+      icon: ShieldCheck,
+      iconColor: 'text-[#A6F16A]',
+    },
+    {
+      kind: 'link',
+      to: '/profile',
+      title: 'My Profile',
+      description: 'Manage avatar, display name, and bio.',
+      icon: User,
+      iconColor: 'text-[#A6F16A]',
+      activeColor: 'text-[#A6F16A]',
+    },
+    {
+      kind: 'link',
+      to: '/welcome',
+      title: 'Sign In & Welcome Tour',
+      description: 'Opening splash, login, and registration.',
+      icon: User,
+      iconColor: 'text-[#20D6A0]',
+    },
+  ]
+
+  const renderItemInner = (item: MenuItemConfig) => {
+    const Icon = item.icon
+    return (
+      <>
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] ${item.iconColor}`}
+          >
+            <Icon className="h-4.5 w-4.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="block text-sm font-semibold leading-snug">{item.title}</span>
+              {item.badge}
+            </div>
+            <span className="block text-[11px] text-[#B2C8BA] truncate">
+              {item.description}
+            </span>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
+      </>
+    )
+  }
+
+  const renderSubView = () => {
+    const onBack = () => setSubView('menu')
+    let viewContent: React.ReactNode = null
+
+    if (subView === 'settings') viewContent = <SettingsPage onBack={onBack} />
+    else if (subView === 'about') viewContent = <AboutPage onBack={onBack} />
+    else if (subView === 'faq') viewContent = <FAQPage onBack={onBack} />
+    else if (subView === 'sync') viewContent = <OfflineSyncPage onBack={onBack} />
+    else if (subView === 'privacy') viewContent = <PrivacyPage onBack={onBack} />
+
+    if (!viewContent) return null
+
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-3">{viewContent}</div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -98,37 +252,8 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
         aria-modal="true"
         aria-label="Application Menu"
       >
-        {/* Render Subviews inline so form data on the active page is never lost */}
-        {subView === 'settings' ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3">
-              <SettingsPage onBack={() => setSubView('menu')} />
-            </div>
-          </div>
-        ) : subView === 'about' ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3">
-              <AboutPage onBack={() => setSubView('menu')} />
-            </div>
-          </div>
-        ) : subView === 'faq' ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3">
-              <FAQPage onBack={() => setSubView('menu')} />
-            </div>
-          </div>
-        ) : subView === 'sync' ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3">
-              <OfflineSyncPage onBack={() => setSubView('menu')} />
-            </div>
-          </div>
-        ) : subView === 'privacy' ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3">
-              <PrivacyPage onBack={() => setSubView('menu')} />
-            </div>
-          </div>
+        {subView !== 'menu' ? (
+          renderSubView()
         ) : (
           /* Main Menu View */
           <>
@@ -158,209 +283,37 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-1.5">
-              {/* 1. Projects & Field Hub */}
-              <NavLink
-                to="/projects"
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
-                    ? 'bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]'
-                    : 'text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent'
-                  }`
+              {menuItems.map((item, idx) => {
+                if (item.kind === 'link') {
+                  return (
+                    <NavLink
+                      key={item.to + idx}
+                      to={item.to}
+                      onClick={item.to === '/welcome' ? handleClose : onClose}
+                      className={({ isActive }) =>
+                        `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${
+                          isActive
+                            ? `bg-[#133D2F] border border-[#1C4D3C] ${item.activeColor || 'text-[#A6F16A]'}`
+                            : 'text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent'
+                        }`
+                      }
+                    >
+                      {renderItemInner(item)}
+                    </NavLink>
+                  )
                 }
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
-                    <FolderGit2 className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">Projects & Field Hub</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Explore and join biodiversity projects.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </NavLink>
 
-              {/* 2. My Joined Projects */}
-              <NavLink
-                to="/my-projects"
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
-                    ? 'bg-[#133D2F] border border-[#1C4D3C] text-[#20D6A0]'
-                    : 'text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent'
-                  }`
-                }
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#20D6A0]">
-                    <BookmarkCheck className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">My Joined Projects</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Access your project activities.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </NavLink>
-
-              {/* 3. Field Guide & Help */}
-              <button
-                type="button"
-                onClick={() => setSubView('faq')}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
-                    <BookOpen className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">Field Guide & Help</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Recording instructions and FAQs.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </button>
-
-              {/* 4. About B-LIFFE */}
-              <button
-                type="button"
-                onClick={() => setSubView('about')}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#20D6A0]">
-                    <Leaf className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold leading-snug">
-                      About <BrandName className="text-sm" />
-                    </span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Mission, features and conservation goals.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </button>
-
-              {/* 5. Settings */}
-              <button
-                type="button"
-                onClick={() => setSubView('settings')}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
-                    <Sliders className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">Settings</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Preferences and appearance.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </button>
-
-              {/* 6. Offline Data & Sync */}
-              <button
-                type="button"
-                onClick={() => setSubView('sync')}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#20D6A0]">
-                    <Database className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="block text-sm font-semibold leading-snug">Offline Data & Sync</span>
-                      {localObservationCount !== null && (
-                        <span className="rounded-full bg-[#133D2F] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] border border-[#1C4D3C]">
-                          {localObservationCount} on device
-                        </span>
-                      )}
-                    </div>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Saved data and synchronisation status.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </button>
-
-              {/* 7. Privacy & Data Sharing */}
-              <button
-                type="button"
-                onClick={() => setSubView('privacy')}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
-                    <ShieldCheck className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">Privacy & Data Sharing</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Understand how observation data is handled.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </button>
-
-              {/* 8. My Profile */}
-              <NavLink
-                to="/profile"
-                onClick={handleClose}
-                className={({ isActive }) =>
-                  `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${isActive
-                    ? 'bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]'
-                    : 'text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent'
-                  }`
-                }
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A]">
-                    <User className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">My Profile</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Manage avatar, display name, and bio.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </NavLink>
-
-              {/* 9. Account & Opening Tour */}
-              <NavLink
-                to="/welcome"
-                onClick={handleClose}
-                className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#133D2F] border border-[#1C4D3C] text-[#20D6A0]">
-                    <User className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-semibold leading-snug">Sign In & Welcome Tour</span>
-                    <span className="block text-[11px] text-[#B2C8BA] truncate">
-                      Opening splash, login, and registration.
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
-              </NavLink>
+                return (
+                  <button
+                    key={item.subView}
+                    type="button"
+                    onClick={() => setSubView(item.subView)}
+                    className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
+                  >
+                    {renderItemInner(item)}
+                  </button>
+                )
+              })}
             </div>
 
             {/* Drawer Footer */}

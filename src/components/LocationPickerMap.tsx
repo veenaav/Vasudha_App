@@ -29,6 +29,10 @@ const createPinIcon = () => {
   })
 }
 
+// Default initial viewport (Thiruvananthapuram, Kerala) if no coordinates yet
+const DEFAULT_CENTER: [number, number] = [8.5241, 76.9366]
+const DEFAULT_ZOOM = 12
+
 interface LocationPickerMapProps {
   location: { latitude: number; longitude: number } | null
   rawGPS?: { latitude: number; longitude: number } | null
@@ -49,7 +53,14 @@ export default function LocationPickerMap({
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const [tileError, setTileError] = useState(false)
-  const [isManuallyMoved, setIsManuallyMoved] = useState(false)
+
+  // Pure derived state: whether pin coordinates diverge from raw GPS
+  const isManuallyMoved = Boolean(
+    rawGPS &&
+    location &&
+    (Math.abs(location.latitude - rawGPS.latitude) >= 0.000001 ||
+      Math.abs(location.longitude - rawGPS.longitude) >= 0.000001)
+  )
 
   // Keep latest onLocationChange in a ref for event handlers
   const onLocationChangeRef = useRef(onLocationChange)
@@ -57,62 +68,35 @@ export default function LocationPickerMap({
     onLocationChangeRef.current = onLocationChange
   }, [onLocationChange])
 
-  // Sync isManuallyMoved based on whether current location differs from rawGPS
-  useEffect(() => {
-    if (!rawGPS || !location) {
-      setIsManuallyMoved(false)
-      return
-    }
-    const isAtGps =
-      Math.abs(location.latitude - rawGPS.latitude) < 0.000001 &&
-      Math.abs(location.longitude - rawGPS.longitude) < 0.000001
-
-    if (isAtGps) {
-      setIsManuallyMoved(false)
-    } else {
-      setIsManuallyMoved(true)
-    }
-  }, [rawGPS, location])
-
   // Recenter map and marker back to raw GPS coordinates
   const handleRecenter = () => {
     if (!rawGPS) return
     const lat = rawGPS.latitude
     const lng = rawGPS.longitude
 
-    // 1. Smoothly animate the map view back to the rawGPS coordinates
     if (mapRef.current) {
       mapRef.current.setView([lat, lng], 18, { animate: true })
     }
 
-    // 2. Reset the pin position back to the raw GPS coordinates
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng])
     }
     onLocationChangeRef.current({ latitude: lat, longitude: lng }, 'gps')
-
-    // 3. Set isManuallyMoved back to false so the button hides itself again
-    setIsManuallyMoved(false)
   }
 
-  // Default initial viewport (Thiruvananthapuram, Kerala) if no coordinates yet
-  // We do NOT invent coordinates or select this location; it only frames the map initial view.
-  const DEFAULT_CENTER: [number, number] = [8.5241, 76.9366]
-  const DEFAULT_ZOOM = 12
+  // Preserve initial coordinates across re-renders for first map mount
+  const initialCenterRef = useRef<[number, number]>(
+    location ? [location.latitude, location.longitude] : DEFAULT_CENTER
+  )
+  const initialZoomRef = useRef<number>(location ? 16 : DEFAULT_ZOOM)
 
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
-    const initialCenter = location
-      ? [location.latitude, location.longitude] as [number, number]
-      : DEFAULT_CENTER
-
-    const initialZoom = location ? 16 : DEFAULT_ZOOM
-
     const map = L.map(mapContainerRef.current, {
-      center: initialCenter,
-      zoom: initialZoom,
+      center: initialCenterRef.current,
+      zoom: initialZoomRef.current,
       zoomControl: true,
       attributionControl: true,
       tapHold: true,
@@ -152,7 +136,6 @@ export default function LocationPickerMap({
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       if (disabled) return
-      setIsManuallyMoved(true)
       onLocationChangeRef.current(
         {
           latitude: Number(e.latlng.lat.toFixed(6)),
@@ -196,7 +179,6 @@ export default function LocationPickerMap({
       marker.on('dragend', () => {
         if (disabled) return
         const pos = marker.getLatLng()
-        setIsManuallyMoved(true)
         onLocationChangeRef.current(
           {
             latitude: Number(pos.lat.toFixed(6)),
@@ -282,4 +264,3 @@ export default function LocationPickerMap({
     </div>
   )
 }
-

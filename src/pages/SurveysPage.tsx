@@ -1,140 +1,46 @@
-import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { db, type Survey, type Ward, type Project } from '@/db/database'
 import { Plus, ArrowRight, Trash2, ArrowLeft, Calendar, User, Layers, Leaf } from 'lucide-react'
-import { generateId } from '@/lib/utils'
+import {
+  useSurveys,
+  formatSurveyDateTime,
+  SURVEY_METHODS,
+  HABITAT_TYPES,
+  TARGET_GROUPS,
+} from '@/features/projects/hooks/useSurveys'
 
-const SURVEY_METHODS = [
-  'Opportunistic Encounter',
-  'Line Transect',
-  'Point Count',
-  'Fixed Area Plot',
-  'Camera Trap',
-  'Other',
-] as const
-
-const HABITAT_TYPES = [
-  'Urban Park / Garden',
-  'Home Garden',
-  'Wetland / Pond / Stream',
-  'Canal / Drain',
-  'Roadside Avenue',
-  'Sacred Grove (Kavu)',
-  'Agricultural Land',
-  'Forest Patch',
-  'Coastal / Beach',
-  'Other',
-] as const
-
-const TARGET_GROUPS = [
-  'All Biodiversity',
-  'Birds only',
-  'Flora / Trees only',
-  'Insects / Butterflies only',
-  'Herpetofauna (Reptiles/Amphibians)',
-  'Mammals only',
-  'Other',
-] as const
-
-function SurveysPage() {
+export default function SurveysPage() {
   const { projectId, wardId } = useParams<{ projectId: string; wardId: string }>()
   const navigate = useNavigate()
 
-  const [project, setProject] = useState<Project | null>(null)
-  const [ward, setWard] = useState<Ward | null>(null)
-  const [surveys, setSurveys] = useState<Survey[]>([])
-  const [observationCounts, setObservationCounts] = useState<Record<string, number>>({})
-  const [showAddForm, setShowAddForm] = useState(false)
+  const {
+    project,
+    ward,
+    surveys,
+    observationCounts,
+    showAddForm,
+    setShowAddForm,
+    leadObserver,
+    setLeadObserver,
+    surveyMethod,
+    setSurveyMethod,
+    habitatType,
+    setHabitatType,
+    targetGroup,
+    setTargetGroup,
+    weatherNotes,
+    setWeatherNotes,
+    isSubmitting,
+    createSurvey,
+    deleteSurvey,
+  } = useSurveys(projectId, wardId)
 
-  // Form state
-  const [leadObserver, setLeadObserver] = useState('')
-  const [surveyMethod, setSurveyMethod] = useState<string>('Opportunistic Encounter')
-  const [habitatType, setHabitatType] = useState<string>('Urban Park / Garden')
-  const [targetGroup, setTargetGroup] = useState<string>('All Biodiversity')
-  const [weatherNotes, setWeatherNotes] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const loadData = async () => {
-    if (!projectId || !wardId) return
-    const [p, w] = await Promise.all([
-      db.projects.get(projectId),
-      db.wards.get(wardId),
-    ])
-    if (p) setProject(p)
-    if (w) setWard(w)
-
-    const list = await db.surveys.where('wardId').equals(wardId).toArray()
-    setSurveys(list.reverse())
-
-    // Load observation count per survey visit
-    const counts: Record<string, number> = {}
-    for (const s of list) {
-      const count = await db.observations.where('surveyId').equals(s.id).count()
-      counts[s.id] = count
-    }
-    setObservationCounts(counts)
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [projectId, wardId])
-
-  const handleCreateSurvey = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!projectId || !wardId) return
-    if (!leadObserver.trim()) {
-      alert('Please enter the name of the lead observer/researcher.')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      const newId = generateId()
-      const now = new Date().toISOString()
-      const newSurvey: Survey = {
-        id: newId,
-        projectId,
-        wardId,
-        leadObserver: leadObserver.trim(),
-        surveyMethod,
-        habitatType,
-        targetGroup,
-        startTime: now,
-        weatherNotes: weatherNotes.trim() || undefined,
-        createdAt: now,
-        updatedAt: now,
-        syncStatus: 'pending',
-      }
-
-      await db.surveys.add(newSurvey)
-      setLeadObserver('')
-      setWeatherNotes('')
-      setShowAddForm(false)
-      await loadData()
-
-      // Automatically navigate to the observation recording screen for this new survey session!
+    const newId = await createSurvey()
+    if (newId && projectId && wardId) {
       navigate(`/projects/${projectId}/wards/${wardId}/surveys/${newId}/observations`)
-    } catch (err) {
-      alert(`Failed to start field visit: ${err instanceof Error ? err.message : 'Unknown error'}`)
-    } finally {
-      setIsSubmitting(false)
     }
-  }
-
-  const handleDeleteSurvey = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this field visit record?')) {
-      await db.surveys.delete(id)
-      await loadData()
-    }
-  }
-
-  const formatDateTime = (isoString?: string) => {
-    if (!isoString) return ''
-    const d = new Date(isoString)
-    return Number.isNaN(d.getTime())
-      ? ''
-      : d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
   }
 
   return (
@@ -185,7 +91,7 @@ function SurveysPage() {
 
       {/* Start Survey Visit Form (Collapsible) */}
       {showAddForm && (
-        <form onSubmit={handleCreateSurvey} className="mb-6 rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
+        <form onSubmit={handleSubmit} className="mb-6 rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF]">
           <h2 className="text-base sm:text-lg font-bold tracking-wide text-white uppercase border-b border-[#1C4D3C] pb-2">
             Start New Survey / Field Visit
           </h2>
@@ -320,7 +226,7 @@ function SurveysPage() {
 
                   <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#B2C8BA]">
                     <Calendar className="h-3.5 w-3.5 text-[#20D6A0]" />
-                    <span>Started: {formatDateTime(survey.startTime)}</span>
+                    <span>Started: {formatSurveyDateTime(survey.startTime)}</span>
                   </p>
 
                   <div className="mt-2.5 flex items-center gap-2 text-xs text-[#F0F5EF] flex-wrap">
@@ -345,7 +251,7 @@ function SurveysPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleDeleteSurvey(survey.id)}
+                  onClick={() => deleteSurvey(survey.id)}
                   className="rounded-lg p-2 text-[#7B9586] hover:bg-rose-950/60 hover:text-rose-400 transition-colors"
                   title="Delete field visit"
                   aria-label="Delete field visit"
@@ -393,5 +299,3 @@ function SurveysPage() {
     </div>
   )
 }
-
-export default SurveysPage

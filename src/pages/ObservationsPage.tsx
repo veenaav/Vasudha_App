@@ -1,78 +1,21 @@
-import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { PlusCircle, Leaf, Download, Tag as TagIcon, X } from 'lucide-react'
-import { db, type Observation } from '@/db/database'
 import ObservationCard from '@/components/ObservationCard'
-import { getTagById } from '@/lib/tagCatalogue'
 import { downloadDarwinCoreExport } from '@/lib/darwinCoreExport'
+import { useObservations, type ObservationFilterStatus } from '@/features/observations/hooks/useObservations'
 
 export default function ObservationsPage() {
-  const [observations, setObservations] = useState<Observation[]>([])
-  const [selectedFilter, setSelectedFilter] = useState<'All' | 'Identified' | 'Needs verification' | 'Unknown'>('All')
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const loadObservations = async () => {
-    try {
-      const items = await db.observations.toArray()
-      // Sort by creation / recording date descending
-      const sorted = [...items].sort((a, b) => {
-        const tA = new Date(b.createdAt || b.recordedAt).getTime()
-        const tB = new Date(a.createdAt || a.recordedAt).getTime()
-        return tA - tB
-      })
-      setObservations(sorted)
-    } catch (err) {
-      console.error('Failed to load observations:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadObservations()
-  }, [])
-
-  const handleDeleteObservation = async (id: string) => {
-    try {
-      await db.observations.delete(id)
-      setObservations((current) => current.filter((obs) => obs.id !== id))
-    } catch (error) {
-      alert(`Failed to delete observation: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    }
-  }
-
-  // Derive unique tags used across all observations
-  const availableTags = useMemo(() => {
-    const counts: Record<string, number> = {}
-    observations.forEach((obs) => {
-      obs.tags?.forEach((t) => {
-        counts[t] = (counts[t] || 0) + 1
-      })
-    })
-    return Object.entries(counts).map(([id, count]) => {
-      const tag = getTagById(id)
-      return {
-        id,
-        name: tag?.label || id,
-        category: tag?.category || 'General',
-        count,
-      }
-    })
-  }, [observations])
-
-  // Filter observations based on selected status pill and tag
-  const filteredObservations = useMemo(() => {
-    return observations.filter((obs) => {
-      if (selectedFilter !== 'All' && obs.identificationStatus !== selectedFilter) {
-        return false
-      }
-      if (selectedTag && (!obs.tags || !obs.tags.includes(selectedTag))) {
-        return false
-      }
-      return true
-    })
-  }, [observations, selectedFilter, selectedTag])
+  const {
+    observations,
+    filteredObservations,
+    availableTags,
+    selectedFilter,
+    setSelectedFilter,
+    selectedTag,
+    setSelectedTag,
+    isLoading,
+    handleDeleteObservation,
+  } = useObservations()
 
   return (
     <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F0F5EF]">
@@ -95,7 +38,7 @@ export default function ObservationsPage() {
             <button
               type="button"
               onClick={() => downloadDarwinCoreExport(filteredObservations)}
-              className="flex h-11 px-3.5 items-center gap-1.5 rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] shadow-sm hover:bg-[#133D2F] text-xs font-semibold transition-all active:scale-95"
+              className="flex h-11 px-3.5 items-center gap-1.5 rounded-2xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] shadow-sm hover:bg-[#133D2F] text-xs font-semibold transition-all active:scale-95 cursor-pointer"
               title="Export observations in Darwin Core (DwC) standard JSON format"
               aria-label="Export Darwin Core JSON"
             >
@@ -124,8 +67,8 @@ export default function ObservationsPage() {
               <button
                 key={filter}
                 type="button"
-                onClick={() => setSelectedFilter(filter)}
-                className={`rounded-full px-3.5 py-1.5 font-semibold tracking-wider uppercase transition-all whitespace-nowrap active:scale-95 ${
+                onClick={() => setSelectedFilter(filter as ObservationFilterStatus)}
+                className={`rounded-full px-3.5 py-1.5 font-semibold tracking-wider uppercase transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                   selectedFilter === filter
                     ? 'bg-[#A6F16A] text-[#061812] shadow-md shadow-[#A6F16A]/20'
                     : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
@@ -148,7 +91,7 @@ export default function ObservationsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedTag(null)}
-                  className="inline-flex items-center gap-1 rounded-full bg-rose-950/60 border border-rose-800/60 px-2.5 py-1 text-[11px] font-medium text-rose-300 whitespace-nowrap active:scale-95"
+                  className="inline-flex items-center gap-1 rounded-full bg-rose-950/60 border border-rose-800/60 px-2.5 py-1 text-[11px] font-medium text-rose-300 whitespace-nowrap active:scale-95 cursor-pointer"
                 >
                   <X className="h-3 w-3" />
                   <span>Clear Tag</span>
@@ -160,14 +103,18 @@ export default function ObservationsPage() {
                   key={tag.id}
                   type="button"
                   onClick={() => setSelectedTag(selectedTag === tag.id ? null : tag.id)}
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all whitespace-nowrap active:scale-95 ${
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                     selectedTag === tag.id
                       ? 'bg-[#A6F16A] text-[#061812] font-bold shadow-sm'
                       : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
                   }`}
                 >
                   <span>#{tag.name}</span>
-                  <span className={`text-[10px] ${selectedTag === tag.id ? 'text-[#061812]' : 'text-[#7B9586]'}`}>
+                  <span
+                    className={`text-[10px] ${
+                      selectedTag === tag.id ? 'text-[#061812]' : 'text-[#7B9586]'
+                    }`}
+                  >
                     ({tag.count})
                   </span>
                 </button>

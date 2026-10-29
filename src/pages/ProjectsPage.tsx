@@ -1,132 +1,47 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { db, type Project } from '@/db/database'
-import { Plus, ArrowRight, FolderPlus, MapPin, Building2, FolderGit2, CheckCircle2, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
-import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
-import { generateId } from '@/lib/utils'
+import {
+  Plus,
+  ArrowRight,
+  FolderPlus,
+  MapPin,
+  Building2,
+  FolderGit2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  X,
+} from 'lucide-react'
+import { useProjects } from '@/features/projects/hooks/useProjects'
 
 function ProjectsPage() {
   const navigate = useNavigate()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [joinedIds, setJoinedIds] = useState<string[]>(getJoinedProjectIds())
-  const [activeTab, setActiveTab] = useState<'all' | 'my'>('all')
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null)
-  const [observationCounts, setObservationCounts] = useState<Record<string, number>>({})
-  const [showAddForm, setShowAddForm] = useState(false)
-
-  // New project form state
-  const [name, setName] = useState('')
-  const [organization, setOrganization] = useState('')
-  const [targetRegion, setTargetRegion] = useState('')
-  const [description, setDescription] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Load projects from IndexedDB
-  const loadProjects = async () => {
-    setJoinedIds(getJoinedProjectIds())
-    const list = await db.projects.toArray()
-    setProjects(list.reverse())
-
-    // Load observation counts per project (checking both scalar projectId and multi-project array projectIds)
-    const allObservations = await db.observations.toArray()
-    const obsCounts: Record<string, number> = {}
-    for (const p of list) {
-      obsCounts[p.id] = allObservations.filter(
-        (obs) => obs.projectId === p.id || (obs.projectIds && obs.projectIds.includes(p.id))
-      ).length
-    }
-    setObservationCounts(obsCounts)
-  }
-
-  useEffect(() => {
-    loadProjects()
-  }, [])
-
-  // Create a new project
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) {
-      alert('Please enter a project name.')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      const newId = generateId()
-      const now = new Date().toISOString()
-      const newProj: Project = {
-        id: newId,
-        name: name.trim(),
-        organization: organization.trim() || undefined,
-        targetRegion: targetRegion.trim() || undefined,
-        description: description.trim() || undefined,
-        status: 'active',
-        createdAt: now,
-        updatedAt: now,
-        syncStatus: 'pending',
-      }
-
-      await db.projects.add(newProj)
-      setName('')
-      setOrganization('')
-      setTargetRegion('')
-      setDescription('')
-      setShowAddForm(false)
-      await loadProjects()
-    } catch (err) {
-      alert(`Failed to create project: ${err instanceof Error ? err.message : 'Unknown error'}`)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Create quick sample project (helpful for first-time use)
-  const handleCreateSampleProject = async () => {
-    const newId = generateId()
-    const now = new Date().toISOString()
-    const sampleProj: Project = {
-      id: newId,
-      name: 'Thiruvananthapuram City Biodiversity Register',
-      organization: 'Kerala State Biodiversity Board',
-      targetRegion: 'Thiruvananthapuram Municipal Corporation',
-      description: 'Comprehensive municipal ward-level documentation of urban flora, fauna, and local biodiversity.',
-      status: 'active',
-      createdAt: now,
-      updatedAt: now,
-      syncStatus: 'pending',
-    }
-
-    await db.projects.add(sampleProj)
-    await loadProjects()
-  }
-
-  // Delete project and update state
-  const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
-    e.stopPropagation()
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this project? Associated local project records will be removed.'
-    )
-    if (!confirmed) return
-
-    try {
-      await db.projects.delete(projectId)
-      const currentJoined = getJoinedProjectIds()
-      if (currentJoined.includes(projectId)) {
-        toggleJoinedProject(projectId)
-      }
-      await loadProjects()
-    } catch (err) {
-      alert(`Failed to delete project: ${err instanceof Error ? err.message : 'Unknown error'}`)
-    }
-  }
-
-  const hasProjects = projects.length > 0
-
-  const displayedProjects =
-    activeTab === 'my'
-      ? projects.filter((p) => joinedIds.includes(p.id))
-      : projects
+  const {
+    projects,
+    joinedIds,
+    activeTab,
+    setActiveTab,
+    expandedProjectId,
+    setExpandedProjectId,
+    observationCounts,
+    showAddForm,
+    setShowAddForm,
+    name,
+    setName,
+    organization,
+    setOrganization,
+    targetRegion,
+    setTargetRegion,
+    description,
+    setDescription,
+    isSubmitting,
+    handleCreateProject,
+    handleCreateSampleProject,
+    handleDeleteProject,
+    hasProjects,
+    displayedProjects,
+  } = useProjects()
 
   return (
     <div className="mx-auto w-full max-w-lg h-full max-h-full flex flex-col overflow-hidden px-4 pt-3 pb-2 sm:px-6 text-[#F0F5EF]">
@@ -144,7 +59,7 @@ function ProjectsPage() {
         {/* Top-right + New Project / Cancel button */}
         {(hasProjects || showAddForm) && (
           <Button
-            onClick={() => setShowAddForm((prev) => !prev)}
+            onClick={() => setShowAddForm(!showAddForm)}
             className={`inline-flex min-h-[40px] items-center gap-2 font-bold text-sm shadow-md rounded-2xl transition-all active:scale-95 shrink-0 ${
               showAddForm
                 ? 'border border-[#1C4D3C] bg-[#0D2D22] text-[#B2C8BA] hover:text-white hover:bg-[#133D2F]'
@@ -184,7 +99,7 @@ function ProjectsPage() {
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="rounded-lg p-1.5 text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-colors"
+                className="rounded-lg p-1.5 text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white transition-colors cursor-pointer"
                 title="Close form"
               >
                 <X className="h-4 w-4" />
@@ -194,7 +109,10 @@ function ProjectsPage() {
             {/* Scrollable form content */}
             <div className="flex-1 min-h-0 overflow-y-auto py-3 space-y-3.5 pr-1 overscroll-contain">
               <div>
-                <label htmlFor="projectName" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                <label
+                  htmlFor="projectName"
+                  className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                >
                   Project Name <span className="text-[#A6F16A]">*</span>
                 </label>
                 <input
@@ -210,7 +128,10 @@ function ProjectsPage() {
 
               <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="org" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  <label
+                    htmlFor="org"
+                    className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                  >
                     Organization / Institution (optional)
                   </label>
                   <input
@@ -224,7 +145,10 @@ function ProjectsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="region" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                  <label
+                    htmlFor="region"
+                    className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                  >
                     Target Region / District (optional)
                   </label>
                   <input
@@ -239,7 +163,10 @@ function ProjectsPage() {
               </div>
 
               <div>
-                <label htmlFor="projDesc" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
+                <label
+                  htmlFor="projDesc"
+                  className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]"
+                >
                   Description (optional)
                 </label>
                 <textarea
@@ -282,7 +209,7 @@ function ProjectsPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer ${
                   activeTab === 'all'
                     ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
                     : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
@@ -294,7 +221,7 @@ function ProjectsPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('my')}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all ${
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer ${
                   activeTab === 'my'
                     ? 'bg-[#A6F16A] text-[#061812] shadow-sm font-bold'
                     : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
@@ -404,10 +331,14 @@ function ProjectsPage() {
                                 onKeyDown={(e) => {
                                   e.stopPropagation()
                                 }}
-                                className="mt-1 inline-flex items-center gap-0.5 text-[11px] text-[#A6F16A] hover:underline"
+                                className="mt-1 inline-flex items-center gap-0.5 text-[11px] text-[#A6F16A] hover:underline cursor-pointer"
                               >
                                 <span>{isExpanded ? 'Show less' : 'Details'}</span>
-                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                {isExpanded ? (
+                                  <ChevronUp className="h-3 w-3" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3" />
+                                )}
                               </button>
                             )}
                           </div>
@@ -420,7 +351,7 @@ function ProjectsPage() {
                         title="Delete project"
                         aria-label={`Delete project ${proj.name}`}
                         onClick={(e) => handleDeleteProject(e, proj.id)}
-                        className="p-2 -mr-1 -mt-1 rounded-xl text-[#7B9586] hover:text-rose-400 hover:bg-rose-950/40 transition-colors shrink-0"
+                        className="p-2 -mr-1 -mt-1 rounded-xl text-[#7B9586] hover:text-rose-400 hover:bg-rose-950/40 transition-colors shrink-0 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -429,7 +360,9 @@ function ProjectsPage() {
                     {/* Card Footer */}
                     <div className="mt-4 flex items-center justify-between border-t border-[#1C4D3C] pt-3">
                       <span className="text-xs text-[#7B9586]">
-                        <strong className="text-white font-bold">{observationCounts[proj.id] ?? 0}</strong>{' '}
+                        <strong className="text-white font-bold">
+                          {observationCounts[proj.id] ?? 0}
+                        </strong>{' '}
                         {observationCounts[proj.id] === 1 ? 'observation' : 'observations'}
                       </span>
 

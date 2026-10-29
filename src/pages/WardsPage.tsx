@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { db, type Project, type Observation } from '@/db/database'
 import {
   ArrowLeft,
   MapPin,
@@ -17,146 +15,37 @@ import {
   X,
   UserCheck,
 } from 'lucide-react'
-import { getJoinedProjectIds, toggleJoinedProject } from './MyProjects'
+import { useProjectDetails, type MockUserRole } from '@/features/projects/hooks/useProjectDetails'
 
 function WardsPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const navigate = useNavigate()
-
-  const [project, setProject] = useState<Project | null>(null)
-  const [projectObservations, setProjectObservations] = useState<Observation[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Mock role state for testing frontend permissions
-  const [userRole, setUserRole] = useState<'admin' | 'project_expert' | 'field_worker'>(() => {
-    const saved = localStorage.getItem('shrishti_mock_user_role')
-    if (saved === 'admin' || saved === 'project_expert' || saved === 'field_worker') {
-      return saved
-    }
-    return 'field_worker'
-  })
-
-  // Administrative project-level permission (Admin / Expert can edit and delete the project)
-  const canManageProject = userRole === 'admin' || userRole === 'project_expert'
-  const [isJoined, setIsJoined] = useState(false)
-
-  // Project editing modal state
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editName, setEditName] = useState('')
-  const [editOrganization, setEditOrganization] = useState('')
-  const [editTargetRegion, setEditTargetRegion] = useState('')
-  const [editDescription, setEditDescription] = useState('')
-  const [editStatus, setEditStatus] = useState<'active' | 'completed' | 'archived'>('active')
-  const [isSavingEdit, setIsSavingEdit] = useState(false)
-
-  const isAuthorizedContributor = isJoined || canManageProject
-
-  const loadData = async () => {
-    if (!projectId) return
-    setIsLoading(true)
-    try {
-      setIsJoined(getJoinedProjectIds().includes(projectId))
-
-      const proj = await db.projects.get(projectId)
-      if (proj) {
-        setProject(proj)
-        setEditName(proj.name)
-        setEditOrganization(proj.organization || '')
-        setEditTargetRegion(proj.targetRegion || '')
-        setEditDescription(proj.description || '')
-        setEditStatus(proj.status || 'active')
-      }
-
-      // Load all observations belonging to this project (supporting both scalar projectId and multi-project array projectIds)
-      const allObs = await db.observations.toArray()
-      const obsList = allObs.filter(
-        (obs) =>
-          obs.projectId === projectId ||
-          (obs.projectIds && obs.projectIds.includes(projectId))
-      )
-      const sortedObs = [...obsList].sort((a, b) => {
-        const tA = new Date(b.createdAt || b.recordedAt || 0).getTime() || 0
-        const tB = new Date(a.createdAt || a.recordedAt || 0).getTime() || 0
-        return tA - tB
-      })
-      setProjectObservations(sortedObs)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [projectId])
-
-  const handleToggleJoin = () => {
-    if (!projectId) return
-    const updated = toggleJoinedProject(projectId)
-    setIsJoined(updated.includes(projectId))
-  }
-
-  const handleRecordObservationClick = () => {
-    if (!projectId) return
-    if (!isAuthorizedContributor) {
-      const confirmJoin = window.confirm(
-        'You need to be a project member to record observations for this project. Would you like to join now and proceed?'
-      )
-      if (confirmJoin) {
-        toggleJoinedProject(projectId)
-        setIsJoined(true)
-        navigate(`/new-observation?projectId=${projectId}`)
-      }
-      return
-    }
-    navigate(`/new-observation?projectId=${projectId}`)
-  }
-
-  const handleSaveProjectEdit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!project || !editName.trim()) {
-      alert('Please provide a valid project name.')
-      return
-    }
-
-    setIsSavingEdit(true)
-    try {
-      const now = new Date().toISOString()
-      await db.projects.update(project.id, {
-        name: editName.trim(),
-        organization: editOrganization.trim() || undefined,
-        targetRegion: editTargetRegion.trim() || undefined,
-        description: editDescription.trim() || undefined,
-        status: editStatus,
-        updatedAt: now,
-        syncStatus: 'pending',
-      })
-      setShowEditModal(false)
-      await loadData()
-    } catch (err) {
-      alert(`Failed to update project: ${err instanceof Error ? err.message : 'Unknown error'}`)
-    } finally {
-      setIsSavingEdit(false)
-    }
-  }
-
-  const handleDeleteProject = async () => {
-    if (!project) return
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this entire project and its associated local records? This action cannot be undone.'
-    )
-    if (!confirmed) return
-
-    try {
-      await db.projects.delete(project.id)
-      const currentJoined = getJoinedProjectIds()
-      if (currentJoined.includes(project.id)) {
-        toggleJoinedProject(project.id)
-      }
-      navigate('/projects')
-    } catch (err) {
-      alert(`Failed to delete project: ${err instanceof Error ? err.message : 'Unknown error'}`)
-    }
-  }
+  const {
+    project,
+    projectObservations,
+    isLoading,
+    userRole,
+    handleRoleChange,
+    canManageProject,
+    isJoined,
+    handleToggleJoin,
+    isAuthorizedContributor,
+    handleRecordObservationClick,
+    showEditModal,
+    setShowEditModal,
+    editName,
+    setEditName,
+    editOrganization,
+    setEditOrganization,
+    editTargetRegion,
+    setEditTargetRegion,
+    editDescription,
+    setEditDescription,
+    editStatus,
+    setEditStatus,
+    isSavingEdit,
+    handleSaveProjectEdit,
+    handleDeleteProject,
+  } = useProjectDetails(projectId)
 
   if (isLoading) {
     return (
@@ -196,11 +85,8 @@ function WardsPage() {
               <button
                 key={role.id}
                 type="button"
-                onClick={() => {
-                  setUserRole(role.id)
-                  localStorage.setItem('shrishti_mock_user_role', role.id)
-                }}
-                className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                onClick={() => handleRoleChange(role.id as MockUserRole)}
+                className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer ${
                   userRole === role.id
                     ? 'bg-[#A6F16A] text-[#061812] font-bold shadow-xs'
                     : 'bg-[#061812] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
@@ -328,7 +214,7 @@ function WardsPage() {
             <button
               type="button"
               onClick={handleToggleJoin}
-              className={`inline-flex min-h-[42px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 border ${
+              className={`inline-flex min-h-[42px] items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 border cursor-pointer ${
                 isJoined
                   ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                   : 'bg-[#061812] text-[#B2C8BA] border-[#1C4D3C] hover:border-[#A6F16A]/40'
@@ -354,7 +240,7 @@ function WardsPage() {
               <button
                 type="button"
                 onClick={() => setShowEditModal(true)}
-                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-[#061812] border border-[#1C4D3C] hover:border-[#A6F16A]/50 text-[#B2C8BA] hover:text-white px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95"
+                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-[#061812] border border-[#1C4D3C] hover:border-[#A6F16A]/50 text-[#B2C8BA] hover:text-white px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                 title="Edit Project"
               >
                 <Edit3 className="h-4 w-4 text-[#A6F16A]" />
@@ -364,7 +250,7 @@ function WardsPage() {
               <button
                 type="button"
                 onClick={handleDeleteProject}
-                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900/80 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95"
+                className="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900/80 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                 title="Delete Project"
               >
                 <Trash2 className="h-4 w-4 text-rose-400" />
@@ -398,7 +284,7 @@ function WardsPage() {
               <button
                 type="button"
                 onClick={() => setShowEditModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors cursor-pointer"
                 aria-label="Close edit modal"
               >
                 <X className="h-5 w-5" />
@@ -482,14 +368,14 @@ function WardsPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setShowEditModal(false)}
-                  className="border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-xs font-semibold rounded-xl"
+                  className="border-[#1C4D3C] bg-[#061812] text-[#B2C8BA] hover:bg-[#133D2F] hover:text-white text-xs font-semibold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSavingEdit}
-                  className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-xs font-bold rounded-xl shadow-md"
+                  className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-xs font-bold rounded-xl shadow-md cursor-pointer"
                 >
                   {isSavingEdit ? 'Saving...' : 'Save Changes'}
                 </Button>
@@ -611,4 +497,3 @@ function WardsPage() {
 }
 
 export default WardsPage
-

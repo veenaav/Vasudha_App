@@ -13,6 +13,30 @@ import {
 } from 'lucide-react'
 import { db } from '@/db/database'
 
+const OFFLINE_CAPABILITIES = [
+  {
+    icon: HardDrive,
+    iconColor: 'text-[#A6F16A]',
+    title: 'Local IndexedDB Persistence (Active)',
+    description:
+      "All observation records, taxonomy names, and ecology notes are committed directly to your browser's IndexedDB store on this device.",
+  },
+  {
+    icon: Camera,
+    iconColor: 'text-[#20D6A0]',
+    title: 'Field Photographs (Stored Locally)',
+    description:
+      'Attached photographs are converted to binary Blobs and stored inside IndexedDB. Photos remain viewable offline on this device.',
+  },
+  {
+    icon: MapPin,
+    iconColor: 'text-[#A6F16A]',
+    title: 'Hardware GPS Geolocation (Active Offline)',
+    description:
+      "Geolocation relies on your phone's onboard GPS hardware chip, receiving satellite signals directly without needing cellular data or internet coverage.",
+  },
+] as const
+
 interface OfflineSyncPageProps {
   onBack?: () => void
 }
@@ -171,44 +195,29 @@ export default function OfflineSyncPage({ onBack }: OfflineSyncPageProps) {
         </div>
       </div>
 
-      {/* Offline Capabilities Clarity */}
+      {/* Operational Offline Capabilities */}
       <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[#A6F16A]">
           Operational Offline Capabilities
         </h3>
 
-        <div className="rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-4 space-y-2 text-xs shadow-md shadow-[#061812]/50">
-          <div className="flex items-center gap-2 font-bold text-white">
-            <HardDrive className="h-4 w-4 text-[#A6F16A]" />
-            <span>Local IndexedDB Persistence (Active)</span>
-          </div>
-          <p className="text-[#B2C8BA] leading-relaxed">
-            All observation records, taxonomy names, and ecology notes are committed directly to your
-            browser&apos;s IndexedDB store on this device.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-4 space-y-2 text-xs shadow-md shadow-[#061812]/50">
-          <div className="flex items-center gap-2 font-bold text-white">
-            <Camera className="h-4 w-4 text-[#20D6A0]" />
-            <span>Field Photographs (Stored Locally)</span>
-          </div>
-          <p className="text-[#B2C8BA] leading-relaxed">
-            Attached photographs are converted to binary Blobs and stored inside IndexedDB. Photos
-            remain viewable offline on this device.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-4 space-y-2 text-xs shadow-md shadow-[#061812]/50">
-          <div className="flex items-center gap-2 font-bold text-white">
-            <MapPin className="h-4 w-4 text-[#A6F16A]" />
-            <span>Hardware GPS Geolocation (Active Offline)</span>
-          </div>
-          <p className="text-[#B2C8BA] leading-relaxed">
-            Geolocation relies on your phone&apos;s onboard GPS hardware chip, receiving satellite
-            signals directly without needing cellular data or internet coverage.
-          </p>
-        </div>
+        {OFFLINE_CAPABILITIES.map((cap) => {
+          const Icon = cap.icon
+          return (
+            <div
+              key={cap.title}
+              className="rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-4 space-y-2 text-xs shadow-md shadow-[#061812]/50"
+            >
+              <div className="flex items-center gap-2 font-bold text-white">
+                <Icon className={`h-4 w-4 ${cap.iconColor}`} />
+                <span>{cap.title}</span>
+              </div>
+              <p className="text-[#B2C8BA] leading-relaxed">
+                {cap.description}
+              </p>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -61,6 +61,30 @@ const STATUS_STYLES: Record<IdentificationStatus, { bg: string; text: string; bo
   },
 }
 
+function DetailRow({
+  icon: Icon,
+  iconColor = 'text-[#A6F16A]',
+  label,
+  value,
+  valueClass = 'font-medium text-white',
+}: {
+  icon?: React.ComponentType<{ className?: string }>
+  iconColor?: string
+  label: string
+  value: React.ReactNode
+  valueClass?: string
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="flex items-center gap-1.5 text-[#7B9586]">
+        {Icon && <Icon className={`h-3.5 w-3.5 ${iconColor}`} />}
+        <span>{label}:</span>
+      </span>
+      <span className={valueClass}>{value}</span>
+    </div>
+  )
+}
+
 interface ObservationCardProps {
   observation: Observation
   onDelete?: (id: string) => void
@@ -176,7 +200,7 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             </div>
           )}
 
-          {/* 4. Delete button inside the card — Top-right corner over photograph */}
+          {/* Delete button inside the card — Top-right corner over photograph */}
           {onDelete && observation.id !== undefined && (
             <button
               type="button"
@@ -406,41 +430,33 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             {/* Temporal info */}
             <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs text-[#B2C8BA]">
               {observation.observationAt && (
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-[#A6F16A]" />
-                    <span>Observation Time:</span>
-                  </span>
-                  <span className="font-medium text-white">
-                    {formatDateTime(observation.observationAt)}
-                  </span>
-                </div>
+                <DetailRow
+                  icon={Calendar}
+                  iconColor="text-[#A6F16A]"
+                  label="Observation Time"
+                  value={formatDateTime(observation.observationAt)}
+                />
               )}
 
               {recordedTimestamp && (
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-[#20D6A0]" />
-                    <span>Recorded Time:</span>
-                  </span>
-                  <span className="font-medium text-white">
-                    {formatDateTime(recordedTimestamp)}
-                  </span>
-                </div>
+                <DetailRow
+                  icon={Clock}
+                  iconColor="text-[#20D6A0]"
+                  label="Recorded Time"
+                  value={formatDateTime(recordedTimestamp)}
+                />
               )}
             </div>
 
             {/* Geolocation & GPS Accuracy */}
             <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[#7B9586]">
-                  <MapPin className="h-3.5 w-3.5 text-[#A6F16A]" />
-                  <span>Final Coordinates:</span>
-                </span>
-                <span className="font-mono font-medium text-[#A6F16A]">
-                  {hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
-                </span>
-              </div>
+              <DetailRow
+                icon={MapPin}
+                iconColor="text-[#A6F16A]"
+                label="Final Coordinates"
+                value={hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
+                valueClass="font-mono font-medium text-[#A6F16A]"
+              />
 
               {observation.location_source && (
                 <div className="flex items-center justify-between">
@@ -464,27 +480,22 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 observation.gps_latitude !== undefined &&
                 observation.gps_longitude !== null &&
                 observation.gps_longitude !== undefined && (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[#7B9586]">
-                      <Compass className="h-3.5 w-3.5 text-[#20D6A0]" />
-                      <span>Raw GPS:</span>
-                    </span>
-                    <span className="font-mono font-medium text-[#B2C8BA]">
-                      {formatCoordinate(observation.gps_latitude)}, {formatCoordinate(observation.gps_longitude)}
-                    </span>
-                  </div>
+                  <DetailRow
+                    icon={Compass}
+                    iconColor="text-[#20D6A0]"
+                    label="Raw GPS"
+                    value={`${formatCoordinate(observation.gps_latitude)}, ${formatCoordinate(observation.gps_longitude)}`}
+                    valueClass="font-mono font-medium text-[#B2C8BA]"
+                  />
                 )}
 
               {observation.accuracyMeters !== null && observation.accuracyMeters !== undefined && (
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[#7B9586]">
-                    <Crosshair className="h-3.5 w-3.5 text-[#A6F16A]" />
-                    <span>GPS Sensor Accuracy:</span>
-                  </span>
-                  <span className="font-medium text-white">
-                    ±{Math.round(observation.accuracyMeters)} metres
-                  </span>
-                </div>
+                <DetailRow
+                  icon={Crosshair}
+                  iconColor="text-[#A6F16A]"
+                  label="GPS Sensor Accuracy"
+                  value={`±${Math.round(observation.accuracyMeters)} metres`}
+                />
               )}
 
               <div className="flex items-center justify-between pt-1 border-t border-[#1C4D3C]">
@@ -533,32 +544,28 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 </span>
 
                 {observation.individualCount !== undefined && (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[#7B9586]">
-                      <Hash className="h-3.5 w-3.5 text-[#A6F16A]" />
-                      <span>Individual Count:</span>
-                    </span>
-                    <span className="font-medium text-white">
-                      {observation.individualCount}
-                    </span>
-                  </div>
+                  <DetailRow
+                    icon={Hash}
+                    iconColor="text-[#A6F16A]"
+                    label="Individual Count"
+                    value={observation.individualCount}
+                  />
                 )}
 
                 {observation.lifeStage && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#7B9586]">Life Stage:</span>
-                    <span className="font-medium text-white">{observation.lifeStage}</span>
-                  </div>
+                  <DetailRow
+                    label="Life Stage"
+                    value={observation.lifeStage}
+                  />
                 )}
 
                 {displayMicroHabitat && (
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-[#7B9586]">
-                      <Layers className="h-3.5 w-3.5 text-[#20D6A0]" />
-                      <span>Micro-Habitat:</span>
-                    </span>
-                    <span className="font-medium text-white">{displayMicroHabitat}</span>
-                  </div>
+                  <DetailRow
+                    icon={Layers}
+                    iconColor="text-[#20D6A0]"
+                    label="Micro-Habitat"
+                    value={displayMicroHabitat}
+                  />
                 )}
               </div>
             )}
