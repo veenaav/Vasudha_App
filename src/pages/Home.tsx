@@ -1430,16 +1430,11 @@ function Home() {
             )}
           </div>
 
-          {/* Basis of Record (Darwin Core standard evidence nature) */}
+          {/* Basis of Record */}
           <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
-            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-              <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                Basis of Record <span className="text-red-500 font-bold">*</span>
-              </label>
-              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] uppercase tracking-wider">
-                Darwin Core Standard
-              </span>
-            </div>
+            <label htmlFor="basisOfRecord" className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] mb-1.5">
+              Basis of Record <span className="text-red-500 font-bold">*</span>
+            </label>
             <select
               id="basisOfRecord"
               value={basisOfRecord}
