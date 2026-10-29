@@ -32,14 +32,14 @@ import {
 } from 'lucide-react'
 import LocationPickerMap from '@/components/LocationPickerMap'
 import TagSelector from '@/components/TagSelector'
-import { SPECIES_GROUPS } from '@/features/observations/constants'
-import { useObservationForm } from '@/features/observations/hooks/useObservationForm'
 import {
+  SPECIES_GROUPS,
+  useObservationForm,
   PhotoTipsModal,
   LocationTipsModal,
   EcologyTipsModal,
   TraditionalKnowledgeTipsModal,
-} from '@/features/observations/components/ObservationTipsModals'
+} from '@/features/observations'
 
 export { SPECIES_GROUPS }
 

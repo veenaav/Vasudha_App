@@ -14,10 +14,10 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react'
-import AvatarDisplay from '@/components/profile/AvatarDisplay'
+import AvatarDisplay from '@/components/AvatarDisplay'
 import { AVATAR_PRESETS, renderPresetIcon } from '@/lib/avatarPresets'
 import type { AvatarPresetId } from '@/lib/profileTypes'
-import { useProfileForm } from '@/features/profile/hooks/useProfileForm'
+import { useProfileForm } from '@/features/profile'
 
 export default function ProfilePage() {
   const {

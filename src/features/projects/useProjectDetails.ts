@@ -174,3 +174,4 @@ export function useProjectDetails(projectId?: string) {
     handleDeleteProject,
   }
 }
+

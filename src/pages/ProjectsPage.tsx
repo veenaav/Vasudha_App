@@ -13,7 +13,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { useProjects } from '@/features/projects/hooks/useProjects'
+import { useProjects } from '@/features/projects'
 
 function ProjectsPage() {
   const navigate = useNavigate()

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import BrandName from '@/components/BrandName'
 import { useProfile } from '@/context/ProfileContext'
-import AvatarDisplay from '@/components/profile/AvatarDisplay'
+import AvatarDisplay from '@/components/AvatarDisplay'
 
 export default function TopBar() {
   const { profile } = useProfile()

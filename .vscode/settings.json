@@ -1,0 +1,24 @@
+{
+  "explorer.compactFolders": true,
+  "explorer.autoReveal": true,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, vite.config.ts, eslint.config.js, tsconfig.json, tsconfig.*.json, index.html",
+    "*.ts": "${capture}.d.ts",
+    "*.tsx": "${capture}.css, ${capture}.module.css"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/dist": true,
+    "**/.tmp": true
+  },
+  "typescript.suggest.paths": true,
+  "javascript.suggest.paths": true
+}
+

@@ -7,7 +7,7 @@ import {
   SURVEY_METHODS,
   HABITAT_TYPES,
   TARGET_GROUPS,
-} from '@/features/projects/hooks/useSurveys'
+} from '@/features/projects'
 
 export default function SurveysPage() {
   const { projectId, wardId } = useParams<{ projectId: string; wardId: string }>()

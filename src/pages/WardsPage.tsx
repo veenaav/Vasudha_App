@@ -15,7 +15,7 @@ import {
   X,
   UserCheck,
 } from 'lucide-react'
-import { useProjectDetails, type MockUserRole } from '@/features/projects/hooks/useProjectDetails'
+import { useProjectDetails, type MockUserRole } from '@/features/projects'
 
 function WardsPage() {
   const { projectId } = useParams<{ projectId: string }>()

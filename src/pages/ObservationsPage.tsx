@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { PlusCircle, Leaf, Download, Tag as TagIcon, X } from 'lucide-react'
 import ObservationCard from '@/components/ObservationCard'
 import { downloadDarwinCoreExport } from '@/lib/darwinCoreExport'
-import { useObservations, type ObservationFilterStatus } from '@/features/observations/hooks/useObservations'
+import { useObservations, type ObservationFilterStatus } from '@/features/observations'
 
 export default function ObservationsPage() {
   const {
