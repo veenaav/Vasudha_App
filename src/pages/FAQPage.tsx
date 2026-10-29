@@ -122,7 +122,7 @@ const FAQ_ITEMS: FAQItem[] = [
     answer:
       'Field photographs are vital evidence for taxonomic verification, especially for unknown species.',
     bulletPoints: [
-      'Under "1. Photographs", tap "Take Photo" to launch your device camera and snap a picture of the specimen.',
+      'Under "Photographs", tap "Take Photo" to launch your device camera and snap a picture of the specimen.',
       'Or tap "Choose Gallery" to upload previously captured field images.',
       'You can attach multiple photos to capture dorsal, ventral, leaf, or floral details.',
       'Thumbnails are displayed immediately with a remove button if an unwanted image was selected.',
