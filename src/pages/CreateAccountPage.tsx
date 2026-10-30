@@ -8,11 +8,9 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  CheckCircle2,
-  Server,
   UserPlus,
-  ArrowRight,
 } from 'lucide-react'
+import { apiRegister } from '@/lib/profileService'
 
 export default function CreateAccountPage() {
   const navigate = useNavigate()
@@ -34,8 +32,8 @@ export default function CreateAccountPage() {
     acceptTerms?: string
   }>({})
 
+  const [serverError, setServerError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showRegisteredModal, setShowRegisteredModal] = useState(false)
 
   const validateForm = () => {
     const newErrors: {
@@ -76,15 +74,20 @@ export default function CreateAccountPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setServerError(null)
     if (!validateForm()) return
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      await apiRegister(fullName, email, password)
+      navigate('/home')
+    } catch (err: any) {
+      setServerError(err.message || 'Registration failed. Please check backend connection.')
+    } finally {
       setIsSubmitting(false)
-      setShowRegisteredModal(true)
-    }, 450)
+    }
   }
 
   return (
@@ -116,6 +119,12 @@ export default function CreateAccountPage() {
           noValidate
           className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-7 shadow-2xl shadow-[#061812] space-y-4"
         >
+          {serverError && (
+            <div className="p-3 rounded-2xl bg-rose-950/50 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{serverError}</span>
+            </div>
+          )}
           {/* Full Name */}
           <div className="space-y-1.5">
             <label
@@ -341,67 +350,6 @@ export default function CreateAccountPage() {
           Skip sign in and open Field Dashboard (Offline Mode) →
         </button>
       </div>
-
-      {/* Backend Registration Diagnostics Modal */}
-      {showRegisteredModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#061812]/80 backdrop-blur-md p-4">
-          <div className="w-full max-w-md rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-6 shadow-2xl text-[#F0F5EF] space-y-4">
-            <div className="flex items-center gap-3 border-b border-[#1C4D3C]/70 pb-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#061812] border border-[#1C4D3C] flex items-center justify-center text-[#20D6A0]">
-                <CheckCircle2 className="w-5 h-5 text-[#20D6A0]" />
-              </div>
-              <div>
-                <h3 className="font-heading text-base font-bold text-white">
-                  Account Validation Passed
-                </h3>
-                <p className="text-xs text-[#20D6A0]">
-                  Ready for backend account persistence
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3 text-xs text-[#B2C8BA] leading-relaxed">
-              <div className="p-3.5 rounded-2xl bg-[#061812] border border-[#1C4D3C] space-y-1.5">
-                <div className="flex items-center gap-2 text-white font-semibold">
-                  <Server className="w-4 h-4 text-[#A6F16A]" />
-                  <span>Backend Registration Service Status</span>
-                </div>
-                <p>
-                  Full client validation succeeded for <strong className="text-white">{fullName}</strong> (<span className="text-[#A6F16A]">{email}</span>). As required, fake registration success is not hardcoded.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <span className="font-semibold text-white">What remains necessary for production:</span>
-                <ul className="list-disc pl-4 space-y-1 text-[11px]">
-                  <li>Connect <code className="text-[#20D6A0] bg-[#061812] px-1 py-0.5 rounded">POST /auth/register</code> to write researcher profile to database.</li>
-                  <li>Hash password using industry-standard bcrypt or argon2 algorithm.</li>
-                  <li>Issue confirmation email or token before full write access to global biodiversity datasets.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => navigate('/home')}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-bold text-xs shadow-md transition-all active:scale-[0.98]"
-              >
-                <span>Continue to Home Dashboard (Offline Field Mode)</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="w-full py-2.5 px-4 rounded-2xl bg-[#061812] border border-[#1C4D3C] text-xs font-semibold text-[#B2C8BA] hover:text-white transition-colors"
-              >
-                Go to Log In Screen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

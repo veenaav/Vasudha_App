@@ -14,6 +14,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import BrandName from '@/components/BrandName'
+import { apiLogin } from '@/lib/profileService'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [serverError, setServerError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Status dialogs
@@ -49,16 +51,20 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setServerError(null)
     if (!validateForm()) return
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      await apiLogin(email, password)
+      navigate('/home')
+    } catch (err: any) {
+      setServerError(err.message || 'Login failed. Please check credentials or backend connection.')
+    } finally {
       setIsSubmitting(false)
-      // Open the diagnostic modal identifying real backend requirements
-      setShowAuthPendingModal(true)
-    }, 400)
+    }
   }
 
   const handleForgotPassword = (e: React.FormEvent) => {
@@ -97,6 +103,12 @@ export default function LoginPage() {
           noValidate
           className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] px-6 sm:px-8 py-8 sm:py-10 md:py-14 min-h-[52vh] max-h-[68vh] sm:min-h-[460px] shadow-2xl shadow-[#061812] flex flex-col justify-between space-y-5 sm:space-y-6"
         >
+          {serverError && (
+            <div className="p-3 rounded-2xl bg-rose-950/50 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{serverError}</span>
+            </div>
+          )}
           {/* Form Fields: Email & Password */}
           <div className="space-y-4 sm:space-y-6 flex-1 flex flex-col justify-center">
             {/* Email Field */}

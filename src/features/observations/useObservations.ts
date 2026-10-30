@@ -1,6 +1,10 @@
 import { useEffect, useState, useMemo } from 'react'
 import { db, type Observation } from '@/db/database'
 import { getTagById } from '@/lib/tagCatalogue'
+import {
+  fetchObservationsFromBackend,
+  deleteObservationOnBackend,
+} from '@/lib/apiService'
 
 export type ObservationFilterStatus = 'All' | 'Identified' | 'Needs verification' | 'Unknown'
 
@@ -13,13 +17,34 @@ export function useObservations() {
   const loadObservations = async () => {
     try {
       const items = await db.observations.toArray()
-      // Sort by creation / recording date descending
       const sorted = [...items].sort((a, b) => {
         const tA = new Date(b.createdAt || b.recordedAt).getTime()
         const tB = new Date(a.createdAt || a.recordedAt).getTime()
         return tA - tB
       })
       setObservations(sorted)
+
+      // Fetch from remote NeoDB and merge into local Dexie cache
+      try {
+        const serverObs = await fetchObservationsFromBackend()
+        if (serverObs && Array.isArray(serverObs)) {
+          for (const s of serverObs) {
+            await db.observations.put({
+              ...s,
+              syncStatus: 'synced',
+            })
+          }
+          const updatedItems = await db.observations.toArray()
+          const updatedSorted = [...updatedItems].sort((a, b) => {
+            const tA = new Date(b.createdAt || b.recordedAt).getTime()
+            const tB = new Date(a.createdAt || a.recordedAt).getTime()
+            return tA - tB
+          })
+          setObservations(updatedSorted)
+        }
+      } catch (err) {
+        console.info('[useObservations] Backend observations fetch skipped/offline:', err)
+      }
     } catch (err) {
       console.error('Failed to load observations:', err)
     } finally {
@@ -33,6 +58,11 @@ export function useObservations() {
 
   const handleDeleteObservation = async (id: string) => {
     try {
+      try {
+        await deleteObservationOnBackend(id)
+      } catch (backendErr) {
+        console.warn('[useObservations] Backend delete queued/failed:', backendErr)
+      }
       await db.observations.delete(id)
       setObservations((current) => current.filter((obs) => obs.id !== id))
     } catch (error) {
@@ -89,4 +119,3 @@ export function useObservations() {
     loadObservations,
   }
 }
-

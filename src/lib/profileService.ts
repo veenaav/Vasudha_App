@@ -1,26 +1,8 @@
-/**
- * Profile Service (Frontend Prototype / Temporary Mock Data Layer)
- * 
- * IMPORTANT ARCHITECTURAL & SECURITY NOTE:
- * ----------------------------------------
- * 1. The backend, database, and real authentication system have not yet been implemented.
- * 2. This service manages a temporary, client-side profile state using localStorage so that
- *    the frontend UI can be fully built, tested, and demonstrated.
- * 3. WARNING: localStorage is NOT secure account storage and must NEVER be used to store
- *    passwords, secret credentials, private authentication tokens, or sensitive identity records.
- * 4. This service is deliberately decoupled from UI components so that when the real backend
- *    API (e.g. POST/GET /api/v1/profile, OAuth2, or JWT sessions) is ready, the functions below
- *    can be swapped with genuine network requests without altering component view code.
- */
-
 import type { UserProfile, ProfileUpdateInput } from './profileTypes'
 
 const PROFILE_STORAGE_KEY = 'bliffe_demo_profile'
+const AUTH_TOKEN_KEY = 'bliffe_auth_token'
 
-/**
- * Default initial mock profile for prototyping.
- * NOTE: When the backend is ready, this will be retrieved from the server session.
- */
 export const DEFAULT_MOCK_PROFILE: UserProfile = {
   id: 'bliffe-demo-user',
   fullName: 'Veena V',
@@ -28,45 +10,40 @@ export const DEFAULT_MOCK_PROFILE: UserProfile = {
   email: 'veena@field.b-liffe.org',
   bio: 'Biodiversity enthusiast & field observer documenting flora, fauna, and local ecosystems.',
   avatarType: 'preset',
-  avatarPresetId: 'user', // Default to generic clean person silhouette
+  avatarPresetId: 'user',
   avatarCustomUrl: null,
   updatedAt: new Date().toISOString(),
 }
 
-/**
- * Retrieves the current profile from temporary localStorage or returns the default mock.
- */
+export function getAuthToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY)
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token)
+}
+
+export function removeAuthToken(): void {
+  localStorage.removeItem(AUTH_TOKEN_KEY)
+}
+
 export function getLocalProfile(): UserProfile {
   try {
     const raw = localStorage.getItem(PROFILE_STORAGE_KEY)
     if (!raw) {
-      // Initialize with default
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(DEFAULT_MOCK_PROFILE))
       return DEFAULT_MOCK_PROFILE
     }
     const parsed = JSON.parse(raw) as UserProfile
-    // Validate minimal structure
     if (!parsed || !parsed.fullName) {
       return DEFAULT_MOCK_PROFILE
     }
-
-    // Ensure default avatar is cleanly set to 'user' generic silhouette if not custom uploaded
-    if (parsed.id === 'bliffe-demo-user' && parsed.avatarPresetId !== 'user' && !parsed.avatarCustomUrl && parsed.avatarType === 'preset') {
-      parsed.avatarPresetId = 'user'
-      setLocalProfile(parsed)
-    }
-
     return parsed
-
   } catch (err) {
-    console.warn('[profileService] Failed to parse temporary profile from localStorage:', err)
+    console.warn('[profileService] Failed to parse profile from localStorage:', err)
     return DEFAULT_MOCK_PROFILE
   }
 }
 
-/**
- * Saves profile to temporary localStorage.
- */
 export function setLocalProfile(profile: UserProfile): void {
   try {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile))
@@ -75,12 +52,81 @@ export function setLocalProfile(profile: UserProfile): void {
   }
 }
 
-/**
- * Update profile fields. Ready for future replacement with `fetch('/api/v1/profile', ...)`.
- */
+export async function apiRegister(fullName: string, email: string, password: string): Promise<{ user: UserProfile; token: string }> {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fullName, email, password }),
+  })
+
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to register account')
+  }
+
+  const resolvedName = (data.user?.fullName || data.user?.name || fullName || '').trim()
+  const resolvedDisplayName = data.user?.displayName || (resolvedName ? resolvedName.split(/\s+/)[0] : 'Researcher')
+
+  const profile: UserProfile = {
+    id: data.user?.id || `user-${Date.now()}`,
+    fullName: resolvedName,
+    displayName: resolvedDisplayName,
+    email: data.user?.email || email,
+    bio: data.user?.bio || data.user?.profile?.bio || '',
+    avatarType: data.user?.avatarType || data.user?.profile?.avatarType || 'preset',
+    avatarPresetId: data.user?.avatarPresetId || data.user?.profile?.avatarPresetId || 'user',
+    avatarCustomUrl: data.user?.avatarCustomUrl || data.user?.profile?.avatarCustomUrl || null,
+    updatedAt: data.user?.updatedAt || new Date().toISOString(),
+  }
+
+  setLocalProfile(profile)
+  if (data.token) {
+    setAuthToken(data.token)
+  }
+  window.dispatchEvent(new CustomEvent('bliffe:profile-changed', { detail: profile }))
+
+  return { user: profile, token: data.token }
+}
+
+export async function apiLogin(email: string, password: string): Promise<{ user: UserProfile; token: string }> {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data.error || 'Invalid email or password')
+  }
+
+  const resolvedName = (data.user?.fullName || data.user?.name || email.split('@')[0] || '').trim()
+  const resolvedDisplayName = data.user?.displayName || (resolvedName ? resolvedName.split(/\s+/)[0] : 'Researcher')
+
+  const profile: UserProfile = {
+    id: data.user?.id || `user-${Date.now()}`,
+    fullName: resolvedName,
+    displayName: resolvedDisplayName,
+    email: data.user?.email || email,
+    bio: data.user?.bio || data.user?.profile?.bio || '',
+    avatarType: data.user?.avatarType || data.user?.profile?.avatarType || 'preset',
+    avatarPresetId: data.user?.avatarPresetId || data.user?.profile?.avatarPresetId || 'user',
+    avatarCustomUrl: data.user?.avatarCustomUrl || data.user?.profile?.avatarCustomUrl || null,
+    updatedAt: data.user?.updatedAt || new Date().toISOString(),
+  }
+
+  setLocalProfile(profile)
+  if (data.token) {
+    setAuthToken(data.token)
+  }
+  window.dispatchEvent(new CustomEvent('bliffe:profile-changed', { detail: profile }))
+
+  return { user: profile, token: data.token }
+}
+
 export async function apiUpdateProfile(input: ProfileUpdateInput): Promise<UserProfile> {
-  // Simulate network latency if desired, or return directly
   const current = getLocalProfile()
+  const token = getAuthToken()
 
   const updated: UserProfile = {
     ...current,
@@ -93,24 +139,34 @@ export async function apiUpdateProfile(input: ProfileUpdateInput): Promise<UserP
     updatedAt: new Date().toISOString(),
   }
 
+  try {
+    if (token) {
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updated),
+      })
+    }
+  } catch (err) {
+    console.warn('[profileService] Backend sync failed, keeping local copy:', err)
+  }
+
   setLocalProfile(updated)
   return updated
 }
 
-/**
- * Resets profile back to factory default mock state.
- */
 export function resetLocalProfile(): UserProfile {
   setLocalProfile(DEFAULT_MOCK_PROFILE)
   return DEFAULT_MOCK_PROFILE
 }
 
-/**
- * Clears demo session on Sign Out.
- */
 export function clearDemoSession(): void {
   try {
     localStorage.removeItem(PROFILE_STORAGE_KEY)
+    removeAuthToken()
   } catch (err) {
     console.error('[profileService] Failed to clear session:', err)
   }

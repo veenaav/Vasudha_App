@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Observation, IdentificationStatus } from '@/db/database'
 import { BASIS_OF_RECORD_OPTIONS } from '@/db/database'
@@ -95,28 +95,35 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [activePhotoIdx, setActivePhotoIdx] = useState(0)
 
-  // Extract photo blobs from props (supports both modern array and legacy single photo)
-  const photoBlobs = useMemo(() => {
-    const raw = observation.photos?.length
+  // Extract photo URLs from props (supports both local Blobs and remote/string URLs)
+  const [photoUrls, setPhotoUrls] = useState<string[]>([])
+
+  useEffect(() => {
+    const raw: any[] = observation.photos?.length
       ? observation.photos
       : observation.photo
       ? [observation.photo]
       : []
-    return raw.filter((item): item is Blob => item instanceof Blob)
-  }, [observation.photos, observation.photo])
 
-  // Derive object URLs synchronously from photo blobs
-  const photoUrls = useMemo(
-    () => photoBlobs.map((blob) => URL.createObjectURL(blob)),
-    [photoBlobs]
-  )
+    const createdBlobUrls: string[] = []
+    const resolvedUrls: string[] = []
 
-  // Clean up object URLs from memory when blobs change or on component unmount
-  useEffect(() => {
-    return () => {
-      photoUrls.forEach((url) => URL.revokeObjectURL(url))
+    for (const item of raw) {
+      if (item instanceof Blob) {
+        const u = URL.createObjectURL(item)
+        createdBlobUrls.push(u)
+        resolvedUrls.push(u)
+      } else if (typeof item === 'string' && item.trim()) {
+        resolvedUrls.push(item.trim())
+      }
     }
-  }, [photoUrls])
+
+    setPhotoUrls(resolvedUrls)
+
+    return () => {
+      createdBlobUrls.forEach((u) => URL.revokeObjectURL(u))
+    }
+  }, [observation.photos, observation.photo])
 
   const statusConfig = observation.identificationStatus
     ? STATUS_STYLES[observation.identificationStatus]

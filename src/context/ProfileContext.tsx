@@ -13,6 +13,7 @@ interface ProfileContextValue {
   updateProfile: (input: ProfileUpdateInput) => Promise<UserProfile>
   resetProfile: () => void
   signOut: () => void
+  refreshProfile: () => void
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
@@ -21,7 +22,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(() => getLocalProfile())
   const [isLoading, setIsLoading] = useState(false)
 
-  // Sync state if localStorage changes in another tab
+  const refreshProfile = useCallback(() => {
+    setProfile(getLocalProfile())
+  }, [])
+
+  // Sync state if localStorage changes in another tab or in current tab via custom event
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'bliffe_demo_profile' && e.newValue) {
@@ -33,9 +38,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
+
+    const handleCustomChange = (e: Event) => {
+      const custom = e as CustomEvent<UserProfile>
+      if (custom.detail) {
+        setProfile(custom.detail)
+      } else {
+        refreshProfile()
+      }
+    }
+
     window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
-  }, [])
+    window.addEventListener('bliffe:profile-changed', handleCustomChange)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('bliffe:profile-changed', handleCustomChange)
+    }
+  }, [refreshProfile])
 
   const updateProfile = useCallback(async (input: ProfileUpdateInput): Promise<UserProfile> => {
     setIsLoading(true)
@@ -67,6 +86,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         updateProfile,
         resetProfile,
         signOut,
+        refreshProfile,
       }}
     >
       {children}

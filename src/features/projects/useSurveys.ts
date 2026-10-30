@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { db, type Survey, type Ward, type Project } from '@/db/database'
 import { generateId } from '@/lib/utils'
+import { fetchSurveysFromBackend, createSurveyOnBackend, deleteSurveyOnBackend } from '@/lib/apiService'
 
 export const SURVEY_METHODS = [
   'Opportunistic Encounter',
@@ -80,6 +81,23 @@ export function useSurveys(projectId?: string, wardId?: string) {
       counts[s.id] = count
     }
     setObservationCounts(counts)
+
+    // Sync surveys from backend if online
+    try {
+      const serverSurveys = await fetchSurveysFromBackend(projectId, wardId)
+      if (serverSurveys && Array.isArray(serverSurveys)) {
+        for (const s of serverSurveys) {
+          await db.surveys.put({
+            ...s,
+            syncStatus: 'synced',
+          })
+        }
+        const updatedList = await db.surveys.where('wardId').equals(wardId).toArray()
+        setSurveys(updatedList.reverse())
+      }
+    } catch (err) {
+      console.info('[useSurveys] Backend surveys fetch skipped/offline:', err)
+    }
   }, [projectId, wardId])
 
   useEffect(() => {
@@ -112,6 +130,13 @@ export function useSurveys(projectId?: string, wardId?: string) {
         syncStatus: 'pending',
       }
 
+      try {
+        await createSurveyOnBackend(newSurvey)
+        newSurvey.syncStatus = 'synced'
+      } catch (backendErr) {
+        console.warn('[useSurveys] Backend survey creation queued locally:', backendErr)
+      }
+
       await db.surveys.add(newSurvey)
       setLeadObserver('')
       setWeatherNotes('')
@@ -126,10 +151,19 @@ export function useSurveys(projectId?: string, wardId?: string) {
     }
   }
 
-  const deleteSurvey = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this field visit record?')) {
-      await db.surveys.delete(id)
+  const deleteSurvey = async (surveyId: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this field visit record?')
+    if (!confirmed) return
+    try {
+      try {
+        await deleteSurveyOnBackend(surveyId)
+      } catch (backendErr) {
+        console.warn('[useSurveys] Backend survey delete failed:', backendErr)
+      }
+      await db.surveys.delete(surveyId)
       await loadData()
+    } catch (err) {
+      alert(`Failed to delete survey: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 
@@ -153,7 +187,5 @@ export function useSurveys(projectId?: string, wardId?: string) {
     isSubmitting,
     createSurvey,
     deleteSurvey,
-    refreshSurveys: loadData,
   }
 }
-

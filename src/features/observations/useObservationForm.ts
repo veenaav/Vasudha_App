@@ -16,6 +16,7 @@ import {
 } from '@/db/database'
 import { useObservationGeolocation } from './useObservationGeolocation'
 import { generateId } from '@/lib/utils'
+import { createObservationOnBackend, updateObservationOnBackend } from '@/lib/apiService'
 
 export function useObservationForm() {
   const { projectId, wardId, surveyId, id } = useParams<{
@@ -503,6 +504,13 @@ export function useObservationForm() {
           updatedAt: nowTimestamp,
         }
 
+        try {
+          if (updatedObservation.id) { await updateObservationOnBackend(updatedObservation.id, updatedObservation); }
+          updatedObservation.syncStatus = 'synced'
+        } catch (backendErr) {
+          console.warn('[useObservationForm] NeoDB update failed, stored locally:', backendErr)
+          updatedObservation.syncStatus = 'pending'
+        }
         await db.observations.put(updatedObservation)
         setSaved(true)
       } else {
@@ -568,6 +576,14 @@ export function useObservationForm() {
           updatedAt: nowTimestamp,
         }
 
+        try {
+          const savedServer = await createObservationOnBackend(newObservation)
+          newObservation.syncStatus = 'synced'
+          if (savedServer?.id) newObservation.id = savedServer.id
+        } catch (backendErr) {
+          console.warn('[useObservationForm] NeoDB insert failed, stored locally:', backendErr)
+          newObservation.syncStatus = 'pending'
+        }
         await db.observations.add(newObservation)
         setSaved(true)
       }

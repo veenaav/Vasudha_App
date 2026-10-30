@@ -6,6 +6,11 @@ import {
   countProjectObservations,
 } from '@/lib/projectStorage'
 import { generateId } from '@/lib/utils'
+import {
+  fetchProjectsFromBackend,
+  createProjectOnBackend,
+  deleteProjectOnBackend,
+} from '@/lib/apiService'
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -22,25 +27,58 @@ export function useProjects() {
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Load projects and counts from IndexedDB
+  // Load projects from local IndexedDB and sync with NeoDB backend
   const loadProjects = async () => {
     setJoinedIds(getJoinedProjectIds())
-    const list = await db.projects.toArray()
-    setProjects(list.reverse())
+    const localList = await db.projects.toArray()
+    setProjects(localList.reverse())
 
     const allObservations = await db.observations.toArray()
     const obsCounts: Record<string, number> = {}
-    for (const p of list) {
+    for (const p of localList) {
       obsCounts[p.id] = countProjectObservations(p.id, allObservations)
     }
     setObservationCounts(obsCounts)
+
+    // Sync with remote NeoDB in background if online
+    try {
+      const serverProjects = await fetchProjectsFromBackend()
+      if (serverProjects && Array.isArray(serverProjects)) {
+        for (const sp of serverProjects) {
+          await db.projects.put({
+            id: sp.id,
+            name: sp.name,
+            organization: sp.organization,
+            targetRegion: sp.targetRegion,
+            description: sp.description,
+            status: sp.status || 'active',
+            startDate: sp.startDate,
+            createdAt: sp.createdAt,
+            updatedAt: sp.updatedAt,
+            syncStatus: 'synced',
+          })
+        }
+        const updatedList = await db.projects.toArray()
+        setProjects(updatedList.reverse())
+
+        const updatedObs = await db.observations.toArray()
+        const updatedCounts: Record<string, number> = {}
+        for (const p of updatedList) {
+          updatedCounts[p.id] = countProjectObservations(p.id, updatedObs)
+        }
+        setObservationCounts(updatedCounts)
+      }
+    } catch (err) {
+      // Offline mode or server unavailable - local store is authoritative
+      console.info('[useProjects] Offline or backend unreachable, using local database cache:', err)
+    }
   }
 
   useEffect(() => {
     loadProjects()
   }, [])
 
-  // Create a new project
+  // Create a new project (validated, saved to NeoDB and cached in IndexedDB)
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
@@ -52,7 +90,7 @@ export function useProjects() {
     try {
       const newId = generateId()
       const now = new Date().toISOString()
-      const newProj: Project = {
+      const payload: Project = {
         id: newId,
         name: name.trim(),
         organization: organization.trim() || undefined,
@@ -64,7 +102,25 @@ export function useProjects() {
         syncStatus: 'pending',
       }
 
-      await db.projects.add(newProj)
+      // Try persisting directly to NeoDB
+      try {
+        const savedServer = await createProjectOnBackend({
+          id: newId,
+          name: payload.name,
+          organization: payload.organization,
+          targetRegion: payload.targetRegion,
+          description: payload.description,
+          status: payload.status,
+          syncStatus: 'synced',
+        })
+        payload.syncStatus = 'synced'
+        if (savedServer.id) payload.id = savedServer.id
+      } catch (backendErr) {
+        console.warn('[useProjects] NeoDB direct write queued locally:', backendErr)
+        payload.syncStatus = 'pending'
+      }
+
+      await db.projects.put(payload)
       setName('')
       setOrganization('')
       setTargetRegion('')
@@ -95,19 +151,38 @@ export function useProjects() {
       syncStatus: 'pending',
     }
 
-    await db.projects.add(sampleProj)
+    try {
+      await createProjectOnBackend({
+        id: newId,
+        name: sampleProj.name,
+        organization: sampleProj.organization,
+        targetRegion: sampleProj.targetRegion,
+        description: sampleProj.description,
+        status: sampleProj.status,
+      })
+      sampleProj.syncStatus = 'synced'
+    } catch (err) {
+      console.warn('[useProjects] Sample project stored locally, sync pending:', err)
+    }
+
+    await db.projects.put(sampleProj)
     await loadProjects()
   }
 
-  // Delete project and update state
+  // Delete project from NeoDB and local store
   const handleDeleteProject = async (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation()
     const confirmed = window.confirm(
-      'Are you sure you want to delete this project? Associated local project records will be removed.'
+      'Are you sure you want to delete this project? Associated records will be removed.'
     )
     if (!confirmed) return
 
     try {
+      try {
+        await deleteProjectOnBackend(projectId)
+      } catch (backendErr) {
+        console.warn('[useProjects] Could not delete from backend immediately:', backendErr)
+      }
       await db.projects.delete(projectId)
       const currentJoined = getJoinedProjectIds()
       if (currentJoined.includes(projectId)) {
@@ -152,4 +227,3 @@ export function useProjects() {
     displayedProjects,
   }
 }
-

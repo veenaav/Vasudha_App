@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db, type Project, type Observation } from '@/db/database'
 import { getJoinedProjectIds, toggleJoinedProject } from '@/lib/projectStorage'
+import { updateProjectOnBackend, deleteProjectOnBackend } from '@/lib/apiService'
 
 export type MockUserRole = 'admin' | 'project_expert' | 'field_worker'
 
@@ -109,15 +110,28 @@ export function useProjectDetails(projectId?: string) {
     setIsSavingEdit(true)
     try {
       const now = new Date().toISOString()
-      await db.projects.update(project.id, {
+      const updates = {
         name: editName.trim(),
         organization: editOrganization.trim() || undefined,
         targetRegion: editTargetRegion.trim() || undefined,
         description: editDescription.trim() || undefined,
         status: editStatus,
         updatedAt: now,
-        syncStatus: 'pending',
+      }
+
+      let syncStatus: 'synced' | 'pending' = 'pending'
+      try {
+        await updateProjectOnBackend(project.id, updates)
+        syncStatus = 'synced'
+      } catch (backendErr) {
+        console.warn('[useProjectDetails] NeoDB direct update failed, queued locally:', backendErr)
+      }
+
+      await db.projects.update(project.id, {
+        ...updates,
+        syncStatus,
       })
+
       setShowEditModal(false)
       await loadData()
     } catch (err) {
@@ -135,6 +149,12 @@ export function useProjectDetails(projectId?: string) {
     if (!confirmed) return
 
     try {
+      try {
+        await deleteProjectOnBackend(project.id)
+      } catch (backendErr) {
+        console.warn('[useProjectDetails] Backend delete queued/failed:', backendErr)
+      }
+
       await db.projects.delete(project.id)
       const currentJoined = getJoinedProjectIds()
       if (currentJoined.includes(project.id)) {
@@ -174,4 +194,3 @@ export function useProjectDetails(projectId?: string) {
     handleDeleteProject,
   }
 }
-
