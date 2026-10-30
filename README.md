@@ -1,4 +1,4 @@
-# 🌿 Vasudha (വസുധ)
+# 🌿 B-Liffe
 
 > **Biodiversity Field Data Collection App**  
 > A mobile-first, offline-ready progressive web application developed for biodiversity surveys, ecological monitoring, and field researchers to capture species observations, multi-angle photos, and GPS coordinates—even in remote forest reserves without internet connectivity.
@@ -7,7 +7,7 @@
 
 ## 📖 Project Overview
 
-**Vasudha** is an intuitive field data collection platform designed for conservationists, botanists, zoologists, and citizen scientists. Conducting biodiversity surveys in remote or protected areas often means operating with zero network coverage. Vasudha solves this by offering an offline-first architecture powered by client-side browser storage (IndexedDB).
+**B-Liffe** is an intuitive field data collection platform designed for conservationists, botanists, zoologists, and citizen scientists. Conducting biodiversity surveys in remote or protected areas often means operating with zero network coverage. B-Liffe solves this by offering an offline-first architecture powered by client-side browser storage (IndexedDB).
 
 ### Key Highlights
 - **Offline-First Resilience**: All field records, attached photos, and metadata are persisted locally using **Dexie.js** (IndexedDB wrapper). Never lose findings in zero-connectivity areas.
@@ -57,7 +57,7 @@
 
 ## 🚀 Local Setup & Installation
 
-Follow the steps below to set up and run Vasudha on your local development machine.
+Follow the steps below to set up and run B-Liffe on your local development machine.
 
 ### Prerequisites
 
@@ -81,7 +81,7 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Vasudha comes with an optional Mapbox integration for high-definition topographic and outdoor tiles.
+B-Liffe comes with an optional Mapbox integration for high-definition topographic and outdoor tiles.
 
 1. Copy the example environment file:
    ```bash
@@ -160,6 +160,6 @@ Vasudha_App/
 
 ## 🔒 Permissions & Security
 
-- **Geolocation**: Vasudha requests browser location permissions only when using the GPS locate button or map picker.
+- **Geolocation**: B-Liffe requests browser location permissions only when using the GPS locate button or map picker.
 - **Camera & Storage**: Access to the camera or file gallery is only invoked upon explicit user tap.
 - **Privacy First**: Observations and media remain saved locally inside your browser's IndexedDB and are never shared or uploaded without user confirmation.
