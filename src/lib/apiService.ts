@@ -2,6 +2,8 @@ import { db, type Project, type Observation, type Ward, type Survey } from '@/db
 import { getAuthToken } from './profileService'
 import type { WardIdentificationResult } from './wardService'
 
+export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
 export interface SyncStatusResult {
   status: 'online' | 'offline'
   timestamp: string
@@ -57,7 +59,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
 // ==========================================
 
 export async function fetchProjectsFromBackend(): Promise<Project[]> {
-  const res = await fetch('/api/projects', {
+  const res = await fetch(`${API_BASE}/api/projects`, {
     headers: getHeaders(),
   })
   if (!res.ok) {
@@ -69,7 +71,7 @@ export async function fetchProjectsFromBackend(): Promise<Project[]> {
 export async function createProjectOnBackend(
   project: Partial<Project> & { name: string }
 ): Promise<Project> {
-  const res = await fetch('/api/projects', {
+  const res = await fetch(`${API_BASE}/api/projects`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(project),
@@ -85,7 +87,7 @@ export async function updateProjectOnBackend(
   id: string,
   updates: Partial<Project>
 ): Promise<Project> {
-  const res = await fetch(`/api/projects/${id}`, {
+  const res = await fetch(`${API_BASE}/api/projects/${id}`, {
     method: 'PUT',
     headers: getHeaders(),
     body: JSON.stringify(updates),
@@ -98,7 +100,7 @@ export async function updateProjectOnBackend(
 }
 
 export async function deleteProjectOnBackend(id: string): Promise<boolean> {
-  const res = await fetch(`/api/projects/${id}`, {
+  const res = await fetch(`${API_BASE}/api/projects/${id}`, {
     method: 'DELETE',
     headers: getHeaders(),
   })
@@ -129,7 +131,7 @@ export async function fetchObservationsFromBackend(filters?: {
   if (filters?.tag) params.set('tag', filters.tag)
   if (filters?.search) params.set('search', filters.search)
 
-  const url = `/api/observations${params.toString() ? `?${params.toString()}` : ''}`
+  const url = `${API_BASE}/api/observations${params.toString() ? `?${params.toString()}` : ''}`
   const res = await fetch(url, {
     headers: getHeaders(),
   })
@@ -172,7 +174,7 @@ export async function createObservationOnBackend(
     photo: photoUrls[0] || null,
   }
 
-  const res = await fetch('/api/observations', {
+  const res = await fetch(`${API_BASE}/api/observations`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(payload),
@@ -211,7 +213,7 @@ export async function updateObservationOnBackend(
     ...(photoUrls.length > 0 && { photos: photoUrls }),
   }
 
-  const res = await fetch(`/api/observations/${id}`, {
+  const res = await fetch(`${API_BASE}/api/observations/${id}`, {
     method: 'PUT',
     headers: getHeaders(),
     body: JSON.stringify(payload),
@@ -226,7 +228,7 @@ export async function updateObservationOnBackend(
 }
 
 export async function deleteObservationOnBackend(id: string): Promise<boolean> {
-  const res = await fetch(`/api/observations/${id}`, {
+  const res = await fetch(`${API_BASE}/api/observations/${id}`, {
     method: 'DELETE',
     headers: getHeaders(),
   })
@@ -245,7 +247,7 @@ export async function identifyWardViaBackend(
   latitude: number,
   longitude: number
 ): Promise<WardIdentificationResult> {
-  const res = await fetch('/api/wards/identify', {
+  const res = await fetch(`${API_BASE}/api/wards/identify`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify({ latitude, longitude }),
@@ -257,7 +259,7 @@ export async function identifyWardViaBackend(
 }
 
 export async function fetchWardsFromBackend(projectId?: string): Promise<Ward[]> {
-  const url = projectId ? `/api/projects/${projectId}/wards` : '/api/wards'
+  const url = projectId ? `${API_BASE}/api/projects/${projectId}/wards` : `${API_BASE}/api/wards`
   const res = await fetch(url, {
     headers: getHeaders(),
   })
@@ -268,7 +270,7 @@ export async function fetchWardsFromBackend(projectId?: string): Promise<Ward[]>
 }
 
 export async function createWardOnBackend(ward: Partial<Ward>): Promise<Ward> {
-  const res = await fetch('/api/wards', {
+  const res = await fetch(`${API_BASE}/api/wards`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(ward),
@@ -292,7 +294,7 @@ export async function fetchSurveysFromBackend(
   if (projectId) params.set('projectId', projectId)
   if (wardId) params.set('wardId', wardId)
 
-  const url = `/api/surveys${params.toString() ? `?${params.toString()}` : ''}`
+  const url = `${API_BASE}/api/surveys${params.toString() ? `?${params.toString()}` : ''}`
   const res = await fetch(url, {
     headers: getHeaders(),
   })
@@ -303,7 +305,7 @@ export async function fetchSurveysFromBackend(
 }
 
 export async function createSurveyOnBackend(survey: Partial<Survey>): Promise<Survey> {
-  const res = await fetch('/api/surveys', {
+  const res = await fetch(`${API_BASE}/api/surveys`, {
     method: 'POST',
     headers: getHeaders(),
     body: JSON.stringify(survey),
@@ -316,7 +318,7 @@ export async function createSurveyOnBackend(survey: Partial<Survey>): Promise<Su
 }
 
 export async function deleteSurveyOnBackend(id: string): Promise<boolean> {
-  const res = await fetch(`/api/surveys/${id}`, {
+  const res = await fetch(`${API_BASE}/api/surveys/${id}`, {
     method: 'DELETE',
     headers: getHeaders(),
   })
@@ -333,7 +335,7 @@ export async function deleteSurveyOnBackend(id: string): Promise<boolean> {
 
 export async function fetchSyncStatus(): Promise<SyncStatusResult> {
   try {
-    const res = await fetch('/api/sync/status', {
+    const res = await fetch(`${API_BASE}/api/sync/status`, {
       headers: getHeaders(),
       signal: AbortSignal.timeout(6000),
     })
@@ -406,7 +408,7 @@ export async function syncAllStoresWithBackend(): Promise<SyncAllResult> {
       observations: serializedObservations,
     }
 
-    const res = await fetch('/api/sync', {
+    const res = await fetch(`${API_BASE}/api/sync`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(payload),

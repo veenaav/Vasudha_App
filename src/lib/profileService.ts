@@ -1,5 +1,7 @@
 import type { UserProfile, ProfileUpdateInput } from './profileTypes'
 
+export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
 const PROFILE_STORAGE_KEY = 'bliffe_demo_profile'
 const AUTH_TOKEN_KEY = 'bliffe_auth_token'
 
@@ -53,7 +55,7 @@ export function setLocalProfile(profile: UserProfile): void {
 }
 
 export async function apiRegister(fullName: string, email: string, password: string): Promise<{ user: UserProfile; token: string }> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fullName, email, password }),
@@ -89,7 +91,7 @@ export async function apiRegister(fullName: string, email: string, password: str
 }
 
 export async function apiLogin(email: string, password: string): Promise<{ user: UserProfile; token: string }> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -141,7 +143,7 @@ export async function apiUpdateProfile(input: ProfileUpdateInput): Promise<UserP
 
   try {
     if (token) {
-      await fetch('/api/profile', {
+      await fetch(`${API_BASE}/api/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

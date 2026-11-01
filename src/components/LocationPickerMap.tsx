@@ -11,9 +11,11 @@ import {
   X,
 } from 'lucide-react'
 
-// Default initial viewport (Thiruvananthapuram, Kerala) if no coordinates yet
-const DEFAULT_CENTER: [number, number] = [8.5241, 76.9366]
-const DEFAULT_ZOOM = 16
+// Default initial viewport (configurable via environment variables with Thiruvananthapuram fallback)
+const DEFAULT_LATITUDE = Number(import.meta.env.VITE_DEFAULT_LATITUDE) || 8.5241
+const DEFAULT_LONGITUDE = Number(import.meta.env.VITE_DEFAULT_LONGITUDE) || 76.9366
+const DEFAULT_CENTER: [number, number] = [DEFAULT_LATITUDE, DEFAULT_LONGITUDE]
+const DEFAULT_ZOOM = Number(import.meta.env.VITE_DEFAULT_ZOOM) || 16
 
 export interface LocationPickerMapProps {
   location: { latitude: number; longitude: number } | null
