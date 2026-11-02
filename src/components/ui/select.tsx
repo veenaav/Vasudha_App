@@ -213,3 +213,186 @@ export function AppSelect({
   )
 }
 export default AppSelect
+
+export interface AppMultiSelectProps {
+  id?: string
+  values: string[]
+  onChange: (values: string[]) => void
+  options: (SelectOption | string)[]
+  placeholder?: string
+  disabled?: boolean
+  className?: string
+  'aria-label'?: string
+}
+
+export function AppMultiSelect({
+  id,
+  values = [],
+  onChange,
+  options,
+  placeholder = 'Select options...',
+  disabled = false,
+  className,
+  'aria-label': ariaLabel,
+}: AppMultiSelectProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const normalizedOptions: SelectOption[] = options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  )
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [isOpen])
+
+  const toggleOption = (optValue: string, isOptDisabled?: boolean) => {
+    if (disabled || isOptDisabled) return
+    if (values.includes(optValue)) {
+      onChange(values.filter((v) => v !== optValue))
+    } else {
+      onChange([...values, optValue])
+    }
+  }
+
+  const selectedLabels = normalizedOptions
+    .filter((opt) => values.includes(opt.value))
+    .map((opt) => opt.label)
+
+  return (
+    <div
+      ref={containerRef}
+      className={cn('relative w-full', className)}
+    >
+      <button
+        id={id}
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label={ariaLabel || placeholder}
+        className={cn(
+          'relative w-full min-h-[50px] rounded-2xl border px-4.5 py-2.5 pr-12 text-left font-medium text-base transition-all duration-200 outline-none flex items-center justify-between cursor-pointer shadow-xs active:scale-[0.995]',
+          isOpen
+            ? 'border-[#A6F16A] ring-1 ring-[#A6F16A] bg-[#0A241C]'
+            : 'border-[#1C4D3C] bg-[#061812] hover:border-[#1C4D3C]/80 hover:bg-[#082017]',
+          disabled && 'cursor-not-allowed opacity-50 bg-[#061812]'
+        )}
+      >
+        <div className="flex-1 min-w-0 pr-2">
+          {values.length === 0 ? (
+            <span className="truncate block text-sm sm:text-base text-[#7B9586]">
+              {placeholder}
+            </span>
+          ) : (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-xs font-bold text-[#A6F16A]">
+                {values.length} selected
+              </span>
+              <span className="truncate text-xs sm:text-sm text-[#F0F5EF] max-w-[200px] sm:max-w-[280px]">
+                {selectedLabels.join(', ')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-full bg-[#133D2F]/60 border border-[#1C4D3C]/60 text-[#A6F16A] transition-colors">
+          <ChevronDown
+            className={cn(
+              'h-4.5 w-4.5 text-[#A6F16A] transition-transform duration-200 stroke-[2.5]',
+              isOpen && 'rotate-180'
+            )}
+          />
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] p-2 shadow-2xl shadow-black/90 backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-150 overflow-hidden">
+          {values.length > 0 && (
+            <div className="flex items-center justify-between px-3 py-1.5 mb-1 border-b border-[#1C4D3C]/70 text-xs">
+              <span className="text-[#B2C8BA] font-medium">
+                {values.length} of {normalizedOptions.length} selected
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onChange([])
+                }}
+                className="text-amber-300 hover:underline font-semibold cursor-pointer"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+
+          <ul
+            role="listbox"
+            aria-multiselectable="true"
+            tabIndex={-1}
+            className="max-h-60 overflow-y-auto dropdown-scrollbar space-y-1 pr-1.5"
+          >
+            {normalizedOptions.map((opt, index) => {
+              const isSelected = values.includes(opt.value)
+
+              return (
+                <li
+                  key={opt.value || `opt-${index}`}
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => toggleOption(opt.value, opt.disabled)}
+                  className={cn(
+                    'w-full min-h-[44px] px-3.5 py-2 rounded-xl text-sm sm:text-base font-medium text-left flex items-center justify-between transition-colors cursor-pointer select-none',
+                    isSelected
+                      ? 'bg-[#133D2F] text-[#A6F16A] font-bold shadow-2xs border border-[#1C4D3C]'
+                      : 'text-[#F0F5EF] hover:bg-[#133D2F]/60 hover:text-[#A6F16A]',
+                    opt.disabled &&
+                      'cursor-not-allowed opacity-40 hover:bg-transparent hover:text-[#7B9586]'
+                  )}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={cn(
+                        'flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-md border transition-all',
+                        isSelected
+                          ? 'border-[#A6F16A] bg-[#A6F16A] text-[#061812]'
+                          : 'border-[#1C4D3C] bg-[#061812]'
+                      )}
+                    >
+                      {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                    </span>
+                    <span>{opt.label}</span>
+                  </div>
+
+                  {opt.hint && (
+                    <span className="text-[11px] text-[#7B9586] font-normal">
+                      {opt.hint}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+

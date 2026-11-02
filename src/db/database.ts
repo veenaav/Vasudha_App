@@ -42,9 +42,20 @@ export const LOCATION_VISIBILITIES: {
 
 export type SyncStatus = 'draft' | 'pending' | 'synced'
 
-export type LocationSource = 'GPS' | 'Manual Pin Adjustment'
+export type LocationSource = 'GPS' | 'EXIF' | 'Manual Pin Adjustment'
 
-export const LOCATION_SOURCES: LocationSource[] = ['GPS', 'Manual Pin Adjustment']
+export const LOCATION_SOURCES: LocationSource[] = ['GPS', 'EXIF', 'Manual Pin Adjustment']
+
+export interface PhotoLocationMetadata {
+  id: string
+  fileName?: string
+  latitude: number | null
+  longitude: number | null
+  accuracy?: number | null
+  capturedAt?: string | null
+  gpsCapturedAt?: string | null
+  locationSource?: LocationSource | null
+}
 
 /**
  * Darwin Core basisOfRecord standard terms:
@@ -262,6 +273,11 @@ export interface Observation {
   lifeStage?: string // Life stage (Adult, Juvenile, Flowering, etc.)
   microHabitat?: string // Specific substrate/location (Tree Canopy, Ground, etc.)
   otherMicroHabitat?: string // Custom micro-habitat when 'Other' selected
+  habitatType?: string // Aquatic, Forest, Grassland, Agricultural, Rocky patch, Urban
+  reproductiveAttributes?: string[] // Flower, Flower bud, Breeding plumage, Presence of eggs, Nest present, Breeding activity
+  sex?: string // Cannot be determined, Female, Male
+  evidenceOfPresence?: string[] // Bone, Construction, Egg, Molt, Organism, Scat, Track
+  season?: string // Premonsoon, Monsoon, Post monsoon
 
   // Traditional Knowledge documentation
   hasTraditionalKnowledge?: YesNo // 'Yes' | 'No' (optional overall)
@@ -275,6 +291,7 @@ export interface Observation {
   longitude: number | null // Final observation longitude
   location_source?: LocationSource | null // 'GPS' | 'Manual Pin Adjustment'
   accuracyMeters: number | null // Actual GPS accuracy radius in metres (or null if unavailable)
+  gpsCapturedAt?: string | null // ISO timestamp when GPS coordinates were acquired
 
   // Temporal (Darwin Core Event)
   observationAt: string
@@ -283,6 +300,7 @@ export interface Observation {
   // Media attachments
   photo?: Blob | null
   photos?: Blob[]
+  photoMetadata?: PhotoLocationMetadata[]
 
   // Expert Verification (Post-MVP / future review)
   verificationStatus?: VerificationStatus // Defaults to 'Unreviewed'

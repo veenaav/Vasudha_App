@@ -65,6 +65,12 @@ export function toDarwinCoreRecord(obs: Observation): DarwinCoreRecord {
     administrativeWard: obs.wardName || obs.wardId,
     surveyId: obs.surveyId,
     projectId: obs.projectId,
+    habitatType: obs.habitatType,
+    reproductiveAttributes: obs.reproductiveAttributes,
+    sex: obs.sex,
+    evidenceOfPresence: obs.evidenceOfPresence,
+    season: obs.season,
+    gpsCapturedAt: obs.gpsCapturedAt,
   }
 
   return {
@@ -78,7 +84,7 @@ export function toDarwinCoreRecord(obs: Observation): DarwinCoreRecord {
     'dwc:eventDate': obs.observationAt || obs.recordedAt || obs.createdAt || new Date().toISOString(),
     'dwc:individualCount': obs.individualCount,
     'dwc:lifeStage': obs.lifeStage,
-    'dwc:habitat': obs.microHabitat,
+    'dwc:habitat': obs.habitatType || obs.microHabitat,
     'dwc:fieldNotes': obs.notes?.trim() || undefined,
     'dwc:identificationVerificationStatus': obs.verificationStatus,
     'dwc:dynamicProperties': JSON.stringify(dynamicProps),

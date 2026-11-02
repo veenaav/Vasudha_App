@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   db,
@@ -13,10 +13,12 @@ import {
   isValidCoordinate,
   type BasisOfRecord,
   BASIS_OF_RECORD_OPTIONS,
+  type PhotoLocationMetadata,
 } from '@/db/database'
 import { useObservationGeolocation } from './useObservationGeolocation'
 import { generateId } from '@/lib/utils'
 import { createObservationOnBackend, updateObservationOnBackend } from '@/lib/apiService'
+import { extractExifLocation, type ExifLocationResult } from '@/lib/exifReader'
 
 export function useObservationForm() {
   const { projectId, wardId, surveyId, id } = useParams<{
@@ -64,9 +66,14 @@ export function useObservationForm() {
   const [showTagsSection, setShowTagsSection] = useState(false)
   const [notes, setNotes] = useState('')
 
-  // Abundance & Ecology state
+  // Abundance & Ecological Details / Population Status fields
   const [individualCount, setIndividualCount] = useState<number>(1)
+  const [habitatType, setHabitatType] = useState('')
   const [lifeStage, setLifeStage] = useState('')
+  const [reproductiveAttributes, setReproductiveAttributes] = useState<string[]>([])
+  const [sex, setSex] = useState('')
+  const [evidenceOfPresence, setEvidenceOfPresence] = useState<string[]>([])
+  const [season, setSeason] = useState('')
   const [microHabitat, setMicroHabitat] = useState('')
   const [otherMicroHabitat, setOtherMicroHabitat] = useState('')
 
@@ -87,10 +94,12 @@ export function useObservationForm() {
     geoRef.current = geo
   }, [geo])
 
-  // Photo attachments state
+  // Photo attachments and metadata state
   const [photos, setPhotos] = useState<Blob[]>([])
+  const [photoMetadata, setPhotoMetadata] = useState<PhotoLocationMetadata[]>([])
   const [photoCapturedAt, setPhotoCapturedAt] = useState<string | null>(null)
   const [showPhotoTips, setShowPhotoTips] = useState(false)
+  const [isProcessingPhotos, setIsProcessingPhotos] = useState(false)
 
   // Submission state
   const [saved, setSaved] = useState(false)
@@ -148,10 +157,18 @@ export function useObservationForm() {
         setBasisOfRecord(existing.basis_of_record || 'HumanObservation')
         setTags(existing.tags || [])
         setNotes(existing.notes || '')
+
+        // Ecological Details / Population status fields
         setIndividualCount(existing.individualCount ?? 1)
+        setHabitatType(existing.habitatType || '')
         setLifeStage(existing.lifeStage || '')
+        setReproductiveAttributes(existing.reproductiveAttributes || [])
+        setSex(existing.sex || '')
+        setEvidenceOfPresence(existing.evidenceOfPresence || [])
+        setSeason(existing.season || '')
         setMicroHabitat(existing.microHabitat || '')
         setOtherMicroHabitat(existing.otherMicroHabitat || '')
+
         setHasTraditionalKnowledge(existing.hasTraditionalKnowledge || '')
         setTraditionalKnowledgeSource(existing.traditionalKnowledgeSource || '')
         setOtherTraditionalKnowledgeSource(existing.otherTraditionalKnowledgeSource || '')
@@ -180,6 +197,9 @@ export function useObservationForm() {
           geoRef.current.setLocationSource(
             existing.location_source || (existing.gps_latitude ? 'GPS' : 'Manual Pin Adjustment')
           )
+          if (existing.gpsCapturedAt) {
+            geoRef.current.setGpsCapturedAt(existing.gpsCapturedAt)
+          }
         }
 
         if (existing.wardId) {
@@ -207,6 +227,7 @@ export function useObservationForm() {
           ? [existing.photo]
           : []
         setPhotos(attached)
+        setPhotoMetadata(existing.photoMetadata || [])
         setPhotoCapturedAt(existing.observationAt || null)
 
         if (existing.projectIds && existing.projectIds.length > 0) {
@@ -280,15 +301,24 @@ export function useObservationForm() {
     setTags([])
     setShowTagsSection(false)
     setNotes('')
+
+    // Reset ecological fields
     setIndividualCount(1)
+    setHabitatType('')
     setLifeStage('')
+    setReproductiveAttributes([])
+    setSex('')
+    setEvidenceOfPresence([])
+    setSeason('')
     setMicroHabitat('')
     setOtherMicroHabitat('')
+
     setHasTraditionalKnowledge('')
     setTraditionalKnowledgeSource('')
     setOtherTraditionalKnowledgeSource('')
     geo.resetLocation()
     setPhotos([])
+    setPhotoMetadata([])
     setPhotoCapturedAt(null)
     setIsSaving(false)
     setSaved(false)
@@ -333,15 +363,127 @@ export function useObservationForm() {
     }
   }
 
-  // Append photo files and record selection timestamp for the first photo
-  const handleAddPhotos = (fileList: FileList | null) => {
-    if (saved || !fileList || fileList.length === 0) return
-    const newFiles = Array.from(fileList)
-    setPhotos((prev) => [...prev, ...newFiles])
-    if (!photoCapturedAt) {
-      setPhotoCapturedAt(new Date().toISOString())
-    }
-  }
+  /**
+   * Handle photo capture from camera or selection from gallery.
+   *
+   * 1. Immediately triggers device GPS acquisition via navigator.geolocation.getCurrentPosition()
+   * 2. For uploaded gallery photos, also extracts original EXIF GPS metadata if present
+   * 3. Associates location metadata with each photo in photoMetadata array
+   * 4. Updates observation location automatically
+   */
+  const handleAddPhotos = useCallback(
+    async (fileList: FileList | null, isCameraCapture: boolean = false) => {
+      if (saved || !fileList || fileList.length === 0) return
+      setIsProcessingPhotos(true)
+
+      const newFiles = Array.from(fileList)
+      const nowIso = new Date().toISOString()
+
+      // Immediately trigger device GPS capture without waiting
+      const gpsPromise = geoRef.current.getLocation()
+
+      // If no photo capture time has been set yet, record current time
+      if (!photoCapturedAt) {
+        setPhotoCapturedAt(nowIso)
+      }
+
+      const newMetaList: PhotoLocationMetadata[] = []
+
+      for (let i = 0; i < newFiles.length; i++) {
+        const file = newFiles[i]
+        const photoId = generateId()
+
+        if (isCameraCapture) {
+          // Camera capture: device GPS is the authoritative location source
+          newMetaList.push({
+            id: photoId,
+            fileName: file.name,
+            latitude: geoRef.current.location?.latitude ?? null,
+            longitude: geoRef.current.location?.longitude ?? null,
+            accuracy: geoRef.current.locationAccuracy ?? null,
+            capturedAt: nowIso,
+            gpsCapturedAt: geoRef.current.gpsCapturedAt || nowIso,
+            locationSource: 'GPS',
+          })
+        } else {
+          // Gallery upload: check for EXIF GPS metadata first
+          let exifResult: ExifLocationResult = { hasGps: false, latitude: null, longitude: null, capturedAt: null }
+          try {
+            exifResult = await extractExifLocation(file)
+          } catch {
+            // Ignore EXIF parsing error, fall back to device GPS
+          }
+
+          if (exifResult.hasGps && exifResult.latitude !== null && exifResult.longitude !== null) {
+            // Original photo EXIF GPS detected! Store as EXIF source
+            newMetaList.push({
+              id: photoId,
+              fileName: file.name,
+              latitude: exifResult.latitude,
+              longitude: exifResult.longitude,
+              accuracy: null,
+              capturedAt: exifResult.capturedAt || nowIso,
+              gpsCapturedAt: nowIso,
+              locationSource: 'EXIF',
+            })
+
+            // If observation has no coordinates yet, apply the photo's EXIF location
+            if (!geoRef.current.location) {
+              geoRef.current.setExifLocation(
+                { latitude: exifResult.latitude, longitude: exifResult.longitude },
+                exifResult.capturedAt
+              )
+            }
+
+            if (exifResult.capturedAt && !photoCapturedAt) {
+              setPhotoCapturedAt(exifResult.capturedAt)
+            }
+          } else {
+            // No EXIF GPS found on uploaded photo, will associate with device GPS
+            newMetaList.push({
+              id: photoId,
+              fileName: file.name,
+              latitude: geoRef.current.location?.latitude ?? null,
+              longitude: geoRef.current.location?.longitude ?? null,
+              accuracy: geoRef.current.locationAccuracy ?? null,
+              capturedAt: nowIso,
+              gpsCapturedAt: geoRef.current.gpsCapturedAt || nowIso,
+              locationSource: 'GPS',
+            })
+          }
+        }
+      }
+
+      // Append files and their metadata
+      setPhotos((prev) => [...prev, ...newFiles])
+      setPhotoMetadata((prev) => [...prev, ...newMetaList])
+
+      // When device GPS completes, update any photos that were awaiting GPS
+      gpsPromise
+        .then((coords) => {
+          if (coords) {
+            setPhotoMetadata((prev) =>
+              prev.map((meta) => {
+                if (meta.locationSource === 'GPS' && meta.latitude === null) {
+                  return {
+                    ...meta,
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                    accuracy: geoRef.current.locationAccuracy,
+                    gpsCapturedAt: new Date().toISOString(),
+                  }
+                }
+                return meta
+              })
+            )
+          }
+        })
+        .finally(() => {
+          setIsProcessingPhotos(false)
+        })
+    },
+    [saved, photoCapturedAt]
+  )
 
   // Remove photo thumbnail by index and clear timestamp if all photos are removed
   const handleRemovePhoto = (indexToRemove: number) => {
@@ -353,6 +495,7 @@ export function useObservationForm() {
       }
       return updated
     })
+    setPhotoMetadata((prev) => prev.filter((_, idx) => idx !== indexToRemove))
   }
 
   // Validate form fields, timestamps, coordinates, and persist record to IndexedDB
@@ -384,10 +527,13 @@ export function useObservationForm() {
       return
     }
 
-    // Validate geolocation coordinates capture and coordinate bounds (-90..90, -180..180)
-    if (!geo.location || !isValidCoordinate(geo.location.latitude, geo.location.longitude)) {
+    // Coordinate validation: if coordinates are provided, ensure they are within bounds
+    if (
+      geo.location &&
+      !isValidCoordinate(geo.location.latitude, geo.location.longitude)
+    ) {
       alert(
-        'Please provide valid location coordinates (latitude between -90 and 90, longitude between -180 and 180) before saving.'
+        'Please provide valid coordinates (latitude between -90 and 90, longitude between -180 and 180).'
       )
       return
     }
@@ -437,6 +583,13 @@ export function useObservationForm() {
           ? otherTraditionalKnowledgeSource.trim()
           : undefined
 
+      const finalLatitude = geo.location ? geo.location.latitude : null
+      const finalLongitude = geo.location ? geo.location.longitude : null
+      const finalGpsLatitude = geo.gpsLocation ? geo.gpsLocation.latitude : null
+      const finalGpsLongitude = geo.gpsLocation ? geo.gpsLocation.longitude : null
+      const finalLocationSource =
+        geo.locationSource || (finalLatitude !== null ? 'Manual Pin Adjustment' : null)
+
       if (isEditMode && existingRecord && id) {
         // Update existing record: preserve original ID, createdAt, and recordedAt
         const finalProjectId = isProjectContext
@@ -472,8 +625,15 @@ export function useObservationForm() {
           tags: tags.length > 0 ? tags : undefined,
           notes: notes.trim(),
 
+          // Ecological Details / Population status fields
           individualCount: parsedCount,
+          habitatType: habitatType || undefined,
           lifeStage: lifeStage || undefined,
+          reproductiveAttributes:
+            reproductiveAttributes.length > 0 ? reproductiveAttributes : undefined,
+          sex: sex || undefined,
+          evidenceOfPresence: evidenceOfPresence.length > 0 ? evidenceOfPresence : undefined,
+          season: season || undefined,
           microHabitat: microHabitat || undefined,
           otherMicroHabitat: finalOtherMicroHabitat,
 
@@ -484,17 +644,19 @@ export function useObservationForm() {
 
           observationAt,
           recordedAt: existingRecord.recordedAt,
-          latitude: geo.location.latitude,
-          longitude: geo.location.longitude,
-          gps_latitude: geo.gpsLocation ? geo.gpsLocation.latitude : null,
-          gps_longitude: geo.gpsLocation ? geo.gpsLocation.longitude : null,
-          location_source: geo.locationSource || 'Manual Pin Adjustment',
+          latitude: finalLatitude,
+          longitude: finalLongitude,
+          gps_latitude: finalGpsLatitude,
+          gps_longitude: finalGpsLongitude,
+          location_source: finalLocationSource,
           accuracyMeters:
-            geo.locationSource === 'GPS' && geo.locationAccuracy !== null
+            finalLocationSource === 'GPS' && geo.locationAccuracy !== null
               ? geo.locationAccuracy
               : null,
+          gpsCapturedAt: geo.gpsCapturedAt || existingRecord.gpsCapturedAt || null,
           photo: photos[0] ?? null,
           photos,
+          photoMetadata: photoMetadata.length > 0 ? photoMetadata : undefined,
 
           verificationStatus: existingRecord.verificationStatus || 'Unreviewed',
           verifiedBy: existingRecord.verifiedBy,
@@ -505,10 +667,12 @@ export function useObservationForm() {
         }
 
         try {
-          if (updatedObservation.id) { await updateObservationOnBackend(updatedObservation.id, updatedObservation); }
+          if (updatedObservation.id) {
+            await updateObservationOnBackend(updatedObservation.id, updatedObservation)
+          }
           updatedObservation.syncStatus = 'synced'
         } catch (backendErr) {
-          console.warn('[useObservationForm] NeoDB update failed, stored locally:', backendErr)
+          console.warn('[useObservationForm] Backend update failed, stored locally:', backendErr)
           updatedObservation.syncStatus = 'pending'
         }
         await db.observations.put(updatedObservation)
@@ -546,8 +710,15 @@ export function useObservationForm() {
           tags: tags.length > 0 ? tags : undefined,
           notes: notes.trim(),
 
+          // Ecological Details / Population status fields
           individualCount: parsedCount,
+          habitatType: habitatType || undefined,
           lifeStage: lifeStage || undefined,
+          reproductiveAttributes:
+            reproductiveAttributes.length > 0 ? reproductiveAttributes : undefined,
+          sex: sex || undefined,
+          evidenceOfPresence: evidenceOfPresence.length > 0 ? evidenceOfPresence : undefined,
+          season: season || undefined,
           microHabitat: microHabitat || undefined,
           otherMicroHabitat: finalOtherMicroHabitat,
 
@@ -558,17 +729,19 @@ export function useObservationForm() {
 
           observationAt,
           recordedAt,
-          latitude: geo.location.latitude,
-          longitude: geo.location.longitude,
-          gps_latitude: geo.gpsLocation ? geo.gpsLocation.latitude : null,
-          gps_longitude: geo.gpsLocation ? geo.gpsLocation.longitude : null,
-          location_source: geo.locationSource || 'Manual Pin Adjustment',
+          latitude: finalLatitude,
+          longitude: finalLongitude,
+          gps_latitude: finalGpsLatitude,
+          gps_longitude: finalGpsLongitude,
+          location_source: finalLocationSource,
           accuracyMeters:
-            geo.locationSource === 'GPS' && geo.locationAccuracy !== null
+            finalLocationSource === 'GPS' && geo.locationAccuracy !== null
               ? geo.locationAccuracy
               : null,
+          gpsCapturedAt: geo.gpsCapturedAt || null,
           photo: photos[0] ?? null,
           photos,
+          photoMetadata: photoMetadata.length > 0 ? photoMetadata : undefined,
 
           verificationStatus: 'Unreviewed',
           syncStatus: 'pending',
@@ -581,7 +754,7 @@ export function useObservationForm() {
           newObservation.syncStatus = 'synced'
           if (savedServer?.id) newObservation.id = savedServer.id
         } catch (backendErr) {
-          console.warn('[useObservationForm] NeoDB insert failed, stored locally:', backendErr)
+          console.warn('[useObservationForm] Backend insert failed, stored locally:', backendErr)
           newObservation.syncStatus = 'pending'
         }
         await db.observations.add(newObservation)
@@ -653,14 +826,27 @@ export function useObservationForm() {
     setShowTagsSection,
     notes,
     setNotes,
+
+    // Ecological Details / Population status fields
     individualCount,
     setIndividualCount,
+    habitatType,
+    setHabitatType,
     lifeStage,
     setLifeStage,
+    reproductiveAttributes,
+    setReproductiveAttributes,
+    sex,
+    setSex,
+    evidenceOfPresence,
+    setEvidenceOfPresence,
+    season,
+    setSeason,
     microHabitat,
     setMicroHabitat,
     otherMicroHabitat,
     setOtherMicroHabitat,
+
     hasTraditionalKnowledge,
     setHasTraditionalKnowledge,
     traditionalKnowledgeSource,
@@ -673,10 +859,13 @@ export function useObservationForm() {
     setShowEcologyTips,
     showTkTips,
     setShowTkTips,
+
     photos,
+    photoMetadata,
     photoCapturedAt,
     showPhotoTips,
     setShowPhotoTips,
+    isProcessingPhotos,
     saved,
     isSaving,
     photoPreviews,
@@ -694,4 +883,3 @@ export function useObservationForm() {
     navigate,
   }
 }
-
