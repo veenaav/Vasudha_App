@@ -22,7 +22,7 @@ import { ProfileProvider } from '@/context/ProfileContext'
 function App() {
   return (
     <ProfileProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <AppLayout>
           <Routes>
             {/* Opening & Authentication Interface */}
