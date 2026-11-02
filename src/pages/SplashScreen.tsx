@@ -14,7 +14,7 @@ export default function SplashScreen() {
       {/* Background Nature Imagery with Bird - Restored original darkness & deep contrast */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/nature-splash.jpg"
+          src={`${import.meta.env.BASE_URL}nature-splash.jpg`}
           alt="Lush rainforest canopy with bird"
           className="h-full w-full object-cover object-center filter brightness-[0.35] contrast-[1.1]"
         />
@@ -27,7 +27,7 @@ export default function SplashScreen() {
         {/* Tree Logo: Preserved size & aspect ratio with subtle floating glow */}
         <div className="mb-3 sm:mb-4 flex items-center justify-center">
           <img
-            src="/splash-logo.png"
+            src={`${import.meta.env.BASE_URL}splash-logo.png`}
             alt="B-Liffe Tree Logo"
             className="w-[150px] h-[150px] sm:w-[192px] sm:h-[192px] max-h-[28vh] aspect-square object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.65)] drop-shadow-[0_0_16px_rgba(166,241,106,0.18)] select-none transition-transform duration-500 hover:scale-[1.03]"
           />

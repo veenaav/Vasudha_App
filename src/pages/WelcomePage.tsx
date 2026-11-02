@@ -12,7 +12,7 @@ export default function WelcomePage() {
       {/* Full-bleed Nature Image Card with blended text overlay */}
       <div className="relative flex-1 min-h-0 w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#1C4D3C] shadow-2xl shadow-[#061812]/70">
         <img
-          src="/nature-welcome.jpg"
+          src={`${import.meta.env.BASE_URL}nature-welcome.jpg`}
           alt="Cyan Cup Fungi Microhabitat"
           className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[1.02] contrast-[1.05] saturate-[1.05]"
         />
@@ -22,7 +22,7 @@ export default function WelcomePage() {
           {/* Logo & Two-Line Title Header */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <img
-              src="/splash-logo.png"
+              src={`${import.meta.env.BASE_URL}splash-logo.png`}
               alt="B-Liffe Logo"
               className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] shrink-0"
             />

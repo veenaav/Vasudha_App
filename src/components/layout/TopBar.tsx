@@ -23,7 +23,7 @@ export default function TopBar() {
         >
           {/* Logo Icon */}
           <img
-            src="/splash-logo.png"
+            src={`${import.meta.env.BASE_URL}splash-logo.png`}
             alt="B-Liffe Logo"
             className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-xl shrink-0 border border-[#1C4D3C] bg-[#0D2D22] p-0.5"
           />

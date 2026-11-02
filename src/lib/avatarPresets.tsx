@@ -130,7 +130,7 @@ export const AVATAR_PRESETS: Record<AvatarPresetId, AvatarPresetMeta> = {
     borderColor: 'border-emerald-400/80',
     textColor: 'text-emerald-400',
     accentColor: '#34D399',
-    imageUrl: '/avatars/avatar_bird.jpg?v=2',
+    imageUrl: `${import.meta.env.BASE_URL}avatars/avatar_bird.jpg?v=2`,
   },
   frog: {
     id: 'frog',
@@ -140,7 +140,7 @@ export const AVATAR_PRESETS: Record<AvatarPresetId, AvatarPresetMeta> = {
     borderColor: 'border-emerald-400/80',
     textColor: 'text-emerald-400',
     accentColor: '#34D399',
-    imageUrl: '/avatars/avatar_frog.jpg?v=2',
+    imageUrl: `${import.meta.env.BASE_URL}avatars/avatar_frog.jpg?v=2`,
   },
   elephant: {
     id: 'elephant',
@@ -150,7 +150,7 @@ export const AVATAR_PRESETS: Record<AvatarPresetId, AvatarPresetMeta> = {
     borderColor: 'border-emerald-400/80',
     textColor: 'text-emerald-400',
     accentColor: '#34D399',
-    imageUrl: '/avatars/avatar_elephant.jpg?v=2',
+    imageUrl: `${import.meta.env.BASE_URL}avatars/avatar_elephant.jpg?v=2`,
   },
   turtle: {
     id: 'turtle',
@@ -160,7 +160,7 @@ export const AVATAR_PRESETS: Record<AvatarPresetId, AvatarPresetMeta> = {
     borderColor: 'border-emerald-400/80',
     textColor: 'text-emerald-400',
     accentColor: '#34D399',
-    imageUrl: '/avatars/avatar_turtle.jpg?v=2',
+    imageUrl: `${import.meta.env.BASE_URL}avatars/avatar_turtle.jpg?v=2`,
   },
   squirrel: {
     id: 'squirrel',
@@ -170,7 +170,7 @@ export const AVATAR_PRESETS: Record<AvatarPresetId, AvatarPresetMeta> = {
     borderColor: 'border-emerald-400/80',
     textColor: 'text-emerald-400',
     accentColor: '#34D399',
-    imageUrl: '/avatars/avatar_squirrel.jpg?v=2',
+    imageUrl: `${import.meta.env.BASE_URL}avatars/avatar_squirrel.jpg?v=2`,
   },
   butterfly: {
     id: 'butterfly',
