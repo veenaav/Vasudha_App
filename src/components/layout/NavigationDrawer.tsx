@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   X,
   ChevronRight,
@@ -10,9 +10,10 @@ import {
   Sliders,
   Database,
   ShieldCheck,
-  User,
+  LogOut,
   type LucideIcon,
 } from 'lucide-react'
+import { useProfile } from '@/context/ProfileContext'
 import { db } from '@/db/database'
 import SettingsPage from '@/pages/SettingsPage'
 import AboutPage from '@/pages/AboutPage'
@@ -30,7 +31,7 @@ type DrawerSubView = 'menu' | 'settings' | 'about' | 'faq' | 'sync' | 'privacy'
 
 interface BaseMenuItem {
   title: string | React.ReactNode
-  description: string
+  description?: string
   icon: LucideIcon
   iconColor: string
   badge?: React.ReactNode
@@ -42,16 +43,31 @@ interface LinkMenuItem extends BaseMenuItem {
   activeColor?: string
 }
 
-interface ActionMenuItem extends BaseMenuItem {
+interface SubviewMenuItem extends BaseMenuItem {
   kind: 'subview'
   subView: DrawerSubView
 }
 
-type MenuItemConfig = LinkMenuItem | ActionMenuItem
+interface ActionMenuItem extends BaseMenuItem {
+  kind: 'action'
+  onAction: () => void
+}
+
+type MenuItemConfig = LinkMenuItem | SubviewMenuItem | ActionMenuItem
 
 export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
+  const navigate = useNavigate()
+  const { signOut } = useProfile()
   const [subView, setSubView] = useState<DrawerSubView>('menu')
   const [localObservationCount, setLocalObservationCount] = useState<number | null>(null)
+
+  const handleSignOut = () => {
+    if (window.confirm('Are you sure you want to sign out?')) {
+      handleClose()
+      signOut()
+      navigate('/welcome', { replace: true })
+    }
+  }
 
   // Load real observation count whenever the drawer opens
   useEffect(() => {
@@ -108,8 +124,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
     {
       kind: 'link',
       to: '/projects',
-      title: 'Projects & Field Hub',
-      description: 'Explore and join biodiversity projects.',
+      title: 'Projects',
       icon: FolderGit2,
       iconColor: 'text-[#A6F16A]',
       activeColor: 'text-[#A6F16A]',
@@ -117,8 +132,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
     {
       kind: 'link',
       to: '/my-projects',
-      title: 'My Joined Projects',
-      description: 'Access your project activities.',
+      title: 'My Projects',
       icon: BookmarkCheck,
       iconColor: 'text-[#20D6A0]',
       activeColor: 'text-[#20D6A0]',
@@ -127,7 +141,6 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
       kind: 'subview',
       subView: 'faq',
       title: 'Field Guide & Help',
-      description: 'Recording instructions and FAQs.',
       icon: BookOpen,
       iconColor: 'text-[#A6F16A]',
     },
@@ -139,7 +152,6 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           About <BrandName className="text-sm" />
         </span>
       ),
-      description: 'Mission, features and conservation goals.',
       icon: Leaf,
       iconColor: 'text-[#20D6A0]',
     },
@@ -147,7 +159,6 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
       kind: 'subview',
       subView: 'settings',
       title: 'Settings',
-      description: 'Preferences and appearance.',
       icon: Sliders,
       iconColor: 'text-[#A6F16A]',
     },
@@ -155,7 +166,6 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
       kind: 'subview',
       subView: 'sync',
       title: 'Offline Data & Sync',
-      description: 'Saved data and synchronisation status.',
       icon: Database,
       iconColor: 'text-[#20D6A0]',
       badge:
@@ -169,26 +179,15 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
       kind: 'subview',
       subView: 'privacy',
       title: 'Privacy & Data Sharing',
-      description: 'Understand how observation data is handled.',
       icon: ShieldCheck,
       iconColor: 'text-[#A6F16A]',
     },
     {
-      kind: 'link',
-      to: '/profile',
-      title: 'My Profile',
-      description: 'Manage avatar, display name, and bio.',
-      icon: User,
-      iconColor: 'text-[#A6F16A]',
-      activeColor: 'text-[#A6F16A]',
-    },
-    {
-      kind: 'link',
-      to: '/welcome',
-      title: 'Sign In & Welcome Tour',
-      description: 'Opening splash, login, and registration.',
-      icon: User,
-      iconColor: 'text-[#20D6A0]',
+      kind: 'action',
+      title: 'Sign Out',
+      icon: LogOut,
+      iconColor: 'text-rose-400',
+      onAction: handleSignOut,
     },
   ]
 
@@ -202,14 +201,9 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           >
             <Icon className="h-4.5 w-4.5" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="block text-sm font-semibold leading-snug">{item.title}</span>
-              {item.badge}
-            </div>
-            <span className="block text-[11px] text-[#B2C8BA] truncate">
-              {item.description}
-            </span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-semibold leading-snug">{item.title}</span>
+            {item.badge}
           </div>
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-[#7B9586] group-hover:text-[#A6F16A] ml-2" />
@@ -289,7 +283,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
                     <NavLink
                       key={item.to + idx}
                       to={item.to}
-                      onClick={item.to === '/welcome' ? handleClose : onClose}
+                      onClick={onClose}
                       className={({ isActive }) =>
                         `group flex items-center justify-between rounded-2xl px-3.5 py-3 transition-colors ${
                           isActive
@@ -303,12 +297,25 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
                   )
                 }
 
+                if (item.kind === 'subview') {
+                  return (
+                    <button
+                      key={item.subView}
+                      type="button"
+                      onClick={() => setSubView(item.subView)}
+                      className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
+                    >
+                      {renderItemInner(item)}
+                    </button>
+                  )
+                }
+
                 return (
                   <button
-                    key={item.subView}
+                    key="action_signout"
                     type="button"
-                    onClick={() => setSubView(item.subView)}
-                    className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-[#F0F5EF] hover:bg-[#0D2D22] border border-transparent cursor-pointer"
+                    onClick={item.onAction}
+                    className="group w-full flex items-center justify-between rounded-2xl px-3.5 py-3 text-left transition-colors text-rose-300 hover:bg-rose-950/40 hover:text-rose-200 border border-transparent hover:border-rose-800/40 cursor-pointer mt-2"
                   >
                     {renderItemInner(item)}
                   </button>

@@ -11,6 +11,11 @@ import { Button } from '@/components/ui/button'
 
 // Color styles per category for clear visual differentiation in dark mode
 const CATEGORY_STYLES: Record<TagCategory, { badge: string; chip: string; dot: string }> = {
+  'Species group': {
+    badge: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
+    chip: 'bg-emerald-950/60 text-emerald-200 border-emerald-800/60',
+    dot: 'bg-emerald-400',
+  },
   Habitat: {
     badge: 'bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]',
     chip: 'bg-[#0D2D22] text-[#A6F16A] border-[#1C4D3C]',
@@ -36,13 +41,23 @@ const CATEGORY_STYLES: Record<TagCategory, { badge: string; chip: string; dot: s
     chip: 'bg-purple-950/60 text-purple-200 border-purple-800/60',
     dot: 'bg-purple-400',
   },
+  General: {
+    badge: 'bg-slate-900 text-slate-300 border-slate-700',
+    chip: 'bg-slate-900 text-slate-200 border-slate-700',
+    dot: 'bg-slate-400',
+  },
 }
 
 // Curated essential tags for rapid, compact 1-tap tagging without overwhelming the form
 const ESSENTIAL_TAG_IDS = [
+  'grp_birds', // Birds
+  'grp_mammals', // Mammals
+  'grp_amphibians', // Amphibians
+  'grp_reptiles', // Reptiles
+  'grp_flora', // Flora
+  'con_endemic_western_ghats', // Endemic to Western Ghats
   'eco_pollinator', // Pollinator
   'con_medicinal', // Medicinal / Ethnobotanical
-  'con_endemic_western_ghats', // Endemic to Western Ghats
   'con_iucn_threatened', // IUCN Threatened
   'con_invasive', // Invasive Alien Species
   'hab_urban_park', // Urban Park / Garden
@@ -70,7 +85,7 @@ export default function TagSelector({
   // Selected tags objects
   const selectedTags = useMemo(() => {
     return selectedTagIds
-      .map((id) => getTagById(id))
+      .map((id) => getTagById(id) || { id, label: id, category: 'General' as TagCategory })
       .filter((t): t is Tag => t !== undefined)
   }, [selectedTagIds])
 
@@ -158,15 +173,8 @@ export default function TagSelector({
         </div>
       )}
 
-      {/* 2. Compact Essential Tags (Horizontal Scroll) */}
+      {/* 2. Compact Quick Tags (Horizontal Scroll) */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-            Essential Tags
-          </span>
-          <span className="text-[11px] text-[#7B9586]">Swipe to browse</span>
-        </div>
-
         <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar -mx-0.5 px-0.5">
           {essentialTags.map((tag) => {
             const isSelected = selectedTagIds.includes(tag.id)

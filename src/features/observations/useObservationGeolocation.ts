@@ -4,6 +4,10 @@ import {
   identifyWardFromCoordinates,
   type WardIdentificationStatus,
 } from '@/lib/wardService'
+import {
+  reverseGeocodeCoordinates,
+  type ReverseGeocodeResult,
+} from '@/lib/reverseGeocode'
 
 export interface Coordinates {
   latitude: number
@@ -21,16 +25,45 @@ export function useObservationGeolocation() {
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
 
+  // Client-Side Reverse Geocoding state (human-readable address components)
+  const [resolvedLocationName, setResolvedLocationName] = useState<string | null>(null)
+  const [reverseGeocodeDetails, setReverseGeocodeDetails] = useState<ReverseGeocodeResult | null>(null)
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false)
+
   // Dedicated Automatic Ward Identification state (read-only for ordinary field workers)
   const [autoWardId, setAutoWardId] = useState<string | null>(null)
   const [autoWardName, setAutoWardName] = useState<string | null>(null)
   const [autoWardNumber, setAutoWardNumber] = useState<string | null>(null)
   const [wardStatus, setWardStatus] = useState<WardIdentificationStatus>('location_not_obtained')
   const [wardStatusMessage, setWardStatusMessage] = useState<string>(
-    'Ward will be identified automatically after GPS acquisition.'
+    'Location and ward will be identified automatically after GPS acquisition.'
   )
 
-  // Request high-accuracy device GPS coordinates and trigger automatic ward identification
+  // Helper to trigger reverse geocoding directly for given coordinates
+  const triggerReverseGeocode = useCallback(async (lat: number, lng: number) => {
+    setIsReverseGeocoding(true)
+    try {
+      const geoResult = await reverseGeocodeCoordinates(lat, lng)
+      if (geoResult?.locationName) {
+        setResolvedLocationName(geoResult.locationName)
+        setReverseGeocodeDetails(geoResult)
+        return geoResult
+      } else {
+        // Fallback: gracefully fall back to formatted coordinates
+        setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+        setReverseGeocodeDetails(null)
+        return null
+      }
+    } catch {
+      setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+      setReverseGeocodeDetails(null)
+      return null
+    } finally {
+      setIsReverseGeocoding(false)
+    }
+  }, [])
+
+  // Request high-accuracy device GPS coordinates (used as automatic fallback when EXIF is missing)
   const getLocation = useCallback(
     (): Promise<Coordinates | null> => {
       return new Promise((resolve) => {
@@ -68,14 +101,30 @@ export function useObservationGeolocation() {
             setIsGettingLocation(false)
             setLocationError(null)
 
-            // Automatic GPS-based ward identification step
+            // Concurrently trigger reverse geocoding and ward boundary identification
+            setIsReverseGeocoding(true)
             setWardStatus('identifying_ward')
-            setWardStatusMessage(
-              'Matching coordinates against Thiruvananthapuram Corporation ward boundaries...'
-            )
+            setWardStatusMessage('Resolving location address and ward boundaries...')
 
-            try {
-              const result = await identifyWardFromCoordinates(lat, lng)
+            const [geoResult, wardResult] = await Promise.allSettled([
+              reverseGeocodeCoordinates(lat, lng),
+              identifyWardFromCoordinates(lat, lng),
+            ])
+
+            // 1. Process Reverse Geocoding
+            if (geoResult.status === 'fulfilled' && geoResult.value?.locationName) {
+              setResolvedLocationName(geoResult.value.locationName)
+              setReverseGeocodeDetails(geoResult.value)
+            } else {
+              // Fallback handling: Gracefully fall back to displaying formatted lat/lng coordinates
+              setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+              setReverseGeocodeDetails(null)
+            }
+            setIsReverseGeocoding(false)
+
+            // 2. Process Ward Boundary Result
+            if (wardResult.status === 'fulfilled') {
+              const result = wardResult.value
               setWardStatus(result.status)
               setWardStatusMessage(result.message)
               if (result.status === 'ward_identified' && result.ward) {
@@ -87,7 +136,7 @@ export function useObservationGeolocation() {
                 setAutoWardName(null)
                 setAutoWardNumber(null)
               }
-            } catch {
+            } else {
               setWardStatus('ward_unidentified')
               setWardStatusMessage('Ward identification service error.')
             }
@@ -99,11 +148,11 @@ export function useObservationGeolocation() {
             let userMessage = error.message
 
             if (error.code === error.PERMISSION_DENIED) {
-              userMessage = 'Location permission denied. You can select your location on the map.'
+              userMessage = 'Location permission denied on device.'
             } else if (error.code === error.POSITION_UNAVAILABLE) {
-              userMessage = 'GPS signal unavailable. You can retry outdoors or select location on the map.'
+              userMessage = 'GPS signal unavailable on device.'
             } else if (error.code === error.TIMEOUT) {
-              userMessage = 'GPS request timed out. You can retry or select location on the map.'
+              userMessage = 'GPS request timed out.'
             }
 
             setLocationError(userMessage)
@@ -122,7 +171,7 @@ export function useObservationGeolocation() {
     [isGettingLocation, location]
   )
 
-  // Set coordinates extracted from photograph EXIF metadata
+  // Set coordinates automatically extracted from photograph EXIF metadata
   const setExifLocation = useCallback(
     async (coords: Coordinates, captureTime?: string | null) => {
       const lat = Number(coords.latitude.toFixed(6))
@@ -136,11 +185,30 @@ export function useObservationGeolocation() {
       setGpsCapturedAt(now)
       setLocationError(null)
 
+      // Concurrently trigger reverse geocoding and ward boundary identification
+      setIsReverseGeocoding(true)
       setWardStatus('identifying_ward')
-      setWardStatusMessage('Matching photo EXIF coordinates against ward boundaries...')
+      setWardStatusMessage('Resolving location address and ward boundaries from photo EXIF...')
 
-      try {
-        const result = await identifyWardFromCoordinates(lat, lng)
+      const [geoResult, wardResult] = await Promise.allSettled([
+        reverseGeocodeCoordinates(lat, lng),
+        identifyWardFromCoordinates(lat, lng),
+      ])
+
+      // 1. Process Reverse Geocoding
+      if (geoResult.status === 'fulfilled' && geoResult.value?.locationName) {
+        setResolvedLocationName(geoResult.value.locationName)
+        setReverseGeocodeDetails(geoResult.value)
+      } else {
+        // Fallback handling: Gracefully fall back to displaying formatted lat/lng coordinates
+        setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+        setReverseGeocodeDetails(null)
+      }
+      setIsReverseGeocoding(false)
+
+      // 2. Process Ward Boundary Result
+      if (wardResult.status === 'fulfilled') {
+        const result = wardResult.value
         setWardStatus(result.status)
         setWardStatusMessage(result.message)
         if (result.status === 'ward_identified' && result.ward) {
@@ -152,54 +220,13 @@ export function useObservationGeolocation() {
           setAutoWardName(null)
           setAutoWardNumber(null)
         }
-      } catch {
+      } else {
         setWardStatus('ward_unidentified')
         setWardStatusMessage('Ward identification service error.')
       }
     },
     []
   )
-
-  // Handle manual correction or tap/drag on the interactive map, as well as GPS recenter
-  const handleManualLocationChange = async (
-    newLocation: Coordinates,
-    source: 'manual' | 'gps' = 'manual'
-  ) => {
-    setLocation(newLocation)
-    if (source === 'gps') {
-      setLocationSource('GPS')
-    } else {
-      setLocationSource('Manual Pin Adjustment')
-      setLocationAccuracy(null)
-    }
-    setLocationError(null)
-
-    // Trigger automatic ward identification with the updated coordinates
-    setWardStatus('identifying_ward')
-    setWardStatusMessage(
-      source === 'gps'
-        ? 'Matching GPS coordinates against ward boundaries...'
-        : 'Matching corrected coordinates against ward boundaries...'
-    )
-
-    try {
-      const result = await identifyWardFromCoordinates(newLocation.latitude, newLocation.longitude)
-      setWardStatus(result.status)
-      setWardStatusMessage(result.message)
-      if (result.status === 'ward_identified' && result.ward) {
-        setAutoWardId(result.ward.wardId)
-        setAutoWardName(result.ward.wardName)
-        setAutoWardNumber(result.ward.wardNumber)
-      } else {
-        setAutoWardId(null)
-        setAutoWardName(null)
-        setAutoWardNumber(null)
-      }
-    } catch {
-      setWardStatus('ward_unidentified')
-      setWardStatusMessage('Ward identification service error.')
-    }
-  }
 
   const resetLocation = () => {
     setGpsLocation(null)
@@ -208,11 +235,14 @@ export function useObservationGeolocation() {
     setLocationSource(null)
     setGpsCapturedAt(null)
     setLocationError(null)
+    setResolvedLocationName(null)
+    setReverseGeocodeDetails(null)
+    setIsReverseGeocoding(false)
     setAutoWardId(null)
     setAutoWardName(null)
     setAutoWardNumber(null)
     setWardStatus('location_not_obtained')
-    setWardStatusMessage('Ward will be identified automatically after GPS acquisition.')
+    setWardStatusMessage('Location and ward will be identified automatically after GPS acquisition.')
     setIsGettingLocation(false)
   }
 
@@ -228,16 +258,14 @@ export function useObservationGeolocation() {
   const locationStatusLabel = isGettingLocation
     ? 'Acquiring GPS location...'
     : locationSource === 'EXIF'
-    ? 'Location captured (Photo EXIF)'
+    ? 'Location locked (Photo EXIF)'
     : locationSource === 'GPS'
-    ? `Location captured (GPS${
+    ? `Location locked (Device GPS${
         locationAccuracy !== null ? ` • ±${Math.round(locationAccuracy)}m` : ''
       })`
-    : locationSource === 'Manual Pin Adjustment'
-    ? 'Location pinned manually'
     : locationError
     ? 'Location unavailable'
-    : 'Location pending'
+    : 'Awaiting photo GPS'
 
   return {
     gpsLocation,
@@ -253,6 +281,11 @@ export function useObservationGeolocation() {
     isGettingLocation,
     locationError,
     setLocationError,
+    resolvedLocationName,
+    setResolvedLocationName,
+    reverseGeocodeDetails,
+    isReverseGeocoding,
+    triggerReverseGeocode,
     autoWardId,
     setAutoWardId,
     autoWardName,
@@ -267,7 +300,6 @@ export function useObservationGeolocation() {
     locationStatusLabel,
     getLocation,
     setExifLocation,
-    handleManualLocationChange,
     resetLocation,
   }
 }

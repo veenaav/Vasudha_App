@@ -59,17 +59,33 @@ export default function ObservationFormPage() {
   const form = useObservationForm()
   const { geo } = form
 
-  // Independent collapsible card states
-  // Requirement 4: Initially keep Media / Photo and Location accessible, and Ecological details collapsed
-  const [openPhotos, setOpenPhotos] = useState(true)
-  const [openLocation, setOpenLocation] = useState(true)
-  const [openSpecies, setOpenSpecies] = useState(true)
-  const [openEcology, setOpenEcology] = useState(false)
-  const [openTk, setOpenTk] = useState(false)
-  const [openNotes, setOpenNotes] = useState(false)
-  const [openTags, setOpenTags] = useState(false)
-  const [openVisibility, setOpenVisibility] = useState(false)
-  const [openProjects, setOpenProjects] = useState(false)
+  // Exclusive accordion behavior: only one section expanded at a time, all closed by default
+  type SectionKey =
+    | 'photos'
+    | 'location'
+    | 'species'
+    | 'ecology'
+    | 'tk'
+    | 'notes'
+    | 'tags'
+    | 'visibility'
+    | 'projects'
+
+  const [activeSection, setActiveSection] = useState<SectionKey | null>(null)
+
+  const toggleSection = (section: SectionKey) => {
+    setActiveSection((current) => (current === section ? null : section))
+  }
+
+  const openPhotos = activeSection === 'photos'
+  const openLocation = activeSection === 'location'
+  const openSpecies = activeSection === 'species'
+  const openEcology = activeSection === 'ecology'
+  const openTk = activeSection === 'tk'
+  const openNotes = activeSection === 'notes'
+  const openTags = activeSection === 'tags'
+  const openVisibility = activeSection === 'visibility'
+  const openProjects = activeSection === 'projects'
 
   if (form.isLoadingExisting) {
     return (
@@ -156,11 +172,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenPhotos((prev) => !prev)}
+            onClick={() => toggleSection('photos')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenPhotos((prev) => !prev)
+                toggleSection('photos')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -300,66 +316,94 @@ export default function ObservationFormPage() {
                       Retry
                     </button>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3 text-xs text-[#7B9586]">
-                    <Compass className="h-4 w-4 text-[#7B9586] shrink-0" />
-                    <span>GPS will be captured automatically upon snapping or uploading photos.</span>
-                  </div>
-                )}
+                ) : null}
               </div>
 
-              {/* Photo Previews with Location Badge per Photo */}
+              {/* Photo Previews with Location Badge per Photo & Primary Reference Selector */}
               {form.photoPreviews.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  {form.photoPreviews.map((url, idx) => {
-                    const meta = form.photoMetadata[idx]
-                    const hasCoord = meta?.latitude !== null && meta?.latitude !== undefined
-                    return (
-                      <div
-                        key={idx}
-                        className="relative aspect-square overflow-hidden rounded-2xl border border-[#1C4D3C] bg-[#061812] group"
-                      >
-                        <img
-                          src={url}
-                          alt={`Preview ${idx + 1}`}
-                          className="h-full w-full object-cover"
-                        />
+                <div className="mt-4 space-y-2.5">
+                  {/* Distinct Coordinates Notice if multiple photos uploaded */}
+                  {form.photoMetadata.length > 1 && (
+                    <div className="flex items-center justify-between text-xs text-[#B2C8BA] bg-[#061812] border border-[#1C4D3C] px-3 py-1.5 rounded-xl">
+                      <span>Tap a photo to set its GPS as primary location:</span>
+                      <span className="font-semibold text-[#A6F16A]">
+                        Photo {form.primaryPhotoIndex + 1} of {form.photoPreviews.length}
+                      </span>
+                    </div>
+                  )}
 
-                        {/* Per-photo GPS status pill */}
-                        <div className="absolute bottom-1 left-1 right-1 pointer-events-none">
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold border backdrop-blur-sm truncate max-w-full ${
-                              hasCoord
-                                ? meta?.locationSource === 'EXIF'
-                                  ? 'bg-[#061812]/90 border-cyan-700/60 text-cyan-300'
-                                  : 'bg-[#061812]/90 border-[#1C4D3C] text-[#A6F16A]'
-                                : 'bg-[#061812]/90 border-amber-800/60 text-amber-300'
-                            }`}
-                          >
-                            <MapPin className="h-2.5 w-2.5 shrink-0" />
-                            <span className="truncate">
-                              {hasCoord
-                                ? meta?.locationSource === 'EXIF'
-                                  ? 'EXIF'
-                                  : 'GPS'
-                                : 'No GPS'}
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {form.photoPreviews.map((url, idx) => {
+                      const meta = form.photoMetadata[idx]
+                      const hasCoord = meta?.latitude !== null && meta?.latitude !== undefined
+                      const isPrimary = form.primaryPhotoIndex === idx
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            if (hasCoord) form.selectPrimaryPhoto(idx)
+                          }}
+                          className={`relative aspect-square overflow-hidden rounded-2xl border transition-all ${
+                            isPrimary
+                              ? 'border-[#A6F16A] ring-2 ring-[#A6F16A]/50 shadow-lg'
+                              : 'border-[#1C4D3C] hover:border-[#A6F16A]/40'
+                          } bg-[#061812] group ${hasCoord ? 'cursor-pointer' : ''}`}
+                          title={hasCoord ? (isPrimary ? 'Primary GPS reference' : 'Click to set as primary GPS reference') : undefined}
+                        >
+                          <img
+                            src={url}
+                            alt={`Preview ${idx + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+
+                          {/* Primary reference star badge */}
+                          {isPrimary && (
+                            <div className="absolute top-1.5 left-1.5 z-10">
+                              <span className="inline-flex items-center gap-1 rounded-md bg-[#A6F16A] text-[#061812] px-1.5 py-0.5 text-[9px] font-bold shadow-md">
+                                ★ Primary
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Per-photo GPS status pill */}
+                          <div className="absolute bottom-1 left-1 right-1 pointer-events-none">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-semibold border backdrop-blur-sm truncate max-w-full ${
+                                hasCoord
+                                  ? meta?.locationSource === 'EXIF'
+                                    ? 'bg-[#061812]/90 border-cyan-700/60 text-cyan-300'
+                                    : 'bg-[#061812]/90 border-[#1C4D3C] text-[#A6F16A]'
+                                  : 'bg-[#061812]/90 border-amber-800/60 text-amber-300'
+                              }`}
+                            >
+                              <MapPin className="h-2.5 w-2.5 shrink-0" />
+                              <span className="truncate">
+                                {hasCoord
+                                  ? meta?.locationSource === 'EXIF'
+                                    ? 'EXIF'
+                                    : 'GPS'
+                                  : 'No GPS'}
+                              </span>
                             </span>
-                          </span>
-                        </div>
+                          </div>
 
-                        {!form.saved && (
-                          <button
-                            type="button"
-                            onClick={() => form.handleRemovePhoto(idx)}
-                            className="absolute top-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-red-600/90 text-white shadow-md hover:bg-red-700 active:scale-95 cursor-pointer"
-                            aria-label="Remove photo"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })}
+                          {!form.saved && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                form.handleRemovePhoto(idx)
+                              }}
+                              className="absolute top-1.5 right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-600/90 text-white shadow-md hover:bg-red-700 active:scale-95 cursor-pointer"
+                              aria-label="Remove photo"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -377,11 +421,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenLocation((prev) => !prev)}
+            onClick={() => toggleSection('location')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenLocation((prev) => !prev)
+                toggleSection('location')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -407,20 +451,9 @@ export default function ObservationFormPage() {
               </button>
 
               {geo.location && (
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                    geo.locationSource === 'Manual Pin Adjustment'
-                      ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
-                      : geo.locationSource === 'EXIF'
-                      ? 'bg-cyan-950/60 text-cyan-300 border-cyan-800/60'
-                      : 'bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]'
-                  }`}
-                >
-                  {geo.locationSource === 'Manual Pin Adjustment'
-                    ? 'Manual Pin'
-                    : geo.locationSource === 'EXIF'
-                    ? 'Photo EXIF'
-                    : `GPS Fix ${geo.locationAccuracy !== null ? `(±${Math.round(geo.locationAccuracy)}m)` : ''}`}
+                <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border bg-[#133D2F] text-[#A6F16A] border-[#1C4D3C]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#A6F16A] animate-pulse" />
+                  <span>{geo.locationSource === 'EXIF' ? 'EXIF Locked' : 'GPS Locked'}</span>
                 </span>
               )}
             </div>
@@ -435,131 +468,91 @@ export default function ObservationFormPage() {
           </div>
 
           {openLocation && (
-            <div className="mt-4 pt-3.5 border-t border-[#1C4D3C]/70">
-              {/* Interactive OpenStreetMap with Centered Marker and Application-Themed Details Popup */}
-              <LocationPickerMap
-                location={geo.location}
-                rawGPS={geo.gpsLocation}
-                locationSource={geo.locationSource}
-                locationAccuracy={geo.locationAccuracy}
-                observationTime={form.displayObservationTime}
-                onLocationChange={geo.handleManualLocationChange}
-                disabled={form.saved}
-              />
+            <div className="mt-4 pt-3.5 border-t border-[#1C4D3C]/70 space-y-3">
+              {/* Unified Location & Ward Information Card */}
+              <div
+                className={`rounded-2xl border p-4 transition-all ${
+                  geo.resolvedLocationName || geo.wardStatus === 'ward_identified'
+                    ? 'border-[#A6F16A]/50 bg-[#133D2F] text-white'
+                    : geo.isReverseGeocoding ||
+                      geo.wardStatus === 'identifying_ward' ||
+                      geo.wardStatus === 'requesting_location'
+                    ? 'border-[#1C4D3C] bg-[#061812] text-[#F0F5EF]'
+                    : geo.wardStatus === 'location_unavailable'
+                    ? 'border-red-800/80 bg-red-950/40 text-red-200'
+                    : 'border-[#1C4D3C] bg-[#061812] text-[#B2C8BA]'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 shrink-0">
+                    {geo.resolvedLocationName || geo.wardStatus === 'ward_identified' ? (
+                      <CheckCircle2 className="h-5 w-5 text-[#A6F16A]" />
+                    ) : geo.isReverseGeocoding ||
+                      geo.wardStatus === 'identifying_ward' ||
+                      geo.wardStatus === 'requesting_location' ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-[#A6F16A]" />
+                    ) : geo.wardStatus === 'location_unavailable' ? (
+                      <AlertCircle className="h-5 w-5 text-red-400" />
+                    ) : (
+                      <Compass className="h-5 w-5 text-[#7B9586]" />
+                    )}
+                  </div>
 
-              {/* GPS Acquire / Retry Button (Get My Location) */}
-              <div className="mt-3 flex gap-2">
-                <Button
-                  type="button"
-                  className="min-h-[50px] flex-1 bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 font-bold text-base shadow-lg shadow-[#20D6A0]/20 rounded-2xl transition-all active:scale-98 tracking-wide cursor-pointer"
-                  disabled={form.saved || geo.isGettingLocation}
-                  onClick={geo.getLocation}
-                >
-                  {geo.isGettingLocation ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin text-[#061812]" />
-                      <span>Acquiring Coordinates...</span>
-                    </>
-                  ) : geo.location ? (
-                    <>
-                      <MapPin className="h-5 w-5 mr-2 text-[#061812]" />
-                      <span>Update GPS Location</span>
-                    </>
-                  ) : geo.locationError ? (
-                    <>
-                      <RotateCcw className="h-5 w-5 mr-2 text-[#061812]" />
-                      <span>Retry Get My Location</span>
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="h-5 w-5 mr-2 text-[#061812]" />
-                      <span>Get My Location</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-base font-bold text-white">
+                        {geo.resolvedLocationName
+                          ? geo.resolvedLocationName
+                          : geo.isReverseGeocoding
+                          ? 'Resolving location...'
+                          : geo.location
+                          ? `${geo.location.latitude.toFixed(5)}, ${geo.location.longitude.toFixed(5)}`
+                          : geo.wardStatus === 'location_unavailable'
+                          ? 'Location unavailable'
+                          : 'Awaiting photo GPS'}
+                      </span>
 
-              {/* Dedicated Read-Only Administrative Ward Information Field */}
-              <div className="mt-4 pt-4 border-t border-[#1C4D3C]">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                    Administrative Ward
-                  </label>
-                  <span className="rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A] uppercase tracking-wider">
-                    Automatic GPS • Read-Only
-                  </span>
-                </div>
+                      {geo.location && (
+                        <span className="rounded-full bg-[#061812] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-semibold text-[#A6F16A]">
+                          {geo.locationSource === 'EXIF' ? 'EXIF Locked' : 'GPS Locked'}
+                        </span>
+                      )}
 
-                <div
-                  className={`rounded-2xl border p-4 transition-all ${
-                    geo.wardStatus === 'ward_identified'
-                      ? 'border-[#A6F16A]/50 bg-[#133D2F] text-white'
-                      : geo.wardStatus === 'identifying_ward' ||
-                        geo.wardStatus === 'requesting_location'
-                      ? 'border-[#1C4D3C] bg-[#061812] text-[#F0F5EF]'
-                      : geo.wardStatus === 'location_unavailable'
-                      ? 'border-red-800/80 bg-red-950/40 text-red-200'
-                      : 'border-[#1C4D3C] bg-[#061812] text-[#B2C8BA]'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 shrink-0">
-                      {geo.wardStatus === 'ward_identified' ? (
-                        <CheckCircle2 className="h-5 w-5 text-[#A6F16A]" />
-                      ) : geo.wardStatus === 'identifying_ward' ||
-                        geo.wardStatus === 'requesting_location' ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-[#A6F16A]" />
-                      ) : geo.wardStatus === 'location_unavailable' ? (
-                        <AlertCircle className="h-5 w-5 text-red-400" />
-                      ) : (
-                        <Compass className="h-5 w-5 text-[#7B9586]" />
+                      {geo.autoWardNumber && (
+                        <span className="rounded bg-[#061812] border border-[#1C4D3C] px-1.5 py-0.5 font-mono text-[10px] text-[#A6F16A]">
+                          Ward {geo.autoWardNumber}
+                        </span>
                       )}
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-base font-bold text-white">
-                          {geo.wardStatus === 'ward_identified' && geo.autoWardName
-                            ? `Ward ${
-                                geo.autoWardNumber ? geo.autoWardNumber + ' – ' : ''
-                              }${geo.autoWardName}`
-                            : geo.wardStatus === 'location_not_obtained'
-                            ? 'Ward will be identified automatically after GPS acquisition'
-                            : geo.wardStatus === 'requesting_location'
-                            ? 'Requesting location...'
-                            : geo.wardStatus === 'identifying_ward'
-                            ? 'Identifying ward from boundary dataset...'
-                            : geo.wardStatus === 'location_unavailable'
-                            ? 'Location unavailable'
-                            : 'Ward could not be identified'}
-                        </span>
-
-                        {geo.autoWardId && (
-                          <span className="rounded bg-[#061812] border border-[#1C4D3C] px-1.5 py-0.5 font-mono text-[10px] text-[#A6F16A]">
-                            ID: {geo.autoWardId}
+                    {geo.location && (
+                      <p className="mt-1 font-mono text-xs text-[#A6F16A]/90">
+                        {geo.location.latitude.toFixed(5)}, {geo.location.longitude.toFixed(5)}
+                        {geo.locationAccuracy !== null && geo.locationSource !== 'EXIF' && (
+                          <span className="text-[#B2C8BA] font-sans ml-1.5">
+                            (±{Math.round(geo.locationAccuracy)}m)
                           </span>
                         )}
-                      </div>
-
-                      <p className="mt-1 text-xs leading-relaxed text-[#B2C8BA]">
-                        {geo.wardStatusMessage}
+                        {geo.autoWardName && (
+                          <span className="text-[#B2C8BA] font-sans ml-2">
+                            • Ward: {geo.autoWardName}
+                          </span>
+                        )}
                       </p>
-
-                      {geo.wardStatus === 'location_unavailable' && (
-                        <button
-                          type="button"
-                          onClick={geo.getLocation}
-                          disabled={geo.isGettingLocation}
-                          className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-red-300 hover:underline cursor-pointer"
-                        >
-                          <RotateCcw className="h-3.5 w-3.5" />
-                          <span>Retry acquiring GPS</span>
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Static Read-Only OpenStreetMap Centered on Photo GPS Coordinates */}
+              <LocationPickerMap
+                location={geo.location}
+                locationSource={geo.locationSource}
+                locationAccuracy={geo.locationAccuracy}
+                locationName={geo.resolvedLocationName}
+                observationTime={form.displayObservationTime}
+                disabled={form.saved}
+              />
             </div>
           )}
 
@@ -575,11 +568,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenSpecies((prev) => !prev)}
+            onClick={() => toggleSection('species')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenSpecies((prev) => !prev)
+                toggleSection('species')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -758,11 +751,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenEcology((prev) => !prev)}
+            onClick={() => toggleSection('ecology')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenEcology((prev) => !prev)
+                toggleSection('ecology')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -1003,11 +996,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenTk((prev) => !prev)}
+            onClick={() => toggleSection('tk')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenTk((prev) => !prev)
+                toggleSection('tk')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -1125,11 +1118,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenNotes((prev) => !prev)}
+            onClick={() => toggleSection('notes')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenNotes((prev) => !prev)
+                toggleSection('notes')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -1178,26 +1171,26 @@ export default function ObservationFormPage() {
           )}
         </section>
 
-        {/* 7. Classification Tags Collapsible Card */}
+        {/* 7. Tags Collapsible Card */}
         <section className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-5 sm:p-6 shadow-xl shadow-[#061812]/50 text-[#F0F5EF] transition-all">
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenTags((prev) => !prev)}
+            onClick={() => toggleSection('tags')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenTags((prev) => !prev)
+                toggleSection('tags')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
             aria-expanded={openTags}
-            aria-label="Toggle Classification Tags section"
+            aria-label="Toggle Tags section"
           >
             <div className="flex items-center gap-2.5 flex-wrap">
               <TagIcon className="h-5 w-5 text-[#A6F16A] shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-white">
-                Classification Tags
+                Tags
               </h2>
               {form.tags.length > 0 && (
                 <span className="rounded-full bg-[#133D2F] text-[#A6F16A] border border-[#1C4D3C] px-2.5 py-0.5 text-xs font-semibold">
@@ -1231,11 +1224,11 @@ export default function ObservationFormPage() {
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setOpenVisibility((prev) => !prev)}
+            onClick={() => toggleSection('visibility')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                setOpenVisibility((prev) => !prev)
+                toggleSection('visibility')
               }
             }}
             className="flex items-center justify-between cursor-pointer select-none"
@@ -1352,11 +1345,11 @@ export default function ObservationFormPage() {
             <div
               role="button"
               tabIndex={0}
-              onClick={() => setOpenProjects((prev) => !prev)}
+              onClick={() => toggleSection('projects')}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
-                  setOpenProjects((prev) => !prev)
+                  toggleSection('projects')
                 }
               }}
               className="flex items-center justify-between cursor-pointer select-none"

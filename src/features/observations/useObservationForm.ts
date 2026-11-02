@@ -98,6 +98,7 @@ export function useObservationForm() {
   const [photos, setPhotos] = useState<Blob[]>([])
   const [photoMetadata, setPhotoMetadata] = useState<PhotoLocationMetadata[]>([])
   const [photoCapturedAt, setPhotoCapturedAt] = useState<string | null>(null)
+  const [primaryPhotoIndex, setPrimaryPhotoIndex] = useState<number>(0)
   const [showPhotoTips, setShowPhotoTips] = useState(false)
   const [isProcessingPhotos, setIsProcessingPhotos] = useState(false)
 
@@ -195,7 +196,7 @@ export function useObservationForm() {
           }
           geoRef.current.setLocationAccuracy(existing.accuracyMeters ?? null)
           geoRef.current.setLocationSource(
-            existing.location_source || (existing.gps_latitude ? 'GPS' : 'Manual Pin Adjustment')
+            existing.location_source === 'EXIF' ? 'EXIF' : 'GPS'
           )
           if (existing.gpsCapturedAt) {
             geoRef.current.setGpsCapturedAt(existing.gpsCapturedAt)
@@ -205,6 +206,7 @@ export function useObservationForm() {
         if (existing.wardId) {
           geoRef.current.setAutoWardId(existing.wardId)
           geoRef.current.setAutoWardName(existing.wardName || null)
+          geoRef.current.setResolvedLocationName(existing.wardName || null)
           geoRef.current.setWardStatus('ward_identified')
           geoRef.current.setWardStatusMessage(
             existing.wardName ? `Ward: ${existing.wardName}` : `Ward ID: ${existing.wardId}`
@@ -216,9 +218,14 @@ export function useObservationForm() {
           geoRef.current.setWardStatusMessage(
             'Ward could not be identified from coordinates (Official boundary dataset pending).'
           )
+          if (existing.wardName) {
+            geoRef.current.setResolvedLocationName(existing.wardName)
+          } else {
+            geoRef.current.triggerReverseGeocode(existing.latitude, existing.longitude)
+          }
         } else {
           geoRef.current.setWardStatus('location_not_obtained')
-          geoRef.current.setWardStatusMessage('Ward will be identified automatically after GPS acquisition.')
+          geoRef.current.setWardStatusMessage('Location and ward will be identified automatically after GPS acquisition.')
         }
 
         const attached = existing.photos?.length
@@ -320,6 +327,7 @@ export function useObservationForm() {
     setPhotos([])
     setPhotoMetadata([])
     setPhotoCapturedAt(null)
+    setPrimaryPhotoIndex(0)
     setIsSaving(false)
     setSaved(false)
     setSelectedProjectIds(initialProjectId ? [initialProjectId] : [])
@@ -366,35 +374,74 @@ export function useObservationForm() {
   /**
    * Handle photo capture from camera or selection from gallery.
    *
-   * 1. Immediately triggers device GPS acquisition via navigator.geolocation.getCurrentPosition()
-   * 2. For uploaded gallery photos, also extracts original EXIF GPS metadata if present
-   * 3. Associates location metadata with each photo in photoMetadata array
-   * 4. Updates observation location automatically
+   * 1. Automatically extracts latitude, longitude, and timestamp directly from photo EXIF metadata.
+   * 2. If EXIF GPS coordinates are missing, falls back immediately to device navigator geolocation.
+   * 3. Binds coordinates directly to the observation record as read-only.
+   * 4. Associates appropriate location metadata with each photo in photoMetadata array.
    */
+  // Allows user to designate which photo's coordinates serve as the primary observation location
+  const selectPrimaryPhoto = useCallback(
+    (idx: number) => {
+      if (saved) return
+      setPrimaryPhotoIndex(idx)
+      const meta = photoMetadata[idx]
+      if (meta && meta.latitude !== null && meta.longitude !== null) {
+        if (meta.locationSource === 'EXIF') {
+          geoRef.current.setExifLocation(
+            { latitude: meta.latitude, longitude: meta.longitude },
+            meta.capturedAt
+          )
+        } else {
+          geoRef.current.setLocation({ latitude: meta.latitude, longitude: meta.longitude })
+          geoRef.current.setLocationSource('GPS')
+          geoRef.current.setLocationAccuracy(meta.accuracy ?? null)
+          geoRef.current.triggerReverseGeocode(meta.latitude, meta.longitude)
+        }
+        if (meta.capturedAt) {
+          setPhotoCapturedAt(meta.capturedAt)
+        }
+      }
+    },
+    [saved, photoMetadata]
+  )
+
   const handleAddPhotos = useCallback(
-    async (fileList: FileList | null, isCameraCapture: boolean = false) => {
+    async (fileList: FileList | null, _isCameraCapture: boolean = false) => {
       if (saved || !fileList || fileList.length === 0) return
       setIsProcessingPhotos(true)
 
       const newFiles = Array.from(fileList)
       const nowIso = new Date().toISOString()
-
-      // Immediately trigger device GPS capture without waiting
-      const gpsPromise = geoRef.current.getLocation()
-
-      // If no photo capture time has been set yet, record current time
-      if (!photoCapturedAt) {
-        setPhotoCapturedAt(nowIso)
-      }
-
       const newMetaList: PhotoLocationMetadata[] = []
+      let needsDeviceGps = false
 
+      // Loop through and extract EXIF metadata for EVERY uploaded image file
       for (let i = 0; i < newFiles.length; i++) {
         const file = newFiles[i]
         const photoId = generateId()
 
-        if (isCameraCapture) {
-          // Camera capture: device GPS is the authoritative location source
+        let exifResult: ExifLocationResult = { hasGps: false, latitude: null, longitude: null, capturedAt: null }
+        try {
+          exifResult = await extractExifLocation(file)
+        } catch {
+          // Ignore EXIF parsing error, fall back to device GPS
+        }
+
+        if (exifResult.hasGps && exifResult.latitude !== null && exifResult.longitude !== null) {
+          // EXIF GPS metadata successfully extracted for this specific photo
+          newMetaList.push({
+            id: photoId,
+            fileName: file.name,
+            latitude: exifResult.latitude,
+            longitude: exifResult.longitude,
+            accuracy: null,
+            capturedAt: exifResult.capturedAt || nowIso,
+            gpsCapturedAt: nowIso,
+            locationSource: 'EXIF',
+          })
+        } else {
+          // Mark that this photo needs device GPS fallback
+          needsDeviceGps = true
           newMetaList.push({
             id: photoId,
             fileName: file.name,
@@ -405,62 +452,47 @@ export function useObservationForm() {
             gpsCapturedAt: geoRef.current.gpsCapturedAt || nowIso,
             locationSource: 'GPS',
           })
-        } else {
-          // Gallery upload: check for EXIF GPS metadata first
-          let exifResult: ExifLocationResult = { hasGps: false, latitude: null, longitude: null, capturedAt: null }
-          try {
-            exifResult = await extractExifLocation(file)
-          } catch {
-            // Ignore EXIF parsing error, fall back to device GPS
-          }
+        }
+      }
 
-          if (exifResult.hasGps && exifResult.latitude !== null && exifResult.longitude !== null) {
-            // Original photo EXIF GPS detected! Store as EXIF source
-            newMetaList.push({
-              id: photoId,
-              fileName: file.name,
-              latitude: exifResult.latitude,
-              longitude: exifResult.longitude,
-              accuracy: null,
-              capturedAt: exifResult.capturedAt || nowIso,
-              gpsCapturedAt: nowIso,
-              locationSource: 'EXIF',
-            })
+      const combinedPhotos = [...photos, ...newFiles]
+      const combinedMeta = [...photoMetadata, ...newMetaList]
 
-            // If observation has no coordinates yet, apply the photo's EXIF location
-            if (!geoRef.current.location) {
-              geoRef.current.setExifLocation(
-                { latitude: exifResult.latitude, longitude: exifResult.longitude },
-                exifResult.capturedAt
-              )
-            }
+      setPhotos(combinedPhotos)
+      setPhotoMetadata(combinedMeta)
 
-            if (exifResult.capturedAt && !photoCapturedAt) {
-              setPhotoCapturedAt(exifResult.capturedAt)
-            }
-          } else {
-            // No EXIF GPS found on uploaded photo, will associate with device GPS
-            newMetaList.push({
-              id: photoId,
-              fileName: file.name,
-              latitude: geoRef.current.location?.latitude ?? null,
-              longitude: geoRef.current.location?.longitude ?? null,
-              accuracy: geoRef.current.locationAccuracy ?? null,
-              capturedAt: nowIso,
-              gpsCapturedAt: geoRef.current.gpsCapturedAt || nowIso,
-              locationSource: 'GPS',
-            })
+      // Automatically select best primary photo reference:
+      // If no valid GPS lock is active, find the first photo with valid EXIF GPS coordinates
+      const firstExifIdx = combinedMeta.findIndex(
+        (m) => m.locationSource === 'EXIF' && m.latitude !== null && m.longitude !== null
+      )
+
+      if (firstExifIdx !== -1) {
+        const currentPrimaryMeta = combinedMeta[primaryPhotoIndex]
+        const shouldSwitchPrimary =
+          !currentPrimaryMeta ||
+          currentPrimaryMeta.latitude === null ||
+          currentPrimaryMeta.locationSource !== 'EXIF'
+
+        const targetPrimaryIdx = shouldSwitchPrimary ? firstExifIdx : primaryPhotoIndex
+        setPrimaryPhotoIndex(targetPrimaryIdx)
+
+        const primaryMeta = combinedMeta[targetPrimaryIdx]
+        if (primaryMeta && primaryMeta.latitude !== null && primaryMeta.longitude !== null) {
+          geoRef.current.setExifLocation(
+            { latitude: primaryMeta.latitude, longitude: primaryMeta.longitude },
+            primaryMeta.capturedAt
+          )
+          if (primaryMeta.capturedAt && !photoCapturedAt) {
+            setPhotoCapturedAt(primaryMeta.capturedAt)
           }
         }
       }
 
-      // Append files and their metadata
-      setPhotos((prev) => [...prev, ...newFiles])
-      setPhotoMetadata((prev) => [...prev, ...newMetaList])
-
-      // When device GPS completes, update any photos that were awaiting GPS
-      gpsPromise
-        .then((coords) => {
+      // If any photos need device GPS fallback, trigger device geolocation once
+      if (needsDeviceGps && firstExifIdx === -1) {
+        try {
+          const coords = await geoRef.current.getLocation()
           if (coords) {
             setPhotoMetadata((prev) =>
               prev.map((meta) => {
@@ -476,13 +508,18 @@ export function useObservationForm() {
                 return meta
               })
             )
+            if (!photoCapturedAt) {
+              setPhotoCapturedAt(nowIso)
+            }
           }
-        })
-        .finally(() => {
+        } finally {
           setIsProcessingPhotos(false)
-        })
+        }
+      } else {
+        setIsProcessingPhotos(false)
+      }
     },
-    [saved, photoCapturedAt]
+    [saved, photos, photoMetadata, primaryPhotoIndex, photoCapturedAt]
   )
 
   // Remove photo thumbnail by index and clear timestamp if all photos are removed
@@ -495,7 +532,19 @@ export function useObservationForm() {
       }
       return updated
     })
-    setPhotoMetadata((prev) => prev.filter((_, idx) => idx !== indexToRemove))
+    setPhotoMetadata((prev) => {
+      const updated = prev.filter((_, idx) => idx !== indexToRemove)
+      setPrimaryPhotoIndex((prevPrimary) => {
+        if (prevPrimary === indexToRemove) {
+          const nextIdx = updated.findIndex((m) => m.latitude !== null)
+          return nextIdx !== -1 ? nextIdx : 0
+        } else if (prevPrimary > indexToRemove) {
+          return prevPrimary - 1
+        }
+        return prevPrimary
+      })
+      return updated
+    })
   }
 
   // Validate form fields, timestamps, coordinates, and persist record to IndexedDB
@@ -585,10 +634,10 @@ export function useObservationForm() {
 
       const finalLatitude = geo.location ? geo.location.latitude : null
       const finalLongitude = geo.location ? geo.location.longitude : null
-      const finalGpsLatitude = geo.gpsLocation ? geo.gpsLocation.latitude : null
-      const finalGpsLongitude = geo.gpsLocation ? geo.gpsLocation.longitude : null
+      const finalGpsLatitude = geo.gpsLocation ? geo.gpsLocation.latitude : finalLatitude
+      const finalGpsLongitude = geo.gpsLocation ? geo.gpsLocation.longitude : finalLongitude
       const finalLocationSource =
-        geo.locationSource || (finalLatitude !== null ? 'Manual Pin Adjustment' : null)
+        geo.locationSource || (finalLatitude !== null ? 'GPS' : null)
 
       if (isEditMode && existingRecord && id) {
         // Update existing record: preserve original ID, createdAt, and recordedAt
@@ -608,7 +657,12 @@ export function useObservationForm() {
           id: existingRecord.id,
           surveyId: existingRecord.surveyId,
           wardId: geo.autoWardId ?? existingRecord.wardId,
-          wardName: geo.autoWardName ?? existingRecord.wardName,
+          wardName:
+            geo.autoWardName
+              ? geo.autoWardNumber
+                ? `Ward ${geo.autoWardNumber} – ${geo.autoWardName}`
+                : geo.autoWardName
+              : (geo.resolvedLocationName || existingRecord.wardName || undefined),
           projectId: finalProjectId,
           projectIds: finalProjectIds,
 
@@ -654,7 +708,7 @@ export function useObservationForm() {
               ? geo.locationAccuracy
               : null,
           gpsCapturedAt: geo.gpsCapturedAt || existingRecord.gpsCapturedAt || null,
-          photo: photos[0] ?? null,
+          photo: photos[primaryPhotoIndex] || photos[0] || null,
           photos,
           photoMetadata: photoMetadata.length > 0 ? photoMetadata : undefined,
 
@@ -693,7 +747,12 @@ export function useObservationForm() {
           id: generateId(),
           surveyId: surveyId || undefined,
           wardId: geo.autoWardId || undefined,
-          wardName: geo.autoWardName || undefined,
+          wardName:
+            geo.autoWardName
+              ? geo.autoWardNumber
+                ? `Ward ${geo.autoWardNumber} – ${geo.autoWardName}`
+                : geo.autoWardName
+              : (geo.resolvedLocationName || undefined),
           projectId: finalProjectId,
           projectIds: finalProjectIds,
 
@@ -739,7 +798,7 @@ export function useObservationForm() {
               ? geo.locationAccuracy
               : null,
           gpsCapturedAt: geo.gpsCapturedAt || null,
-          photo: photos[0] ?? null,
+          photo: photos[primaryPhotoIndex] || photos[0] || null,
           photos,
           photoMetadata: photoMetadata.length > 0 ? photoMetadata : undefined,
 
@@ -869,6 +928,8 @@ export function useObservationForm() {
     saved,
     isSaving,
     photoPreviews,
+    primaryPhotoIndex,
+    selectPrimaryPhoto,
     geo,
     resetForm,
     handleStatusChange,
