@@ -261,7 +261,7 @@ export default function TagSelector({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search tags by name, category, or keyword..."
+                  placeholder="Search tags..."
                   className="w-full min-h-[42px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-9 pr-8 py-2 text-xs sm:text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                 />
                 {searchQuery && (

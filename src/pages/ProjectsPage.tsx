@@ -173,7 +173,7 @@ function ProjectsPage() {
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of the biodiversity assessment scope..."
+                  placeholder="Add brief description..."
                   className="mt-1.5 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                 />
               </div>

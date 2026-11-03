@@ -643,7 +643,7 @@ export default function ObservationFormPage() {
                   placeholder={
                     form.isUnknown
                       ? 'Locked for Unknown species'
-                      : 'e.g. Indian Peafowl, Cinnamon Tree'
+                      : 'Enter species name'
                   }
                   className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
                 />
@@ -664,7 +664,7 @@ export default function ObservationFormPage() {
                   disabled={form.saved || form.isUnknown}
                   onChange={(e) => form.setLocalName(e.target.value)}
                   placeholder={
-                    form.isUnknown ? 'Locked for Unknown species' : 'e.g., Naattu Mayil, Thulasi'
+                    form.isUnknown ? 'Locked for Unknown species' : 'e.g., Naattu Mayil'
                   }
                   className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
                 />
@@ -717,7 +717,7 @@ export default function ObservationFormPage() {
                       value={form.otherSpeciesGroup}
                       disabled={form.saved}
                       onChange={(event) => form.setOtherSpeciesGroup(event.target.value)}
-                      placeholder="Specify other group..."
+                      placeholder="e.g. Fungi"
                       className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                     />
                   </div>
@@ -957,7 +957,7 @@ export default function ObservationFormPage() {
                       value={form.otherMicroHabitat}
                       disabled={form.saved}
                       onChange={(e) => form.setOtherMicroHabitat(e.target.value)}
-                      placeholder="Specify other micro-habitat..."
+                      placeholder="e.g. Canopy layer"
                       className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                     />
                   </div>
@@ -1092,7 +1092,7 @@ export default function ObservationFormPage() {
                         onChange={(e) =>
                           form.setOtherTraditionalKnowledgeSource(e.target.value)
                         }
-                        placeholder="Specify other source..."
+                        placeholder="e.g. Village elder"
                         className="w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#0D2D22] px-3.5 py-2.5 text-base text-[#F0F5EF] placeholder-[#7B9586]"
                       />
                     </div>
@@ -1164,7 +1164,7 @@ export default function ObservationFormPage() {
                 value={form.notes}
                 disabled={form.saved}
                 onChange={(e) => form.setNotes(e.target.value)}
-                placeholder="Habit, weather, host plant, landmarks..."
+                placeholder="Add brief notes"
                 className="mt-2 w-full rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
@@ -1463,7 +1463,7 @@ export default function ObservationFormPage() {
                     value={form.projectSearchQuery}
                     disabled={form.saved}
                     onChange={(e) => form.setProjectSearchQuery(e.target.value)}
-                    placeholder="Search projects by name, organization, or region..."
+                    placeholder="Search projects..."
                     className="w-full min-h-[44px] rounded-xl border border-[#1C4D3C] bg-[#061812] pl-10 pr-9 py-2.5 text-sm text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
                   />
                   {form.projectSearchQuery && (

@@ -131,7 +131,7 @@ export default function LoginPage() {
                     setEmail(e.target.value)
                     if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }))
                   }}
-                  placeholder="researcher@field.org"
+                  placeholder="Email address"
                   className={`w-full pl-10 pr-4 py-3 rounded-2xl bg-[#061812] border ${
                     errors.email ? 'border-rose-500' : 'border-[#1C4D3C]'
                   } text-sm text-[#F0F5EF] placeholder-[#7B9586] focus:outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] transition-all`}
@@ -165,7 +165,7 @@ export default function LoginPage() {
                     setPassword(e.target.value)
                     if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
                   }}
-                  placeholder="Enter password"
+                  placeholder="Password"
                   className={`w-full pl-10 pr-11 py-3 rounded-2xl bg-[#061812] border ${
                     errors.password ? 'border-rose-500' : 'border-[#1C4D3C]'
                   } text-sm text-[#F0F5EF] placeholder-[#7B9586] focus:outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A] transition-all`}
@@ -243,7 +243,7 @@ export default function LoginPage() {
           onClick={() => navigate('/home')}
           className="text-xs text-[#7B9586] hover:text-[#A6F16A] transition-colors"
         >
-          Skip sign in and open Field Dashboard (Offline Mode) →
+          Continue as Guest →
         </button>
       </div>
 
