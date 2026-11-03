@@ -440,7 +440,7 @@ function WardsPage() {
         ) : (
           <div className="space-y-3">
             {projectObservations.map((obs) => {
-              const photoBlob = obs.photos?.[0] || obs.photo
+              const photoBlob: unknown = obs.photos?.[0] || obs.photo
               const previewUrl =
                 photoBlob instanceof Blob
                   ? URL.createObjectURL(photoBlob)
