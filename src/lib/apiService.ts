@@ -1,5 +1,6 @@
 import { db, type Project, type Observation, type Ward, type Survey } from '@/db/database'
 import { getAuthToken } from './profileService'
+import { uploadImageToS3 } from './mediaService'
 import type { WardIdentificationResult } from './wardService'
 
 export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
@@ -52,6 +53,32 @@ export function blobToBase64(blob: Blob): Promise<string> {
     reader.onerror = reject
     reader.readAsDataURL(blob)
   })
+}
+
+/**
+ * Resolves an observation photo for cloud storage.
+ * If already a remote URL (e.g. S3), returns it directly.
+ * If a Blob, uploads to S3 bucket (bliffe-media).
+ * If offline or S3 upload fails, falls back to base64 so field data is never lost.
+ */
+export async function resolvePhotoForBackend(photo: Blob | string): Promise<string> {
+  if (typeof photo === 'string') {
+    return photo.trim()
+  }
+  if (photo instanceof Blob) {
+    try {
+      const uploadRes = await uploadImageToS3(photo, 'observations')
+      if (uploadRes?.url) return uploadRes.url
+    } catch (err) {
+      console.warn('[apiService] S3 direct upload failed, falling back to base64:', err)
+    }
+    try {
+      return await blobToBase64(photo)
+    } catch (err) {
+      console.warn('[apiService] Failed to serialize blob to base64:', err)
+    }
+  }
+  return ''
 }
 
 // ==========================================
@@ -144,28 +171,17 @@ export async function fetchObservationsFromBackend(filters?: {
 export async function createObservationOnBackend(
   observation: Partial<Observation> & { speciesName: string }
 ): Promise<Observation> {
-  // Convert any Blobs to base64 strings for network transport
+  // Resolve photos: uploads to Amazon S3 (bliffe-media) or falls back to base64
   const photoUrls: string[] = []
-  if (observation.photos && observation.photos.length > 0) {
-    for (const p of observation.photos) {
-      if (p instanceof Blob) {
-        try {
-          const b64 = await blobToBase64(p)
-          photoUrls.push(b64)
-        } catch (err) {
-          console.warn('[apiService] Failed to serialize photo blob:', err)
-        }
-      } else if (typeof p === 'string') {
-        photoUrls.push(p)
-      }
-    }
-  } else if (observation.photo instanceof Blob) {
-    try {
-      const b64 = await blobToBase64(observation.photo)
-      photoUrls.push(b64)
-    } catch (err) {
-      console.warn('[apiService] Failed to serialize single photo blob:', err)
-    }
+  const rawList: (Blob | string)[] = observation.photos?.length
+    ? observation.photos
+    : observation.photo
+    ? [observation.photo]
+    : []
+
+  for (const item of rawList) {
+    const resolved = await resolvePhotoForBackend(item)
+    if (resolved) photoUrls.push(resolved)
   }
 
   const payload = {
@@ -195,17 +211,12 @@ export async function updateObservationOnBackend(
   const photoUrls: string[] = []
   if (updates.photos && updates.photos.length > 0) {
     for (const p of updates.photos) {
-      if (p instanceof Blob) {
-        try {
-          const b64 = await blobToBase64(p)
-          photoUrls.push(b64)
-        } catch (err) {
-          console.warn('[apiService] Failed to serialize photo blob:', err)
-        }
-      } else if (typeof p === 'string') {
-        photoUrls.push(p)
-      }
+      const resolved = await resolvePhotoForBackend(p)
+      if (resolved) photoUrls.push(resolved)
     }
+  } else if (updates.photo) {
+    const resolved = await resolvePhotoForBackend(updates.photo)
+    if (resolved) photoUrls.push(resolved)
   }
 
   const payload = {
@@ -367,30 +378,19 @@ export async function syncAllStoresWithBackend(): Promise<SyncAllResult> {
       db.observations.toArray(),
     ])
 
-    // Convert photos for observations to base64 strings
+    // Resolve photos for observations (upload to S3 bliffe-media or fallback to base64)
     const serializedObservations = await Promise.all(
       localObservations.map(async (obs) => {
         const photoUrls: string[] = []
-        if (obs.photos && obs.photos.length > 0) {
-          for (const p of obs.photos) {
-            if (p instanceof Blob) {
-              try {
-                const b64 = await blobToBase64(p)
-                photoUrls.push(b64)
-              } catch (err) {
-                console.warn('[sync] Failed to convert blob to b64:', err)
-              }
-            } else if (typeof p === 'string') {
-              photoUrls.push(p)
-            }
-          }
-        } else if (obs.photo instanceof Blob) {
-          try {
-            const b64 = await blobToBase64(obs.photo)
-            photoUrls.push(b64)
-          } catch (err) {
-            console.warn('[sync] Failed to convert single blob to b64:', err)
-          }
+        const rawPhotos: (Blob | string)[] = obs.photos?.length
+          ? obs.photos
+          : obs.photo
+          ? [obs.photo]
+          : []
+
+        for (const p of rawPhotos) {
+          const resolved = await resolvePhotoForBackend(p)
+          if (resolved) photoUrls.push(resolved)
         }
 
         return {

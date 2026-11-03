@@ -441,8 +441,13 @@ function WardsPage() {
           <div className="space-y-3">
             {projectObservations.map((obs) => {
               const photoBlob = obs.photos?.[0] || obs.photo
-              const hasPhoto = photoBlob instanceof Blob
-              const previewUrl = hasPhoto ? URL.createObjectURL(photoBlob) : null
+              const previewUrl =
+                photoBlob instanceof Blob
+                  ? URL.createObjectURL(photoBlob)
+                  : typeof photoBlob === 'string' && photoBlob.trim()
+                  ? photoBlob.trim()
+                  : null
+
 
               return (
                 <div

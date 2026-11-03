@@ -88,7 +88,7 @@ export function useObservationForm() {
   }, [geo])
 
   // Photo attachments state
-  const [photos, setPhotos] = useState<Blob[]>([])
+  const [photos, setPhotos] = useState<(Blob | string)[]>([])
   const [photoCapturedAt, setPhotoCapturedAt] = useState<string | null>(null)
   const [showPhotoTips, setShowPhotoTips] = useState(false)
 
@@ -232,12 +232,22 @@ export function useObservationForm() {
   }, [id, navigate])
 
   // Derive photo preview URLs synchronously from attached blobs
-  const photoPreviews = useMemo(() => photos.map((blob) => URL.createObjectURL(blob)), [photos])
+  const photoPreviews = useMemo(
+    () =>
+      photos.map((item) =>
+        item instanceof Blob ? URL.createObjectURL(item) : typeof item === 'string' ? item : ''
+      ),
+    [photos]
+  )
 
   // Revoke preview object URLs from browser memory when photos change or on unmount
   useEffect(() => {
     return () => {
-      photoPreviews.forEach((url) => URL.revokeObjectURL(url))
+      photoPreviews.forEach((url) => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url)
+        }
+      })
     }
   }, [photoPreviews])
 

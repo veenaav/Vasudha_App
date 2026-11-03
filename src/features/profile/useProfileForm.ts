@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/context/ProfileContext'
 import type { AvatarPresetId, AvatarType } from '@/lib/profileTypes'
+import { uploadImageToS3 } from '@/lib/mediaService'
 
 export interface ProfileFormState {
   fullName: string
@@ -37,6 +38,7 @@ export function useProfileForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pendingFileRef = useRef<File | null>(null)
 
   // Calculate if form is dirty
   const isDirty =
@@ -72,6 +74,7 @@ export function useProfileForm() {
   }
 
   const confirmDiscard = () => {
+    pendingFileRef.current = null
     setShowDiscardModal(false)
     setIsEditing(false)
     setFormData({
@@ -89,6 +92,8 @@ export function useProfileForm() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    pendingFileRef.current = file
 
     // Quick size validation (max 5MB for local prototype)
     if (file.size > 5 * 1024 * 1024) {
@@ -111,6 +116,7 @@ export function useProfileForm() {
   }
 
   const handleRemovePhoto = () => {
+    pendingFileRef.current = null
     setFormData((prev) => ({
       ...prev,
       avatarType: 'preset',
@@ -140,13 +146,24 @@ export function useProfileForm() {
     setIsSubmitting(true)
 
     try {
+      let finalAvatarUrl = formData.avatarCustomUrl
+      if (formData.avatarType === 'upload' && pendingFileRef.current) {
+        try {
+          const uploadResult = await uploadImageToS3(pendingFileRef.current, 'avatars')
+          if (uploadResult?.url) {
+            finalAvatarUrl = uploadResult.url
+          }
+        } catch (uploadErr) {
+          console.warn('[profile] S3 upload failed, using fallback data:', uploadErr)
+        }
+      }
       await updateProfile({
         fullName: formData.fullName,
         displayName: formData.displayName,
         bio: formData.bio,
         avatarType: formData.avatarType,
         avatarPresetId: formData.avatarPresetId,
-        avatarCustomUrl: formData.avatarCustomUrl,
+        avatarCustomUrl: finalAvatarUrl,
       })
 
       setIsEditing(false)

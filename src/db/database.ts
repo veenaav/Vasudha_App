@@ -281,8 +281,8 @@ export interface Observation {
   recordedAt: string
 
   // Media attachments
-  photo?: Blob | null
-  photos?: Blob[]
+  photo?: Blob | string | null
+  photos?: (Blob | string)[]
 
   // Expert Verification (Post-MVP / future review)
   verificationStatus?: VerificationStatus // Defaults to 'Unreviewed'
