@@ -23,28 +23,39 @@ export const LOCATION_VISIBILITIES: {
   label: string
   description: string
 }[] = [
-  {
-    value: 'Open',
-    label: 'Open',
-    description: 'Exact coordinates may be shared with permitted viewers.',
-  },
-  {
-    value: 'Obscured',
-    label: 'Obscured',
-    description: 'Public views should show an approximate location only — not exact coordinates.',
-  },
-  {
-    value: 'Private',
-    label: 'Private',
-    description: 'Exact coordinates must not be shown to public viewers.',
-  },
-]
+    {
+      value: 'Open',
+      label: 'Open',
+      description: 'Exact coordinates may be shared with permitted viewers.',
+    },
+    {
+      value: 'Obscured',
+      label: 'Obscured',
+      description: 'Public views should show an approximate location only — not exact coordinates.',
+    },
+    {
+      value: 'Private',
+      label: 'Private',
+      description: 'Exact coordinates must not be shown to public viewers.',
+    },
+  ]
 
 export type SyncStatus = 'draft' | 'pending' | 'synced'
 
-export type LocationSource = 'GPS' | 'Manual Pin Adjustment'
+export type LocationSource = 'GPS' | 'EXIF' | 'Manual Pin Adjustment'
 
-export const LOCATION_SOURCES: LocationSource[] = ['GPS', 'Manual Pin Adjustment']
+export const LOCATION_SOURCES: LocationSource[] = ['GPS', 'EXIF', 'Manual Pin Adjustment']
+
+export interface PhotoLocationMetadata {
+  id: string
+  fileName?: string
+  latitude: number | null
+  longitude: number | null
+  accuracy?: number | null
+  capturedAt?: string | null
+  gpsCapturedAt?: string | null
+  locationSource?: LocationSource | null
+}
 
 /**
  * Darwin Core basisOfRecord standard terms:
@@ -65,47 +76,47 @@ export const BASIS_OF_RECORD_OPTIONS: {
   label: string
   description: string
 }[] = [
-  {
-    value: 'HumanObservation',
-    label: 'Human Observation',
-    description: 'Field sighting or visual/auditory detection by a human observer in nature.',
-  },
-  {
-    value: 'MachineObservation',
-    label: 'Machine Observation',
-    description: 'Detection recorded automatically by sensor, camera trap, or automated sound recorder.',
-  },
-  {
-    value: 'PreservedSpecimen',
-    label: 'Preserved Specimen',
-    description: 'Physical specimen preserved in a herbarium, museum collection, or archive.',
-  },
-  {
-    value: 'MaterialSample',
-    label: 'Material Sample',
-    description: 'Biological sample such as tissue, blood, feather, hair, seed, or environmental DNA.',
-  },
-  {
-    value: 'LivingSpecimen',
-    label: 'Living Specimen',
-    description: 'Live organism maintained in a botanical garden, zoo, nursery, or culture collection.',
-  },
-  {
-    value: 'FossilSpecimen',
-    label: 'Fossil Specimen',
-    description: 'Preserved remains, imprint, or trace of an organism from a past geological period.',
-  },
-  {
-    value: 'Literature',
-    label: 'Literature',
-    description: 'Record transcribed from a published scientific paper, book, flora/fauna checklist, or report.',
-  },
-  {
-    value: 'Unknown',
-    label: 'Unknown',
-    description: 'Nature of evidence is unrecorded or uncertain.',
-  },
-]
+    {
+      value: 'HumanObservation',
+      label: 'Human Observation',
+      description: 'Field sighting or visual/auditory detection by a human observer in nature.',
+    },
+    {
+      value: 'MachineObservation',
+      label: 'Machine Observation',
+      description: 'Detection recorded automatically by sensor, camera trap, or automated sound recorder.',
+    },
+    {
+      value: 'PreservedSpecimen',
+      label: 'Preserved Specimen',
+      description: 'Physical specimen preserved in a herbarium, museum collection, or archive.',
+    },
+    {
+      value: 'MaterialSample',
+      label: 'Material Sample',
+      description: 'Biological sample such as tissue, blood, feather, hair, seed, or environmental DNA.',
+    },
+    {
+      value: 'LivingSpecimen',
+      label: 'Living Specimen',
+      description: 'Live organism maintained in a botanical garden, zoo, nursery, or culture collection.',
+    },
+    {
+      value: 'FossilSpecimen',
+      label: 'Fossil Specimen',
+      description: 'Preserved remains, imprint, or trace of an organism from a past geological period.',
+    },
+    {
+      value: 'Literature',
+      label: 'Literature',
+      description: 'Record transcribed from a published scientific paper, book, flora/fauna checklist, or report.',
+    },
+    {
+      value: 'Unknown',
+      label: 'Unknown',
+      description: 'Nature of evidence is unrecorded or uncertain.',
+    },
+  ]
 
 /**
  * Validates geographic coordinate bounds.
@@ -262,6 +273,11 @@ export interface Observation {
   lifeStage?: string // Life stage (Adult, Juvenile, Flowering, etc.)
   microHabitat?: string // Specific substrate/location (Tree Canopy, Ground, etc.)
   otherMicroHabitat?: string // Custom micro-habitat when 'Other' selected
+  habitatType?: string // Aquatic, Forest, Grassland, Agricultural, Rocky patch, Urban
+  reproductiveAttributes?: string[] // Flower, Flower bud, Breeding plumage, Presence of eggs, Nest present, Breeding activity
+  sex?: string // Cannot be determined, Female, Male
+  evidenceOfPresence?: string[] // Bone, Construction, Egg, Molt, Organism, Scat, Track
+  season?: string // Premonsoon, Monsoon, Post monsoon
 
   // Traditional Knowledge documentation
   hasTraditionalKnowledge?: YesNo // 'Yes' | 'No' (optional overall)
@@ -275,14 +291,16 @@ export interface Observation {
   longitude: number | null // Final observation longitude
   location_source?: LocationSource | null // 'GPS' | 'Manual Pin Adjustment'
   accuracyMeters: number | null // Actual GPS accuracy radius in metres (or null if unavailable)
+  gpsCapturedAt?: string | null // ISO timestamp when GPS coordinates were acquired
 
   // Temporal (Darwin Core Event)
   observationAt: string
   recordedAt: string
 
   // Media attachments
-  photo?: Blob | string | null
-  photos?: (Blob | string)[]
+  photo?: Blob | null
+  photos?: Blob[]
+  photoMetadata?: PhotoLocationMetadata[]
 
   // Expert Verification (Post-MVP / future review)
   verificationStatus?: VerificationStatus // Defaults to 'Unreviewed'
@@ -418,4 +436,4 @@ export class ShrishtiDatabase extends Dexie {
 export const db = new ShrishtiDatabase()
 
 // Backward-compatible alias for existing imports
-export { ShrishtiDatabase as VasudhaDatabase }
+export { ShrishtiDatabase as VasudhaDatabase }

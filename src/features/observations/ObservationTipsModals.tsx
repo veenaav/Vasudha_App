@@ -136,19 +136,19 @@ export function LocationTipsModal({ isOpen, onClose }: { isOpen: boolean; onClos
       ariaLabelledBy="location-tips-title"
       tips={[
         {
-          title: 'Use GPS for Precision',
+          title: 'Automatic Photo GPS',
           description:
-            'Tap “Get My Location” when standing right at the observation spot for accurate coordinates.',
+            'Coordinates and timestamps are automatically extracted from your photograph’s EXIF metadata when you snap or upload a photo.',
         },
         {
-          title: 'Fine-Tune on Map',
+          title: 'Device GPS Fallback',
           description:
-            'If you are logging later or the GPS marker is slightly off, tap anywhere on the map or drag the pin directly to the correct spot.',
+            'If your photo does not contain embedded EXIF location metadata, the device’s current GPS coordinates are captured automatically as a fallback.',
         },
         {
           title: 'Automatic Ward Lookup',
           description:
-            'Once your location pin is set, the system will automatically match and identify your administrative ward.',
+            'Once photo coordinates are locked, the administrative ward is automatically matched and identified in the background.',
         },
       ]}
     />
@@ -223,4 +223,3 @@ export function TraditionalKnowledgeTipsModal({
     />
   )
 }
-

@@ -110,7 +110,7 @@ export default function SurveysPage() {
               required
               value={leadObserver}
               onChange={(e) => setLeadObserver(e.target.value)}
-              placeholder="e.g. Dr. Anitha / Team Palayam"
+              placeholder="Lead observer"
               className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
             />
           </div>
@@ -162,7 +162,7 @@ export default function SurveysPage() {
               type="text"
               value={weatherNotes}
               onChange={(e) => setWeatherNotes(e.target.value)}
-              placeholder="e.g. Sunny morning, 28°C, post-monsoon flowering season"
+              placeholder="e.g. Sunny, 28°C"
               className="mt-2 w-full min-h-[48px] rounded-xl border border-[#1C4D3C] bg-[#061812] px-4 py-3 text-base text-[#F0F5EF] placeholder-[#7B9586] outline-none focus:border-[#A6F16A] focus:ring-1 focus:ring-[#A6F16A]"
             />
           </div>

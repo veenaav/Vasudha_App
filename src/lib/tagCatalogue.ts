@@ -11,11 +11,13 @@
  */
 
 export type TagCategory =
+  | 'Species group'
   | 'Habitat'
   | 'Ecological role'
   | 'Activity or behaviour'
   | 'Conservation'
   | 'Observation context'
+  | 'General'
 
 export interface Tag {
   id: string // Stable unique identifier (e.g. 'eco_pollinator')
@@ -25,6 +27,7 @@ export interface Tag {
 }
 
 export const TAG_CATEGORIES: TagCategory[] = [
+  'Species group',
   'Habitat',
   'Ecological role',
   'Activity or behaviour',
@@ -33,6 +36,62 @@ export const TAG_CATEGORIES: TagCategory[] = [
 ]
 
 export const MANAGED_TAGS: Tag[] = [
+  // 0. Species Groups & Common Taxa
+  {
+    id: 'grp_birds',
+    label: 'Birds',
+    category: 'Species group',
+    description: 'Avian fauna: songbirds, raptors, waterbirds, waders, and seabirds.',
+  },
+  {
+    id: 'grp_mammals',
+    label: 'Mammals',
+    category: 'Species group',
+    description: 'Mammalian wildlife including bats, rodents, primates, ungulates, and carnivores.',
+  },
+  {
+    id: 'grp_amphibians',
+    label: 'Amphibians',
+    category: 'Species group',
+    description: 'Frogs, toads, caecilians, and salamanders.',
+  },
+  {
+    id: 'grp_reptiles',
+    label: 'Reptiles',
+    category: 'Species group',
+    description: 'Snakes, lizards, skinks, geckos, turtles, tortoises, and crocodilians.',
+  },
+  {
+    id: 'grp_flora',
+    label: 'Flora',
+    category: 'Species group',
+    description: 'Flowering plants, trees, shrubs, herbs, ferns, and grasses.',
+  },
+  {
+    id: 'grp_insects',
+    label: 'Insects',
+    category: 'Species group',
+    description: 'Butterflies, moths, beetles, dragonflies, bees, ants, and other hexapods.',
+  },
+  {
+    id: 'grp_arachnids',
+    label: 'Arachnids',
+    category: 'Species group',
+    description: 'Spiders, scorpions, harvestmen, ticks, and mites.',
+  },
+  {
+    id: 'grp_fungi',
+    label: 'Fungi',
+    category: 'Species group',
+    description: 'Mushrooms, brackets, polypores, lichens, and molds.',
+  },
+  {
+    id: 'grp_fish',
+    label: 'Fish',
+    category: 'Species group',
+    description: 'Freshwater, estuarine, or marine ichthyofauna.',
+  },
+
   // 1. Habitat
   {
     id: 'hab_urban_park',
@@ -237,10 +296,34 @@ export const MANAGED_TAGS: Tag[] = [
 ]
 
 /**
- * Look up a tag by its stable ID.
+ * Look up a tag by its stable ID, label, or preserved user tag.
  */
 export function getTagById(id: string): Tag | undefined {
-  return MANAGED_TAGS.find((t) => t.id === id)
+  if (!id) return undefined
+  // 1. Direct match on id
+  const byId = MANAGED_TAGS.find((t) => t.id === id)
+  if (byId) return byId
+
+  // 2. Normalized match (strip leading '#', check label or id case-insensitively)
+  const clean = id.trim().replace(/^#/, '')
+  const cleanLower = clean.toLowerCase()
+
+  // Match common alias for Flora <-> Plants
+  if (cleanLower === 'plants' || cleanLower === 'plant') {
+    return MANAGED_TAGS.find((t) => t.id === 'grp_flora')
+  }
+
+  const byLabel = MANAGED_TAGS.find(
+    (t) => t.label.toLowerCase() === cleanLower || t.id.toLowerCase() === cleanLower
+  )
+  if (byLabel) return byLabel
+
+  // 3. Fallback for custom user tags (preserve user tags without ever wiping or losing them)
+  return {
+    id,
+    label: clean,
+    category: 'General',
+  }
 }
 
 /**
@@ -262,15 +345,19 @@ export function searchTags(query: string): Tag[] {
  */
 export function getTagsByCategory(): Record<TagCategory, Tag[]> {
   const result: Record<TagCategory, Tag[]> = {
+    'Species group': [],
     Habitat: [],
     'Ecological role': [],
     'Activity or behaviour': [],
     Conservation: [],
     'Observation context': [],
+    General: [],
   }
 
   for (const tag of MANAGED_TAGS) {
-    result[tag.category].push(tag)
+    if (result[tag.category]) {
+      result[tag.category].push(tag)
+    }
   }
 
   return result

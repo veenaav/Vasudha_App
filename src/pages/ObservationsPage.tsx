@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { PlusCircle, Leaf, Download, Tag as TagIcon, X } from 'lucide-react'
+import { PlusCircle, Leaf, Download, X } from 'lucide-react'
 import ObservationCard from '@/components/ObservationCard'
 import { downloadDarwinCoreExport } from '@/lib/darwinCoreExport'
 import { useObservations, type ObservationFilterStatus } from '@/features/observations'
@@ -22,9 +22,6 @@ export default function ObservationsPage() {
       {/* Editorial Header */}
       <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-4">
         <div>
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#A6F16A]">
-            Biodiversity Archive
-          </span>
           <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-white">
             My Records
           </h1>
@@ -79,46 +76,19 @@ export default function ObservationsPage() {
             ))}
           </div>
 
-          {/* Tag filter pills (if any observations have tags) */}
-          {availableTags.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs border-t border-[#1C4D3C]/60">
-              <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#7B9586] shrink-0 mr-1">
-                <TagIcon className="h-3 w-3 text-[#A6F16A]" />
-                Tags:
-              </span>
-
-              {selectedTag && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedTag(null)}
-                  className="inline-flex items-center gap-1 rounded-full bg-rose-950/60 border border-rose-800/60 px-2.5 py-1 text-[11px] font-medium text-rose-300 whitespace-nowrap active:scale-95 cursor-pointer"
-                >
-                  <X className="h-3 w-3" />
-                  <span>Clear Tag</span>
-                </button>
-              )}
-
-              {availableTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => setSelectedTag(selectedTag === tag.id ? null : tag.id)}
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
-                    selectedTag === tag.id
-                      ? 'bg-[#A6F16A] text-[#061812] font-bold shadow-sm'
-                      : 'bg-[#0D2D22] text-[#B2C8BA] border border-[#1C4D3C] hover:border-[#A6F16A]/40'
-                  }`}
-                >
-                  <span>#{tag.name}</span>
-                  <span
-                    className={`text-[10px] ${
-                      selectedTag === tag.id ? 'text-[#061812]' : 'text-[#7B9586]'
-                    }`}
-                  >
-                    ({tag.count})
-                  </span>
-                </button>
-              ))}
+          {/* Active tag filter indicator if a tag is selected */}
+          {selectedTag && (
+            <div className="flex items-center gap-2 pt-0.5">
+              <span className="text-xs text-[#7B9586]">Filtered by tag:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTag(null)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-1 text-xs font-semibold text-[#A6F16A] hover:bg-rose-950/60 hover:border-rose-800 hover:text-rose-300 transition-colors cursor-pointer"
+                title="Click to clear filter"
+              >
+                <span>#{availableTags.find((t) => t.id === selectedTag)?.name || selectedTag}</span>
+                <X className="h-3 w-3" />
+              </button>
             </div>
           )}
         </div>
@@ -159,6 +129,7 @@ export default function ObservationsPage() {
               key={obs.id}
               observation={obs}
               onDelete={handleDeleteObservation}
+              onSelectTag={setSelectedTag}
             />
           ))}
         </div>

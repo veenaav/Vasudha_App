@@ -21,6 +21,8 @@ import {
   Eye,
   EyeOff,
   Tag as TagIcon,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 // Format ISO timestamp into Indian English localized string
@@ -88,12 +90,14 @@ function DetailRow({
 interface ObservationCardProps {
   observation: Observation
   onDelete?: (id: string) => void
+  onSelectTag?: (tagId: string) => void
 }
 
-function ObservationCard({ observation, onDelete }: ObservationCardProps) {
+function ObservationCard({ observation, onDelete, onSelectTag }: ObservationCardProps) {
   const navigate = useNavigate()
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [activePhotoIdx, setActivePhotoIdx] = useState(0)
+  const [cardPhotoIdx, setCardPhotoIdx] = useState(0)
 
   // Extract photo URLs from props (supports both local Blobs and remote/string URLs)
   const [photoUrls, setPhotoUrls] = useState<string[]>([])
@@ -167,23 +171,24 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
     <>
       {/* 1. Image-first observation card — Entire card is clickable to open details */}
       <article
-        onClick={() => setIsDetailOpen(true)}
+        onClick={() => { setActivePhotoIdx(cardPhotoIdx); setIsDetailOpen(true); }}
         className="group cursor-pointer overflow-hidden rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] shadow-lg shadow-[#061812]/50 transition-all duration-200 hover:border-[#A6F16A]/50 hover:shadow-2xl text-[#F0F5EF]"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
+            setActivePhotoIdx(cardPhotoIdx)
             setIsDetailOpen(true)
           }
         }}
         aria-label={`View details for ${displayTitle}`}
       >
-        {/* Photograph occupies top of card visible area */}
+        {/* Photograph occupies top of card visible area with multi-photo carousel */}
         <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[#061812]">
           {photoUrls.length > 0 && !imageFailed ? (
             <img
-              src={photoUrls[0]}
+              src={photoUrls[cardPhotoIdx] || photoUrls[0]}
               alt={displayTitle}
               onError={() => setImageFailed(true)}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] filter brightness-[0.9]"
@@ -212,6 +217,70 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
             </div>
           )}
 
+          {/* Multi-photo Navigation & Thumbnail Strip directly on card */}
+          {photoUrls.length > 1 && (
+            <>
+              {/* Previous Photo Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCardPhotoIdx((prev) => (prev > 0 ? prev - 1 : photoUrls.length - 1))
+                }}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {/* Next Photo Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCardPhotoIdx((prev) => (prev < photoUrls.length - 1 ? prev + 1 : 0))
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              {/* Thumbnail strip & photo counter pill at bottom */}
+              <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between pointer-events-none">
+                <div className="flex items-center gap-1.5 bg-[#061812]/90 backdrop-blur-md px-2 py-1 rounded-full border border-[#1C4D3C] shadow-md pointer-events-auto">
+                  {photoUrls.slice(0, 5).map((url, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCardPhotoIdx(idx)
+                      }}
+                      className={`h-4.5 w-4.5 rounded-full overflow-hidden border transition-all cursor-pointer ${
+                        cardPhotoIdx === idx
+                          ? 'border-[#A6F16A] ring-1.5 ring-[#A6F16A] scale-110'
+                          : 'border-white/30 opacity-60 hover:opacity-100'
+                      }`}
+                      aria-label={`View photo ${idx + 1}`}
+                    >
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                  {photoUrls.length > 5 && (
+                    <span className="text-[9px] font-bold text-[#A6F16A] px-1">
+                      +{photoUrls.length - 5}
+                    </span>
+                  )}
+                </div>
+
+                <span className="rounded-full bg-[#061812]/90 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-[#A6F16A] border border-[#1C4D3C] shadow-md pointer-events-auto">
+                  {cardPhotoIdx + 1} / {photoUrls.length}
+                </span>
+              </div>
+            </>
+          )}
+
           {/* Delete button inside the card — Top-right corner over photograph */}
           {onDelete && observation.id !== undefined && (
             <button
@@ -237,40 +306,52 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
         </div>
 
         {/* 3. Information visible on the card */}
-        <div className="p-4 sm:p-5 space-y-2">
-          {/* Common / species name */}
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white line-clamp-1 group-hover:text-[#A6F16A] transition-colors">
-              {displayTitle}
-            </h3>
+        <div className="p-4 sm:p-5 space-y-2.5">
+          {/* Header row: Species Title + Species Group Pill */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white line-clamp-1 group-hover:text-[#A6F16A] transition-colors">
+                {displayTitle}
+              </h3>
+              {observation.scientificName?.trim() && (
+                <p className="mt-0.5 text-xs sm:text-sm italic text-[#20D6A0] line-clamp-1">
+                  {observation.scientificName.trim()}
+                </p>
+              )}
+            </div>
 
-            {/* Scientific name */}
-            {observation.scientificName?.trim() && (
-              <p className="mt-0.5 text-xs sm:text-sm italic text-[#20D6A0] line-clamp-1">
-                {observation.scientificName.trim()}
-              </p>
+            {/* Species group badge if recorded */}
+            {observation.speciesGroup && (
+              <span className="shrink-0 inline-flex items-center rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-[#A6F16A] shadow-xs">
+                {observation.speciesGroup}
+              </span>
             )}
           </div>
 
-          {/* Tags preview on card face */}
+          {/* Clean small pill badges for tags directly on card */}
           {observation.tags && observation.tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {observation.tags.slice(0, 3).map((tagId) => {
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+              {observation.tags.map((tagId) => {
                 const tag = getTagById(tagId)
+                const label = tag ? tag.label : tagId.startsWith('#') ? tagId.slice(1) : tagId
                 return (
                   <span
                     key={tagId}
-                    className="inline-flex items-center rounded-md bg-[#133D2F] px-1.5 py-0.5 text-[10px] font-medium text-[#A6F16A] border border-[#1C4D3C]"
+                    onClick={(e) => {
+                      if (onSelectTag) {
+                        e.stopPropagation()
+                        onSelectTag(tagId)
+                      }
+                    }}
+                    className={`inline-flex items-center gap-1 rounded-full bg-[#061812] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-medium text-[#A6F16A] shadow-xs transition-colors ${
+                      onSelectTag ? 'hover:bg-[#133D2F] hover:border-[#A6F16A]/60' : ''
+                    }`}
                   >
-                    #{tag ? tag.label : tagId}
+                    <span className="h-1 w-1 rounded-full bg-[#20D6A0]" />
+                    <span>#{label}</span>
                   </span>
                 )
               })}
-              {observation.tags.length > 3 && (
-                <span className="text-[10px] text-[#7B9586] font-medium">
-                  +{observation.tags.length - 3} more
-                </span>
-              )}
             </div>
           )}
 
@@ -460,12 +541,12 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
               )}
             </div>
 
-            {/* Geolocation & GPS Accuracy */}
-            <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs">
+            {/* Geolocation & GPS Metadata */}
+            <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2.5 text-xs">
               <DetailRow
                 icon={MapPin}
                 iconColor="text-[#A6F16A]"
-                label="Final Coordinates"
+                label="GPS Coordinates"
                 value={hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
                 valueClass="font-mono font-medium text-[#A6F16A]"
               />
@@ -478,7 +559,9 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                   </span>
                   <span
                     className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
-                      observation.location_source === 'GPS'
+                      observation.location_source === 'EXIF'
+                        ? 'bg-cyan-950/60 border-cyan-800/60 text-cyan-300'
+                        : observation.location_source === 'GPS'
                         ? 'bg-[#133D2F] border-[#1C4D3C] text-[#A6F16A]'
                         : 'bg-amber-950/60 border-amber-800/60 text-amber-300'
                     }`}
@@ -488,35 +571,24 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 </div>
               )}
 
-              {observation.gps_latitude !== null &&
-                observation.gps_latitude !== undefined &&
-                observation.gps_longitude !== null &&
-                observation.gps_longitude !== undefined && (
+              {observation.location_source !== 'EXIF' &&
+                observation.accuracyMeters !== null &&
+                observation.accuracyMeters !== undefined && (
                   <DetailRow
-                    icon={Compass}
-                    iconColor="text-[#20D6A0]"
-                    label="Raw GPS"
-                    value={`${formatCoordinate(observation.gps_latitude)}, ${formatCoordinate(observation.gps_longitude)}`}
-                    valueClass="font-mono font-medium text-[#B2C8BA]"
+                    icon={Crosshair}
+                    iconColor="text-[#A6F16A]"
+                    label="GPS Accuracy"
+                    value={`±${Math.round(observation.accuracyMeters)} metres`}
                   />
                 )}
-
-              {observation.accuracyMeters !== null && observation.accuracyMeters !== undefined && (
-                <DetailRow
-                  icon={Crosshair}
-                  iconColor="text-[#A6F16A]"
-                  label="GPS Sensor Accuracy"
-                  value={`±${Math.round(observation.accuracyMeters)} metres`}
-                />
-              )}
 
               <div className="flex items-center justify-between pt-1 border-t border-[#1C4D3C]">
                 <span className="flex items-center gap-1.5 text-[#7B9586]">
                   <Compass className="h-3.5 w-3.5 text-[#20D6A0]" />
                   <span>Administrative Ward:</span>
                 </span>
-                <span className="font-medium text-white text-right">
-                  {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Automatic GIS identification pending')}
+                <span className="font-semibold text-white text-right">
+                  {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Not identified')}
                 </span>
               </div>
 
@@ -594,14 +666,15 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {observation.tags.map((tagId) => {
                     const tag = getTagById(tagId)
+                    const label = tag ? tag.label : tagId.startsWith('#') ? tagId.slice(1) : tagId
                     return (
                       <span
                         key={tagId}
                         className="inline-flex items-center gap-1 rounded-full border border-[#1C4D3C] bg-[#0D2D22] px-2.5 py-1 text-[11px] font-medium text-white shadow-2xs"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-[#A6F16A]" />
-                        <span>{tag ? tag.label : tagId}</span>
-                        {tag && (
+                        <span>#{label}</span>
+                        {tag && tag.category !== 'General' && (
                           <span className="text-[9px] uppercase tracking-wider text-[#7B9586] border-l border-[#1C4D3C] pl-1 ml-0.5 font-normal">
                             {tag.category}
                           </span>

@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
-  Leaf,
   Database,
   Compass,
   CheckCircle2,
@@ -10,6 +9,7 @@ import {
   Mail,
 } from 'lucide-react'
 import BrandName from '@/components/BrandName'
+import BrandLockup from '@/components/BrandLockup'
 
 interface AboutPageProps {
   onBack?: () => void
@@ -26,7 +26,9 @@ export default function AboutPage({ onBack }: AboutPageProps) {
           </span>
           <h1 className="font-heading text-2xl sm:text-[28px] font-bold tracking-wide text-white mt-0.5 flex items-center gap-2">
             <span>About</span>
-            <BrandName className="text-2xl sm:text-[28px]" />
+            <span className="font-sans font-extrabold tracking-[0.14em] uppercase text-[#E4F6EC] drop-shadow-[0_0_12px_rgba(32,214,160,0.22)]">
+              B-LIFFE
+            </span>
           </h1>
           <p className="text-xs text-[#B2C8BA] mt-0.5">
             Mission, features and conservation goals
@@ -56,17 +58,12 @@ export default function AboutPage({ onBack }: AboutPageProps) {
       {/* 1. Identity & Full Name */}
       <div className="rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] p-6 shadow-xl text-[#F0F5EF]">
         <div className="flex items-center gap-3 border-b border-[#1C4D3C]/70 pb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#061812] border border-[#1C4D3C] text-[#A6F16A] shadow-md">
-            <Leaf className="h-6 w-6 text-[#A6F16A]" />
-          </div>
-          <div>
-            <h2>
-              <BrandName className="text-2xl font-bold tracking-wider" />
-            </h2>
-            <p className="text-xs font-semibold text-[#A6F16A] leading-tight mt-0.5">
-              Bharat Local Informatics for Flora, Fauna, and Ecosystems
-            </p>
-          </div>
+          <BrandLockup
+            layout="horizontal"
+            size="md"
+            subtitle="Bharat Local Informatics for Flora, Fauna, and Ecosystems"
+            subtitleClassName="text-xs font-semibold text-[#A6F16A] leading-tight mt-0.5"
+          />
         </div>
 
         {/* 2. Purpose & Vision */}
