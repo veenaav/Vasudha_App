@@ -323,15 +323,7 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
               })}
             </div>
 
-            {/* Drawer Footer */}
-            <div className="border-t border-[#1C4D3C] bg-[#061812] px-4 py-3 text-center text-xs text-[#B2C8BA]">
-              <div className="flex justify-center">
-                <BrandName className="text-base" />
-              </div>
-              <p className="text-[10px] text-[#7B9586] font-normal mt-0.5">
-                Bharat Local Informatics for Flora, Fauna, and Ecosystems
-              </p>
-            </div>
+
           </>
         )}
       </aside>

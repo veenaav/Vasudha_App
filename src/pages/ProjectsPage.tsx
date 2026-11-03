@@ -37,7 +37,6 @@ function ProjectsPage() {
     setDescription,
     isSubmitting,
     handleCreateProject,
-    handleCreateSampleProject,
     handleDeleteProject,
     hasProjects,
     displayedProjects,
@@ -233,28 +232,23 @@ function ProjectsPage() {
           )}
 
           {/* Projects List or Empty State (Independently scrolling) */}
-          <div className="flex-1 min-h-0 overflow-y-auto py-3 space-y-4 pr-1 overscroll-contain">
+          <div className={`flex-1 min-h-0 ${!hasProjects ? 'flex items-center justify-center' : 'overflow-y-auto space-y-4'} py-3 pr-1 overscroll-contain`}>
             {!hasProjects ? (
-              <div className="rounded-3xl border border-dashed border-[#1C4D3C] p-8 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50 my-auto">
-                <FolderPlus className="mx-auto h-12 w-12 text-[#A6F16A]/70" />
-                <h3 className="mt-2 text-xl font-bold text-white">No projects yet</h3>
-                <p className="mt-1 text-sm text-[#B2C8BA] max-w-sm mx-auto">
+              <div className="w-full rounded-3xl border border-dashed border-[#1C4D3C] p-8 sm:p-10 text-center bg-[#0D2D22] shadow-xl shadow-[#061812]/50 flex flex-col items-center justify-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#133D2F] border border-[#1C4D3C] text-[#A6F16A] shadow-md mb-3">
+                  <FolderPlus className="h-8 w-8 text-[#A6F16A]" />
+                </div>
+                <h3 className="text-xl font-bold text-white">No projects yet</h3>
+                <p className="mt-1.5 text-sm text-[#B2C8BA] max-w-xs mx-auto leading-relaxed">
                   Create a project to organize biodiversity field data.
                 </p>
-                <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
+                <div className="mt-6 flex justify-center">
                   <Button
                     onClick={() => setShowAddForm(true)}
-                    className="bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold min-h-[46px] rounded-xl active:scale-95 shadow-md"
+                    className="inline-flex items-center justify-center bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] hover:opacity-95 text-sm font-bold min-h-[46px] px-6 rounded-2xl active:scale-95 shadow-lg shadow-[#20D6A0]/20 transition-all cursor-pointer"
                   >
-                    <Plus className="h-4 w-4 mr-1 text-[#061812]" />
-                    Create Project
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleCreateSampleProject}
-                    className="border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] text-sm font-semibold min-h-[46px] rounded-xl active:scale-95 shadow-sm"
-                  >
-                    + Load Sample PBR Project
+                    <Plus className="h-4 w-4 mr-1.5 text-[#061812] stroke-[2.5]" />
+                    <span>Create Project</span>
                   </Button>
                 </div>
               </div>
