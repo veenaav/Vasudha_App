@@ -97,8 +97,10 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
 
   // Extract photo URLs from props (supports both local Blobs and remote/string URLs)
   const [photoUrls, setPhotoUrls] = useState<string[]>([])
+  const [imageFailed, setImageFailed] = useState(false)
 
   useEffect(() => {
+    setImageFailed(false)
     const raw: any[] = observation.photos?.length
       ? observation.photos
       : observation.photo
@@ -179,16 +181,19 @@ function ObservationCard({ observation, onDelete }: ObservationCardProps) {
       >
         {/* Photograph occupies top of card visible area */}
         <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[#061812]">
-          {photoUrls.length > 0 ? (
+          {photoUrls.length > 0 && !imageFailed ? (
             <img
               src={photoUrls[0]}
               alt={displayTitle}
+              onError={() => setImageFailed(true)}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] filter brightness-[0.9]"
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center bg-[#061812] text-[#7B9586]">
               <Camera className="h-10 w-10 stroke-[1.5] text-[#1C4D3C]" />
-              <span className="mt-2 text-xs font-medium tracking-wide">No photograph attached</span>
+              <span className="mt-2 text-xs font-medium tracking-wide">
+                {imageFailed ? 'Image unavailable' : 'No photograph attached'}
+              </span>
             </div>
           )}
 
