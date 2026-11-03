@@ -21,6 +21,7 @@ import FAQPage from '@/pages/FAQPage'
 import OfflineSyncPage from '@/pages/OfflineSyncPage'
 import PrivacyPage from '@/pages/PrivacyPage'
 import BrandName from '@/components/BrandName'
+import BrandLockup from '@/components/BrandLockup'
 
 interface NavigationDrawerProps {
   isOpen: boolean
@@ -253,17 +254,12 @@ export default function NavigationDrawer({ isOpen, onClose }: NavigationDrawerPr
           <>
             {/* Header */}
             <div className="relative z-10 flex items-center justify-between border-b border-[#1C4D3C] bg-[#08221A] px-4 py-3.5 sm:px-5">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0D2D22] border border-[#1C4D3C] p-0.5 shadow-xs overflow-hidden">
-                  <img src={`${import.meta.env.BASE_URL}splash-logo.png`} alt="B-LIFFE" className="h-full w-full object-contain" />
-                </div>
-                <div className="min-w-0">
-                  <BrandName className="text-lg" />
-                  <p className="text-[10px] tracking-wider uppercase font-semibold text-[#B2C8BA] truncate mt-0.5">
-                    Menu & Information
-                  </p>
-                </div>
-              </div>
+              <BrandLockup
+                layout="horizontal"
+                size="sm"
+                subtitle="Menu & Information"
+                subtitleClassName="text-[10px] tracking-wider uppercase font-semibold text-[#B2C8BA] mt-0.5"
+              />
 
               <button
                 type="button"

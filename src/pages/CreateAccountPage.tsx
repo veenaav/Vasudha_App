@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import BrandLockup from '@/components/BrandLockup'
 import {
   ArrowLeft,
+  Compass,
   User,
   Mail,
   Lock,
@@ -92,7 +94,7 @@ export default function CreateAccountPage() {
 
   return (
     <div className="min-h-screen bg-[#08221A] text-[#F0F5EF] flex flex-col justify-between p-4 sm:p-6 max-w-lg mx-auto">
-      {/* Top Header with Back Arrow */}
+      {/* Top Header with Back Arrow & Unified Brand Lockup */}
       <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-[#1C4D3C]/70 flex-shrink-0">
         <Link
           to="/welcome"
@@ -101,17 +103,18 @@ export default function CreateAccountPage() {
         >
           <ArrowLeft className="w-4 h-4 text-[#A6F16A]" />
         </Link>
+        <Link to="/welcome" className="hover:opacity-90 transition-opacity">
+          <BrandLockup layout="horizontal" size="sm" />
+        </Link>
+        <div className="w-8" aria-hidden="true" />
       </div>
 
       {/* Main Registration Card */}
       <div className="my-auto py-4 space-y-5">
-        <div className="space-y-1 text-center">
+        <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Create an Account
+            Create Account
           </h1>
-          <p className="text-xs sm:text-sm text-[#B2C8BA]">
-            Join grassroots biodiversity researchers and ward surveyors
-          </p>
         </div>
 
         <form
@@ -318,16 +321,26 @@ export default function CreateAccountPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-sm sm:text-base shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
+            className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-sm sm:text-base shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all disabled:opacity-70 mt-2"
           >
             {isSubmitting ? (
               <span>Validating Account...</span>
             ) : (
               <>
-                <UserPlus className="w-4 h-4 text-[#061812]" />
+                <UserPlus className="w-4.5 h-4.5 text-[#061812]" />
                 <span>Create Account</span>
               </>
             )}
+          </button>
+
+          {/* Continue as Guest Button (Consistent with Welcome Screen) */}
+          <button
+            type="button"
+            onClick={() => navigate('/home')}
+            className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-4 rounded-xl sm:rounded-2xl border border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] hover:text-[#F0F5EF] text-xs sm:text-sm md:text-base font-extrabold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap mt-1"
+          >
+            <Compass className="w-4.5 h-4.5 text-[#A6F16A] shrink-0" />
+            <span>Continue as Guest →</span>
           </button>
 
           {/* Link to Login */}
@@ -338,17 +351,6 @@ export default function CreateAccountPage() {
             </Link>
           </div>
         </form>
-      </div>
-
-      {/* Offline Mode Bypass */}
-      <div className="pt-2 pb-1 text-center">
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="text-xs text-[#7B9586] hover:text-[#A6F16A] transition-colors"
-        >
-          Continue as Guest →
-        </button>
       </div>
     </div>
   )

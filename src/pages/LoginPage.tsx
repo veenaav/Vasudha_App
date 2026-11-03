@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
+  Compass,
   Mail,
   Lock,
   Eye,
@@ -14,6 +15,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import BrandName from '@/components/BrandName'
+import BrandLockup from '@/components/BrandLockup'
 import { apiLogin } from '@/lib/profileService'
 
 export default function LoginPage() {
@@ -78,7 +80,7 @@ export default function LoginPage() {
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#08221A] text-[#F0F5EF] flex flex-col justify-between px-4 py-3 sm:py-5 max-w-lg mx-auto select-none">
-      {/* Top Bar with Back Arrow */}
+      {/* Top Bar with Back Arrow & Unified Brand Lockup */}
       <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-[#1C4D3C]/70 flex-shrink-0">
         <Link
           to="/welcome"
@@ -87,14 +89,17 @@ export default function LoginPage() {
         >
           <ArrowLeft className="w-4 h-4 text-[#A6F16A]" />
         </Link>
+        <Link to="/welcome" className="hover:opacity-90 transition-opacity">
+          <BrandLockup layout="horizontal" size="sm" />
+        </Link>
+        <div className="w-8" aria-hidden="true" />
       </div>
 
       {/* Login Card */}
       <div className="my-auto w-full flex-1 flex flex-col justify-center min-h-0 py-2 sm:py-3 space-y-3 sm:space-y-4">
         <div className="text-center flex-shrink-0">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center justify-center gap-2">
-            <span>Log In to</span>
-            <BrandName className="text-2xl sm:text-3xl font-extrabold" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Log In
           </h1>
         </div>
 
@@ -206,24 +211,34 @@ export default function LoginPage() {
           </div>
 
           {/* Action / Submit Section */}
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2.5 pt-1">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-sm sm:text-base shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all disabled:opacity-70 cursor-pointer"
+              className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-extrabold text-sm sm:text-base shadow-lg shadow-[#20D6A0]/20 hover:shadow-[#A6F16A]/30 active:scale-[0.98] transition-all disabled:opacity-70 cursor-pointer"
             >
               {isSubmitting ? (
                 <span>Validating...</span>
               ) : (
                 <>
-                  <LogIn className="w-4 h-4 text-[#061812]" />
+                  <LogIn className="w-4.5 h-4.5 text-[#061812]" />
                   <span>Log In</span>
                 </>
               )}
             </button>
 
+            {/* Continue as Guest Button (Consistent with Welcome Screen) */}
+            <button
+              type="button"
+              onClick={() => navigate('/home')}
+              className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-4 rounded-xl sm:rounded-2xl border border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] hover:text-[#F0F5EF] text-xs sm:text-sm md:text-base font-extrabold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+            >
+              <Compass className="w-4.5 h-4.5 text-[#A6F16A] shrink-0" />
+              <span>Continue as Guest →</span>
+            </button>
+
             {/* Quick link to create account */}
-            <div className="text-center text-xs text-[#B2C8BA]">
+            <div className="text-center text-xs text-[#B2C8BA] pt-0.5">
               Don&apos;t have an account?{' '}
               <Link
                 to="/create-account"
@@ -234,17 +249,6 @@ export default function LoginPage() {
             </div>
           </div>
         </form>
-      </div>
-
-      {/* Field Worker Local Mode Bypass footer */}
-      <div className="pt-1 pb-1 text-center flex-shrink-0">
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="text-xs text-[#7B9586] hover:text-[#A6F16A] transition-colors"
-        >
-          Continue as Guest →
-        </button>
       </div>
 
       {/* Backend Requirements & Validation Diagnostic Modal */}

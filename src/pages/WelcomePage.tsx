@@ -4,7 +4,6 @@ import {
   LogIn,
   Compass,
 } from 'lucide-react'
-import BrandName from '@/components/BrandName'
 
 export default function WelcomePage() {
   return (
@@ -22,13 +21,16 @@ export default function WelcomePage() {
           {/* Logo & Two-Line Title Header */}
           <div className="flex items-center gap-3.5 sm:gap-4">
             <img
-              src={`${import.meta.env.BASE_URL}splash-logo.png`}
-              alt="B-Liffe Logo"
-              className="w-18 h-18 sm:w-22 sm:h-22 md:w-26 md:h-26 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] shrink-0"
+              src={`${import.meta.env.BASE_URL}splash-logo-opt2.png`}
+              alt="B-LIFFE Logo"
+              className="w-16 h-15 sm:w-20 sm:h-19 md:w-22 md:h-21 object-contain filter drop-shadow-[0_0_16px_rgba(32,214,160,0.28)] drop-shadow-[0_8px_20px_rgba(0,0,0,0.85)] shrink-0 select-none"
             />
             <div className="flex flex-col">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight font-modern">
-                Welcome to <BrandName className="text-xl sm:text-2xl md:text-3xl font-extrabold" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight font-modern flex items-baseline gap-2 flex-wrap">
+                <span>Welcome to</span>
+                <span className="font-sans font-extrabold tracking-[0.14em] uppercase text-[#E4F6EC] drop-shadow-[0_0_12px_rgba(32,214,160,0.22)]">
+                  B-LIFFE
+                </span>
               </h1>
               <p className="text-xs sm:text-sm md:text-base font-semibold text-[#A6F16A] tracking-normal leading-snug font-modern mt-0.5">
                 Bharat Local Informatics for Flora, Fauna, and Ecosystems

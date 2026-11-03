@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import BrandName from '@/components/BrandName'
+import BrandLockup from '@/components/BrandLockup'
 import { useProfile } from '@/context/ProfileContext'
 import AvatarDisplay from '@/components/AvatarDisplay'
 
@@ -15,29 +15,18 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 z-20 border-b border-[#1C4D3C] bg-[#08221A]/95 backdrop-blur-md">
       <div className="flex w-full items-center justify-between px-3.5 py-2 sm:px-6 sm:py-2.5 gap-3">
-        {/* Left-aligned Branding Group: Logo Icon + Wordmark & Subtitle */}
+        {/* Left-aligned Branding Group: Unified Compact Logo + B-LIFFE Lockup */}
         <Link
           to="/home"
-          className="flex items-center text-left group gap-2.5 sm:gap-3.5 min-w-0"
+          className="flex items-center text-left group min-w-0"
           title="B-Liffe - Bharat Local Informatics for Flora, Fauna, and Ecosystems"
         >
-          {/* Logo Icon */}
-          <img
-            src={`${import.meta.env.BASE_URL}splash-logo.png`}
-            alt="B-Liffe Logo"
-            className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-xl shrink-0 border border-[#1C4D3C] bg-[#0D2D22] p-0.5"
+          <BrandLockup
+            layout="horizontal"
+            size="sm"
+            subtitle="Bharat Local Informatics for Flora, Fauna, and Ecosystems"
+            subtitleClassName="hidden md:block max-w-md"
           />
-
-          {/* Wordmark and Subtitle in compact vertical arrangement */}
-          <div className="flex flex-col justify-center items-start text-left min-w-0">
-            {/* Standardized B-Liffe Wordmark */}
-            <BrandName className="text-xl sm:text-2xl leading-none" />
-
-            {/* Subtitle - hidden on mobile screens to prevent overlap, visible on md+ */}
-            <p className="hidden md:block text-xs leading-tight tracking-normal text-[#B2C8BA] font-normal mt-1 max-w-md truncate">
-              Bharat Local Informatics for Flora, Fauna, and Ecosystems
-            </p>
-          </div>
         </Link>
 
         {/* Right-aligned Profile Entry Point: Vertical stack of Avatar + First Name */}
@@ -64,4 +53,3 @@ export default function TopBar() {
     </header>
   )
 }
-

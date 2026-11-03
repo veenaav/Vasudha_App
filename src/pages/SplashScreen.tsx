@@ -34,9 +34,9 @@ export default function SplashScreen() {
             />
           </div>
 
-          {/* "B-LIFFE" Wordmark: Increased font size, uppercase, tight lockup */}
-          <h1 className="mt-2 sm:mt-2.5 select-none">
-            <span className="text-[24px] sm:text-[28px] md:text-[30px] font-sans font-extrabold tracking-[0.14em] uppercase text-[#E2EBE5]/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+          {/* "B-LIFFE" Wordmark: Tighter spacing & soft pale mint off-white blend */}
+          <h1 className="mt-1 sm:mt-1.5 select-none">
+            <span className="text-[24px] sm:text-[28px] md:text-[30px] font-sans font-extrabold tracking-[0.14em] uppercase text-[#E4F6EC] drop-shadow-[0_0_12px_rgba(32,214,160,0.22)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               B-LIFFE
             </span>
           </h1>
@@ -48,12 +48,12 @@ export default function SplashScreen() {
         </p>
       </div>
 
-      {/* Action Button: Clean, subtle solid/soft button without excessive neon glow */}
+      {/* Action Button: Refined soft ambient glow & subtle surface shine */}
       <div className="relative z-10 pb-4 sm:pb-6 w-full flex justify-center flex-shrink-0">
         <button
           type="button"
           onClick={handleContinue}
-          className="w-full max-w-[260px] sm:max-w-[280px] h-[50px] min-h-[50px] sm:h-[54px] sm:min-h-[54px] flex items-center justify-center gap-2 px-7 rounded-xl sm:rounded-2xl bg-[#174D3B] hover:bg-[#1E5F49] text-[#F0F5EF] hover:text-white border border-[#20D6A0]/35 font-bold text-sm sm:text-base shadow-md shadow-[#061812]/50 hover:border-[#20D6A0]/60 active:scale-[0.98] transition-all cursor-pointer"
+          className="w-full max-w-[260px] sm:max-w-[280px] h-[50px] min-h-[50px] sm:h-[54px] sm:min-h-[54px] flex items-center justify-center gap-2 px-7 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#1C5743] to-[#134233] hover:from-[#21664F] hover:to-[#174D3B] text-[#F0F5EF] hover:text-white border border-[#20D6A0]/40 hover:border-[#20D6A0]/65 font-bold text-sm sm:text-base shadow-[0_0_20px_rgba(32,214,160,0.20),inset_0_1px_1px_rgba(255,255,255,0.16)] hover:shadow-[0_0_28px_rgba(32,214,160,0.32),inset_0_1px_1px_rgba(255,255,255,0.25)] active:scale-[0.98] transition-all cursor-pointer"
         >
           <span>Get Started</span>
           <ArrowRight className="w-4.5 h-4.5 text-[#20D6A0]" />
