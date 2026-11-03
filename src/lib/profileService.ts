@@ -54,6 +54,19 @@ export function setLocalProfile(profile: UserProfile): void {
   }
 }
 
+async function safeParseJson(res: Response): Promise<any> {
+  const contentType = res.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    return await res.json()
+  }
+  const text = await res.text()
+  throw new Error(
+    res.status === 404
+      ? 'Backend service endpoint not found (404). Please verify backend URL.'
+      : "Server returned non-JSON response (" + res.status + "): " + text.slice(0, 120)
+  )
+}
+
 export async function apiRegister(fullName: string, email: string, password: string): Promise<{ user: UserProfile; token: string }> {
   const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: 'POST',
@@ -61,7 +74,7 @@ export async function apiRegister(fullName: string, email: string, password: str
     body: JSON.stringify({ fullName, email, password }),
   })
 
-  const data = await res.json()
+  const data = await safeParseJson(res)
   if (!res.ok) {
     throw new Error(data.error || 'Failed to register account')
   }
@@ -97,7 +110,7 @@ export async function apiLogin(email: string, password: string): Promise<{ user:
     body: JSON.stringify({ email, password }),
   })
 
-  const data = await res.json()
+  const data = await safeParseJson(res)
   if (!res.ok) {
     throw new Error(data.error || 'Invalid email or password')
   }

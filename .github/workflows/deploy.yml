@@ -35,6 +35,8 @@ jobs:
         run: npm ci
 
       - name: Build project
+        env:
+          VITE_API_URL: https://bliffe-api.duckdns.org
         run: npm run build
 
       - name: Setup Pages
@@ -48,3 +50,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
