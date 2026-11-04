@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { LocationSource } from '@/db/database'
 import {
   identifyWardFromCoordinates,
@@ -20,10 +20,19 @@ export function useObservationGeolocation() {
   const [gpsLocation, setGpsLocation] = useState<Coordinates | null>(null)
   const [location, setLocation] = useState<Coordinates | null>(null)
   const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null)
-  const [locationSource, setLocationSource] = useState<LocationSource | null>(null)
+  const [locationSource, setLocationSourceState] = useState<LocationSource | null>(null)
   const [gpsCapturedAt, setGpsCapturedAt] = useState<string | null>(null)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+
+  // Synchronous ref to prevent async live GPS fetch from overwriting EXIF coordinates (Requirement 5)
+  const locationSourceRef = useRef<LocationSource | null>(null)
+  const activeRequestIdRef = useRef<number>(0)
+
+  const setLocationSource = useCallback((src: LocationSource | null) => {
+    locationSourceRef.current = src
+    setLocationSourceState(src)
+  }, [])
 
   // Client-Side Reverse Geocoding state (human-readable address components)
   const [resolvedLocationName, setResolvedLocationName] = useState<string | null>(null)
@@ -63,7 +72,13 @@ export function useObservationGeolocation() {
     }
   }, [])
 
-  // Request high-accuracy device GPS coordinates (used as automatic fallback when EXIF is missing)
+  // Cancel any active in-flight live GPS requests
+  const cancelLocationRequest = useCallback(() => {
+    activeRequestIdRef.current++
+    setIsGettingLocation(false)
+  }, [])
+
+  // Request high-accuracy device GPS coordinates (only when explicitly requested by user)
   const getLocation = useCallback(
     (): Promise<Coordinates | null> => {
       return new Promise((resolve) => {
@@ -82,6 +97,7 @@ export function useObservationGeolocation() {
           return
         }
 
+        const currentRequestId = ++activeRequestIdRef.current
         setIsGettingLocation(true)
         setLocationError(null)
         setWardStatus('requesting_location')
@@ -89,6 +105,23 @@ export function useObservationGeolocation() {
 
         navigator.geolocation.getCurrentPosition(
           async (position) => {
+            // Guard against race conditions (Requirement 5):
+            // 1. If photo EXIF location has already been applied, NEVER overwrite with live GPS!
+            if (locationSourceRef.current === 'EXIF') {
+              console.info('[useObservationGeolocation] Ignored live GPS response because EXIF location is active.')
+              setIsGettingLocation(false)
+              resolve(null)
+              return
+            }
+
+            // 2. If a newer location request was initiated, discard this obsolete result
+            if (currentRequestId !== activeRequestIdRef.current) {
+              console.info('[useObservationGeolocation] Ignored superseded live GPS request.')
+              setIsGettingLocation(false)
+              resolve(null)
+              return
+            }
+
             const lat = Number(position.coords.latitude.toFixed(6))
             const lng = Number(position.coords.longitude.toFixed(6))
             const now = new Date().toISOString()
@@ -111,12 +144,17 @@ export function useObservationGeolocation() {
               identifyWardFromCoordinates(lat, lng),
             ])
 
+            // If EXIF was applied while reverse geocode was running, do not overwrite
+            if ((locationSourceRef.current as any) === 'EXIF') {
+              setIsReverseGeocoding(false)
+              return
+            }
+
             // 1. Process Reverse Geocoding
             if (geoResult.status === 'fulfilled' && geoResult.value?.locationName) {
               setResolvedLocationName(geoResult.value.locationName)
               setReverseGeocodeDetails(geoResult.value)
             } else {
-              // Fallback handling: Gracefully fall back to displaying formatted lat/lng coordinates
               setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
               setReverseGeocodeDetails(null)
             }
@@ -144,6 +182,11 @@ export function useObservationGeolocation() {
             resolve({ latitude: lat, longitude: lng })
           },
           (error) => {
+            if (currentRequestId !== activeRequestIdRef.current) {
+              resolve(null)
+              return
+            }
+
             setIsGettingLocation(false)
             let userMessage = error.message
 
@@ -168,12 +211,17 @@ export function useObservationGeolocation() {
         )
       })
     },
-    [isGettingLocation, location]
+    [isGettingLocation, location, setLocationSource]
   )
 
-  // Set coordinates automatically extracted from photograph EXIF metadata
+  // Set coordinates automatically extracted from photograph EXIF metadata (Requirement 3)
   const setExifLocation = useCallback(
     async (coords: Coordinates, captureTime?: string | null) => {
+      // Invalidate any in-flight live GPS requests immediately (Requirement 5)
+      activeRequestIdRef.current++
+      locationSourceRef.current = 'EXIF'
+      setIsGettingLocation(false)
+
       const lat = Number(coords.latitude.toFixed(6))
       const lng = Number(coords.longitude.toFixed(6))
       const now = captureTime || new Date().toISOString()
@@ -200,7 +248,6 @@ export function useObservationGeolocation() {
         setResolvedLocationName(geoResult.value.locationName)
         setReverseGeocodeDetails(geoResult.value)
       } else {
-        // Fallback handling: Gracefully fall back to displaying formatted lat/lng coordinates
         setResolvedLocationName(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
         setReverseGeocodeDetails(null)
       }
@@ -225,10 +272,12 @@ export function useObservationGeolocation() {
         setWardStatusMessage('Ward identification service error.')
       }
     },
-    []
+    [setLocationSource]
   )
 
   const resetLocation = () => {
+    activeRequestIdRef.current++
+    locationSourceRef.current = null
     setGpsLocation(null)
     setLocation(null)
     setLocationAccuracy(null)
@@ -299,6 +348,7 @@ export function useObservationGeolocation() {
     locationStatus,
     locationStatusLabel,
     getLocation,
+    cancelLocationRequest,
     setExifLocation,
     resetLocation,
   }

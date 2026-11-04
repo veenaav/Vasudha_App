@@ -72,14 +72,16 @@ export default function MyProjects() {
           </p>
         </div>
 
-        <Link to="/projects">
-          <Button
-            variant="outline"
-            className="border-[#1C4D3C] bg-[#0D2D22] text-[#A6F16A] hover:bg-[#133D2F] text-xs font-semibold rounded-xl shadow-xs"
-          >
-            Browse All
-          </Button>
-        </Link>
+        {joinedProjects.length > 0 && (
+          <Link to="/projects">
+            <Button
+              variant="outline"
+              className="border-[#1C4D3C] bg-[#0D2D22] text-[#A6F16A] hover:bg-[#133D2F] text-xs font-semibold rounded-xl shadow-xs"
+            >
+              Browse All
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Projects List */}

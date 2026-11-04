@@ -273,11 +273,11 @@ export default function ObservationFormPage() {
               />
 
               {/* Automatic Location Status Indicator for Photos */}
-              <div className="mt-3.5">
+              <div className="mt-3.5 space-y-2.5">
                 {geo.isGettingLocation || form.isProcessingPhotos ? (
                   <div className="flex items-center gap-2 rounded-2xl bg-[#061812] border border-[#1C4D3C] p-3 text-xs text-[#A6F16A]">
                     <Loader2 className="h-4 w-4 animate-spin text-[#A6F16A] shrink-0" />
-                    <span>Acquiring GPS coordinates for photo...</span>
+                    <span>Extracting photo EXIF GPS metadata...</span>
                   </div>
                 ) : geo.location ? (
                   <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#133D2F]/50 border border-[#1C4D3C] p-3 text-xs text-[#F0F5EF]">
@@ -286,7 +286,7 @@ export default function ObservationFormPage() {
                       <div className="truncate">
                         <span className="font-semibold text-[#A6F16A]">
                           {geo.locationSource === 'EXIF'
-                            ? 'Location captured (Photo EXIF)'
+                            ? 'Location extracted (Photo EXIF)'
                             : 'Location captured (Device GPS)'}
                         </span>
                         {geo.locationAccuracy !== null && (
@@ -299,6 +299,26 @@ export default function ObservationFormPage() {
                     <span className="font-mono text-[11px] text-[#20D6A0] shrink-0">
                       {geo.location.latitude.toFixed(5)}, {geo.location.longitude.toFixed(5)}
                     </span>
+                  </div>
+                ) : form.exifWarning ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-2xl bg-amber-950/40 border border-amber-600/50 p-3 text-xs text-amber-200">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                      <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-amber-300">No GPS in Photo Metadata</p>
+                        <p className="text-[11px] text-amber-200/80 mt-0.5">
+                          {form.exifWarning}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={form.handleUseDeviceGps}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0D2D22] border border-[#1C4D3C] text-[#A6F16A] hover:bg-[#133D2F] font-bold text-xs shrink-0 self-start sm:self-center transition-colors cursor-pointer"
+                    >
+                      <MapPin className="h-3.5 w-3.5 text-[#A6F16A]" />
+                      <span>Use Device GPS</span>
+                    </button>
                   </div>
                 ) : geo.locationError ? (
                   <div className="flex items-center justify-between gap-2 rounded-2xl bg-amber-950/40 border border-amber-800/60 p-3 text-xs text-amber-200">
