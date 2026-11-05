@@ -26,7 +26,8 @@ jobs:
       - name: Build project
         env:
           VITE_BASE_URL: '/'
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://bliffe-api.ap-southeast-2.elasticbeanstalk.com' }}
+          # Leave empty to use same-origin relative '/api' via CloudFront reverse proxy (fixes Mixed Content)
+          VITE_API_URL: ${{ secrets.VITE_API_URL || '' }}
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
         run: npm run build
 
