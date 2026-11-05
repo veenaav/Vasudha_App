@@ -8,9 +8,10 @@ export default defineConfig(({ mode }) => {
 
   const serverPort = Number(env.VITE_PORT || env.PORT || 5173)
   const proxyTarget = env.VITE_PROXY_TARGET || env.VITE_API_URL || 'http://localhost:3000'
+  const appBase = env.VITE_BASE_URL || '/'
 
   return {
-    base: '/Vasudha_App/',
+    base: appBase,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
