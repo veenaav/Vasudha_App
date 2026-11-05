@@ -3,6 +3,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import HomePage from '@/pages/HomePage'
 import Home from '@/pages/Home'
 import ObservationsPage from '@/pages/ObservationsPage'
+import ObservationDetailPage from '@/pages/ObservationDetailPage'
 import ProjectsPage from '@/pages/ProjectsPage'
 import MyProjects from '@/pages/MyProjects'
 import WardsPage from '@/pages/WardsPage'
@@ -47,6 +48,7 @@ function App() {
 
           {/* 3. Saved Observations List Screen */}
           <Route path="/observations" element={<ObservationsPage />} />
+          <Route path="/observations/:id" element={<ObservationDetailPage />} />
 
           {/* 4. Edit Observation Screen */}
           <Route path="/observations/:id/edit" element={<Home />} />

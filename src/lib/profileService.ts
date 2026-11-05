@@ -4,6 +4,28 @@ export const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 const PROFILE_STORAGE_KEY = 'bliffe_demo_profile'
 const AUTH_TOKEN_KEY = 'bliffe_auth_token'
+const GUEST_STORAGE_KEY = 'bliffe_is_guest'
+
+export function getIsGuestUser(): boolean {
+  try {
+    return localStorage.getItem(GUEST_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+export function setIsGuestUser(isGuest: boolean): void {
+  try {
+    if (isGuest) {
+      localStorage.setItem(GUEST_STORAGE_KEY, 'true')
+    } else {
+      localStorage.removeItem(GUEST_STORAGE_KEY)
+    }
+    window.dispatchEvent(new CustomEvent('bliffe:guest-mode-changed', { detail: { isGuest } }))
+  } catch (err) {
+    console.error('[profileService] Failed to set guest mode in localStorage:', err)
+  }
+}
 
 export const DEFAULT_MOCK_PROFILE: UserProfile = {
   id: 'bliffe-demo-user',
@@ -82,6 +104,7 @@ export async function apiRegister(fullName: string, email: string, password: str
   }
 
   setLocalProfile(profile)
+  setIsGuestUser(false)
   if (data.token) {
     setAuthToken(data.token)
   }
@@ -118,6 +141,7 @@ export async function apiLogin(email: string, password: string): Promise<{ user:
   }
 
   setLocalProfile(profile)
+  setIsGuestUser(false)
   if (data.token) {
     setAuthToken(data.token)
   }
@@ -169,6 +193,7 @@ export function clearDemoSession(): void {
   try {
     localStorage.removeItem(PROFILE_STORAGE_KEY)
     removeAuthToken()
+    setIsGuestUser(false)
   } catch (err) {
     console.error('[profileService] Failed to clear session:', err)
   }

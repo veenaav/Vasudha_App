@@ -5,11 +5,15 @@ import {
   apiUpdateProfile,
   resetLocalProfile,
   clearDemoSession,
+  getIsGuestUser,
+  setIsGuestUser,
 } from '@/lib/profileService'
 
 interface ProfileContextValue {
   profile: UserProfile
   isLoading: boolean
+  isGuest: boolean
+  setGuestSession: (isGuest: boolean) => void
   updateProfile: (input: ProfileUpdateInput) => Promise<UserProfile>
   resetProfile: () => void
   signOut: () => void
@@ -20,10 +24,17 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(() => getLocalProfile())
+  const [isGuest, setIsGuest] = useState<boolean>(() => getIsGuestUser())
   const [isLoading, setIsLoading] = useState(false)
 
   const refreshProfile = useCallback(() => {
     setProfile(getLocalProfile())
+    setIsGuest(getIsGuestUser())
+  }, [])
+
+  const setGuestSession = useCallback((guest: boolean) => {
+    setIsGuestUser(guest)
+    setIsGuest(guest)
   }, [])
 
   // Sync state if localStorage changes in another tab or in current tab via custom event
@@ -37,6 +48,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           // ignore parse errors
         }
       }
+      if (e.key === 'bliffe_is_guest') {
+        setIsGuest(e.newValue === 'true')
+      }
     }
 
     const handleCustomChange = (e: Event) => {
@@ -48,11 +62,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    const handleGuestModeChange = (e: Event) => {
+      const custom = e as CustomEvent<{ isGuest: boolean }>
+      if (custom.detail && typeof custom.detail.isGuest === 'boolean') {
+        setIsGuest(custom.detail.isGuest)
+      } else {
+        setIsGuest(getIsGuestUser())
+      }
+    }
+
     window.addEventListener('storage', handleStorage)
     window.addEventListener('bliffe:profile-changed', handleCustomChange)
+    window.addEventListener('bliffe:guest-mode-changed', handleGuestModeChange)
     return () => {
       window.removeEventListener('storage', handleStorage)
       window.removeEventListener('bliffe:profile-changed', handleCustomChange)
+      window.removeEventListener('bliffe:guest-mode-changed', handleGuestModeChange)
     }
   }, [refreshProfile])
 
@@ -74,6 +99,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     clearDemoSession()
+    setIsGuest(false)
     // Re-initialize clean state
     setProfile(resetLocalProfile())
   }, [])
@@ -83,6 +109,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       value={{
         profile,
         isLoading,
+        isGuest,
+        setGuestSession,
         updateProfile,
         resetProfile,
         signOut,

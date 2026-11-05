@@ -13,8 +13,10 @@ import {
   UserPlus,
 } from 'lucide-react'
 import { apiRegister } from '@/lib/profileService'
+import { useProfile } from '@/context/ProfileContext'
 
 export default function CreateAccountPage() {
+  const { setGuestSession } = useProfile()
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')
@@ -84,6 +86,7 @@ export default function CreateAccountPage() {
     setIsSubmitting(true)
     try {
       await apiRegister(fullName, email, password)
+      setGuestSession(false)
       navigate('/home')
     } catch (err: any) {
       setServerError(err.message || 'Registration failed. Please check backend connection.')
@@ -336,7 +339,10 @@ export default function CreateAccountPage() {
           {/* Continue as Guest Button (Consistent with Welcome Screen) */}
           <button
             type="button"
-            onClick={() => navigate('/home')}
+            onClick={() => {
+              setGuestSession(true)
+              navigate('/home')
+            }}
             className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-4 rounded-xl sm:rounded-2xl border border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] hover:text-[#F0F5EF] text-xs sm:text-sm md:text-base font-extrabold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap mt-1"
           >
             <Compass className="w-4.5 h-4.5 text-[#A6F16A] shrink-0" />

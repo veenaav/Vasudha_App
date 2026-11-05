@@ -3,7 +3,7 @@ import { PlusCircle, ArrowRight, FolderGit2, BookOpen } from 'lucide-react'
 import { useProfile } from '@/context/ProfileContext'
 
 export default function HomePage() {
-  const { profile } = useProfile()
+  const { profile, isGuest } = useProfile()
 
   // Read name dynamically from the frontend profile state.
   // Falls back to 'Welcome to B-Liffe!' if no name is available.
@@ -11,15 +11,25 @@ export default function HomePage() {
     profile?.displayName?.trim() ||
     (profile?.fullName?.trim() ? profile.fullName.trim().split(/\s+/)[0] : '')
 
+  const headingText = isGuest
+    ? 'Hello, there'
+    : greetingName
+      ? `Hi, ${greetingName}!`
+      : 'Welcome to B-Liffe!'
+
+  const subtitleText = isGuest
+    ? 'Look closer. Nature has stories to tell.'
+    : 'Record observations. Support conservation.'
+
   return (
     <div className="mx-auto max-w-lg px-4 py-6 sm:px-6 space-y-6">
-      {/* 1. Main Heading & Subtitle with personalised greeting */}
+      {/* 1. Main Heading & Subtitle with conditional greeting */}
       <section className="text-center pt-2 pb-1 space-y-1.5">
         <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-          {greetingName ? `Hi, ${greetingName}!` : 'Welcome to B-Liffe!'}
+          {headingText}
         </h1>
         <p className="text-sm sm:text-base font-normal text-[#B2C8BA]">
-          Record observations. Support conservation.
+          {subtitleText}
         </p>
       </section>
 

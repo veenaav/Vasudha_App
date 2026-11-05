@@ -1,48 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Observation, IdentificationStatus } from '@/db/database'
-import { BASIS_OF_RECORD_OPTIONS } from '@/db/database'
-import { getTagById } from '@/lib/tagCatalogue'
 import {
-  MapPin,
-  Clock,
-  Calendar,
   Trash2,
-  X,
-  Pencil,
   Camera,
-  Layers,
-  Leaf,
-  BookOpen,
-  Crosshair,
-  Hash,
-  ShieldCheck,
-  Compass,
-  Eye,
-  EyeOff,
-  Tag as TagIcon,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-
-// Format ISO timestamp into Indian English localized string
-const formatDateTime = (value?: string | null) => {
-  if (!value) return 'Not recorded'
-  const date = new Date(value)
-  return Number.isNaN(date.getTime())
-    ? 'Invalid date'
-    : date.toLocaleString('en-IN', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      })
-}
-
-// Format coordinates to 5 decimal places with graceful fallback
-const formatCoordinate = (value?: number | string | null) => {
-  if (value === null || value === undefined || value === '') return null
-  const num = Number(value)
-  return Number.isNaN(num) ? null : num.toFixed(5)
-}
 
 // Visual style mapping for identification verification pills matching B-LIFFE dark palette
 const STATUS_STYLES: Record<IdentificationStatus, { bg: string; text: string; border: string }> = {
@@ -63,40 +27,14 @@ const STATUS_STYLES: Record<IdentificationStatus, { bg: string; text: string; bo
   },
 }
 
-function DetailRow({
-  icon: Icon,
-  iconColor = 'text-[#A6F16A]',
-  label,
-  value,
-  valueClass = 'font-medium text-white',
-}: {
-  icon?: React.ComponentType<{ className?: string }>
-  iconColor?: string
-  label: string
-  value: React.ReactNode
-  valueClass?: string
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="flex items-center gap-1.5 text-[#7B9586]">
-        {Icon && <Icon className={`h-3.5 w-3.5 ${iconColor}`} />}
-        <span>{label}:</span>
-      </span>
-      <span className={valueClass}>{value}</span>
-    </div>
-  )
-}
-
 interface ObservationCardProps {
   observation: Observation
   onDelete?: (id: string) => void
   onSelectTag?: (tagId: string) => void
 }
 
-function ObservationCard({ observation, onDelete, onSelectTag }: ObservationCardProps) {
+function ObservationCard({ observation, onDelete }: ObservationCardProps) {
   const navigate = useNavigate()
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
-  const [activePhotoIdx, setActivePhotoIdx] = useState(0)
   const [cardPhotoIdx, setCardPhotoIdx] = useState(0)
 
   // Extract photo URLs from props (supports both local Blobs and remote/string URLs)
@@ -139,614 +77,142 @@ function ObservationCard({ observation, onDelete, onSelectTag }: ObservationCard
     commonName ||
     (observation.identificationStatus === 'Unknown' ? 'Unknown species' : 'Unnamed observation')
 
-  // Resolve recorded time safely from existing timestamp fields
-  const recordedTimestamp = observation.recordedAt || observation.createdAt || observation.observationAt
-
-  // Format coordinates
-  const latStr = formatCoordinate(observation.latitude)
-  const lngStr = formatCoordinate(observation.longitude)
-  const hasCoordinates = latStr !== null && lngStr !== null
-
-  // Extended values for detailed view
-  const selectedGroup = observation.speciesGroup || observation.speciesGroups
-  const displaySpeciesGroup =
-    selectedGroup === 'Other' && observation.otherSpeciesGroup?.trim()
-      ? `Other (${observation.otherSpeciesGroup.trim()})`
-      : selectedGroup
-
-  const displayMicroHabitat =
-    observation.microHabitat === 'Other' && observation.otherMicroHabitat?.trim()
-      ? `Other (${observation.otherMicroHabitat.trim()})`
-      : observation.microHabitat
-
-  const displayTKSource =
-    observation.traditionalKnowledgeSource === 'Other' &&
-    observation.otherTraditionalKnowledgeSource?.trim()
-      ? `Other (${observation.otherTraditionalKnowledgeSource.trim()})`
-      : observation.traditionalKnowledgeSource
+  const handleCardClick = () => {
+    if (observation.id) {
+      navigate(`/observations/${observation.id}`)
+    }
+  }
 
   return (
-    <>
-      {/* 1. Image-first observation card — Entire card is clickable to open details */}
-      <article
-        onClick={() => { setActivePhotoIdx(cardPhotoIdx); setIsDetailOpen(true); }}
-        className="group cursor-pointer overflow-hidden rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] shadow-lg shadow-[#061812]/50 transition-all duration-200 hover:border-[#A6F16A]/50 hover:shadow-2xl text-[#F0F5EF]"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            setActivePhotoIdx(cardPhotoIdx)
-            setIsDetailOpen(true)
-          }
-        }}
-        aria-label={`View details for ${displayTitle}`}
-      >
-        {/* Photograph occupies top of card visible area with multi-photo carousel */}
-        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[#061812]">
-          {photoUrls.length > 0 ? (
-            <img
-              src={photoUrls[cardPhotoIdx] || photoUrls[0]}
-              alt={displayTitle}
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] filter brightness-[0.9]"
-            />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center bg-[#061812] text-[#7B9586]">
-              <Camera className="h-10 w-10 stroke-[1.5] text-[#1C4D3C]" />
-              <span className="mt-2 text-xs font-medium tracking-wide">No photograph attached</span>
-            </div>
-          )}
+    <article
+      onClick={handleCardClick}
+      className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl border border-[#1C4D3C] bg-[#0D2D22] shadow-sm hover:shadow-xl transition-all duration-200 hover:border-[#A6F16A]/50 text-[#F0F5EF] flex flex-col h-full"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleCardClick()
+        }
+      }}
+      aria-label={`View details for ${displayTitle}`}
+    >
+      {/* Photograph occupies top of card visible area: full width edge-to-edge with no black bars on sides */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#061812] shrink-0 border-b border-[#1C4D3C]/60">
+        {photoUrls.length > 0 ? (
+          <img
+            src={photoUrls[cardPhotoIdx] || photoUrls[0]}
+            alt={displayTitle}
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105 filter brightness-[0.95]"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center bg-[#061812] text-[#7B9586] p-2">
+            <Camera className="h-6 w-6 sm:h-8 sm:w-8 stroke-[1.5] text-[#1C4D3C]" />
+            <span className="mt-1 text-[9px] sm:text-xs font-medium tracking-wide text-center">
+              No photo
+            </span>
+          </div>
+        )}
 
-          {/* 2. Identification status badge — Top-left corner over photograph */}
-          {observation.identificationStatus && (
-            <div className="absolute top-3 left-3 z-10">
-              <span
-                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] tracking-wider uppercase font-semibold backdrop-blur-md shadow-md ${
-                  statusConfig?.bg || 'bg-[#061812]/80'
-                } ${statusConfig?.text || 'text-white'} ${
-                  statusConfig?.border || 'border-[#1C4D3C]'
-                }`}
-              >
+        {/* Identification status label — Top-left corner over photograph */}
+        {observation.identificationStatus && (
+          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10">
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[8px] sm:text-[9px] tracking-wider uppercase font-semibold backdrop-blur-md shadow-md ${
+                statusConfig?.bg || 'bg-[#061812]/80'
+              } ${statusConfig?.text || 'text-white'} ${
+                statusConfig?.border || 'border-[#1C4D3C]'
+              }`}
+            >
+              <span className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full shrink-0 bg-current" />
+              <span className="hidden sm:inline">
                 {observation.identificationStatus}
               </span>
-            </div>
-          )}
+              <span className="inline sm:hidden">
+                {observation.identificationStatus === 'Needs verification'
+                  ? 'Verify'
+                  : observation.identificationStatus === 'Identified'
+                    ? 'ID'
+                    : 'Unknown'}
+              </span>
+            </span>
+          </div>
+        )}
 
-          {/* Multi-photo Navigation & Thumbnail Strip directly on card */}
-          {photoUrls.length > 1 && (
-            <>
-              {/* Previous Photo Button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCardPhotoIdx((prev) => (prev > 0 ? prev - 1 : photoUrls.length - 1))
-                }}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
-                aria-label="Previous photo"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-
-              {/* Next Photo Button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCardPhotoIdx((prev) => (prev < photoUrls.length - 1 ? prev + 1 : 0))
-                }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
-                aria-label="Next photo"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-
-              {/* Thumbnail strip & photo counter pill at bottom */}
-              <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between pointer-events-none">
-                <div className="flex items-center gap-1.5 bg-[#061812]/90 backdrop-blur-md px-2 py-1 rounded-full border border-[#1C4D3C] shadow-md pointer-events-auto">
-                  {photoUrls.slice(0, 5).map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setCardPhotoIdx(idx)
-                      }}
-                      className={`h-4.5 w-4.5 rounded-full overflow-hidden border transition-all cursor-pointer ${
-                        cardPhotoIdx === idx
-                          ? 'border-[#A6F16A] ring-1.5 ring-[#A6F16A] scale-110'
-                          : 'border-white/30 opacity-60 hover:opacity-100'
-                      }`}
-                      aria-label={`View photo ${idx + 1}`}
-                    >
-                      <img src={url} alt="" className="h-full w-full object-cover" />
-                    </button>
-                  ))}
-                  {photoUrls.length > 5 && (
-                    <span className="text-[9px] font-bold text-[#A6F16A] px-1">
-                      +{photoUrls.length - 5}
-                    </span>
-                  )}
-                </div>
-
-                <span className="rounded-full bg-[#061812]/90 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-[#A6F16A] border border-[#1C4D3C] shadow-md pointer-events-auto">
-                  {cardPhotoIdx + 1} / {photoUrls.length}
-                </span>
-              </div>
-            </>
-          )}
-
-          {/* Delete button inside the card — Top-right corner over photograph */}
-          {onDelete && observation.id !== undefined && (
+        {/* Minimal Action Elements: Carousel Arrows and Photo Counter (if multiple photos) */}
+        {photoUrls.length > 1 && (
+          <>
+            {/* Previous Photo Button */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
-                const label = observation.speciesName?.trim() || 'this observation'
-                if (
-                  window.confirm(
-                    `Are you sure you want to delete ${label} from local storage? This action cannot be undone.`
-                  )
-                ) {
-                  onDelete(observation.id!)
-                }
+                setCardPhotoIdx((prev) => (prev > 0 ? prev - 1 : photoUrls.length - 1))
               }}
-              className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#061812]/80 text-[#B2C8BA] backdrop-blur-md border border-[#1C4D3C] hover:bg-rose-900/80 hover:text-white hover:border-rose-700 transition-all shadow-sm focus:outline-none"
-              title="Delete observation from local storage"
-              aria-label={`Delete ${displayTitle}`}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
+              aria-label="Previous photo"
             >
-              <Trash2 className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </button>
-          )}
-        </div>
 
-        {/* 3. Information visible on the card */}
-        <div className="p-4 sm:p-5 space-y-2.5">
-          {/* Header row: Species Title + Species Group Pill */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white line-clamp-1 group-hover:text-[#A6F16A] transition-colors">
-                {displayTitle}
-              </h3>
-              {observation.scientificName?.trim() && (
-                <p className="mt-0.5 text-xs sm:text-sm italic text-[#20D6A0] line-clamp-1">
-                  {observation.scientificName.trim()}
-                </p>
-              )}
-            </div>
+            {/* Next Photo Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setCardPhotoIdx((prev) => (prev < photoUrls.length - 1 ? prev + 1 : 0))
+              }}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#061812]/85 text-[#F0F5EF] hover:bg-[#133D2F] hover:text-[#A6F16A] border border-[#1C4D3C] transition-all cursor-pointer shadow-md active:scale-95"
+              aria-label="Next photo"
+            >
+              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            </button>
 
-            {/* Species group badge if recorded */}
-            {observation.speciesGroup && (
-              <span className="shrink-0 inline-flex items-center rounded-full bg-[#133D2F] border border-[#1C4D3C] px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-[#A6F16A] shadow-xs">
-                {observation.speciesGroup}
+            {/* Photo counter indicator at bottom right */}
+            <div className="absolute bottom-1.5 right-1.5 z-10 pointer-events-none">
+              <span className="rounded-full bg-[#061812]/90 backdrop-blur-md px-1.5 py-0.5 text-[8px] sm:text-[9px] font-semibold text-[#A6F16A] border border-[#1C4D3C] shadow-md pointer-events-auto">
+                {cardPhotoIdx + 1}/{photoUrls.length}
               </span>
-            )}
-          </div>
+            </div>
+          </>
+        )}
 
-          {/* Clean small pill badges for tags directly on card */}
-          {observation.tags && observation.tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              {observation.tags.map((tagId) => {
-                const tag = getTagById(tagId)
-                const label = tag ? tag.label : tagId.startsWith('#') ? tagId.slice(1) : tagId
-                return (
-                  <span
-                    key={tagId}
-                    onClick={(e) => {
-                      if (onSelectTag) {
-                        e.stopPropagation()
-                        onSelectTag(tagId)
-                      }
-                    }}
-                    className={`inline-flex items-center gap-1 rounded-full bg-[#061812] border border-[#1C4D3C] px-2 py-0.5 text-[10px] font-medium text-[#A6F16A] shadow-xs transition-colors ${
-                      onSelectTag ? 'hover:bg-[#133D2F] hover:border-[#A6F16A]/60' : ''
-                    }`}
-                  >
-                    <span className="h-1 w-1 rounded-full bg-[#20D6A0]" />
-                    <span>#{label}</span>
-                  </span>
+        {/* Minimal Action Element: Delete Button — Top-right corner over photograph */}
+        {onDelete && observation.id !== undefined && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              const label = observation.speciesName?.trim() || 'this observation'
+              if (
+                window.confirm(
+                  `Are you sure you want to delete ${label} from local storage? This action cannot be undone.`
                 )
-              })}
-            </div>
-          )}
-
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 text-xs text-[#7B9586] border-t border-[#1C4D3C]">
-            {/* Recorded time */}
-            <div className="flex items-center gap-1.5 text-[11px] text-[#B2C8BA]">
-              <Clock className="h-3.5 w-3.5 shrink-0 text-[#A6F16A]" />
-              <span>{formatDateTime(recordedTimestamp)}</span>
-            </div>
-
-            {/* Location coordinates */}
-            <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#20D6A0]">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-[#20D6A0]" />
-              <span>
-                {hasCoordinates ? `${latStr}, ${lngStr}` : 'Coordinates not recorded'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      {/* 5. Detailed View Modal */}
-      {isDetailOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
-          onClick={() => setIsDetailOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Observation Details: ${displayTitle}`}
-        >
-          <div
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-[#1C4D3C] bg-[#0D2D22] text-[#F0F5EF] shadow-2xl p-5 sm:p-6 space-y-5"
-            onClick={(e) => e.stopPropagation()}
+              ) {
+                onDelete(observation.id!)
+              }
+            }}
+            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-[#061812]/80 text-[#B2C8BA] backdrop-blur-md border border-[#1C4D3C] hover:bg-rose-900/80 hover:text-white hover:border-rose-700 transition-all shadow-sm focus:outline-none"
+            title="Delete observation from local storage"
+            aria-label={`Delete ${displayTitle}`}
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-3">
-              <div>
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#A6F16A]">
-                  Observation Details
-                </span>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                  {displayTitle}
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDetailOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#061812] border border-[#1C4D3C] text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-colors"
-                aria-label="Close detailed view"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+            <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          </button>
+        )}
+      </div>
 
-            {/* Full-size photograph and any additional photos */}
-            {photoUrls.length > 0 ? (
-              <div className="space-y-2">
-                <div className="overflow-hidden rounded-2xl border border-[#1C4D3C] bg-[#061812]">
-                  <img
-                    src={photoUrls[activePhotoIdx] || photoUrls[0]}
-                    alt={`${displayTitle} full size`}
-                    className="max-h-72 w-full object-contain"
-                  />
-                </div>
-                {/* Thumbnails if multiple photos */}
-                {photoUrls.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                    {photoUrls.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setActivePhotoIdx(idx)}
-                        className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
-                          activePhotoIdx === idx
-                            ? 'border-[#A6F16A] ring-2 ring-[#A6F16A]/40'
-                            : 'border-[#1C4D3C] opacity-60 hover:opacity-100'
-                        }`}
-                        aria-label={`View photo ${idx + 1}`}
-                      >
-                        <img
-                          src={url}
-                          alt={`Thumbnail ${idx + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex h-36 w-full flex-col items-center justify-center rounded-2xl border border-[#1C4D3C] bg-[#061812] text-[#7B9586]">
-                <Camera className="h-8 w-8 stroke-[1.5] text-[#1C4D3C]" />
-                <span className="mt-1.5 text-xs font-medium">No photograph attached</span>
-              </div>
-            )}
-
-            {/* Taxonomy & Identification details */}
-            <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                  Identification Status
-                </span>
-                {observation.identificationStatus ? (
-                  <span
-                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold shadow-xs ${
-                      statusConfig?.bg || 'bg-[#133D2F]'
-                    } ${statusConfig?.text || 'text-white'} ${
-                      statusConfig?.border || 'border-[#1C4D3C]'
-                    }`}
-                  >
-                    {observation.identificationStatus}
-                  </span>
-                ) : (
-                  <span className="text-xs text-[#7B9586]">Not specified</span>
-                )}
-              </div>
-
-              {/* Organism Status */}
-              {observation.organismStatus && (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                    Organism Status
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-[#1C4D3C] bg-[#133D2F] px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold text-[#A6F16A]">
-                    {observation.organismStatus}
-                  </span>
-                </div>
-              )}
-
-              {/* Basis of Record */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold tracking-wider uppercase text-[#B2C8BA]">
-                  Basis of Record
-                </span>
-                <span className="inline-flex items-center rounded-full border border-[#1C4D3C] bg-[#133D2F] px-2.5 py-0.5 text-[10px] tracking-wider uppercase font-semibold text-[#20D6A0]">
-                  {BASIS_OF_RECORD_OPTIONS.find((o) => o.value === observation.basis_of_record)?.label ||
-                    observation.basis_of_record ||
-                    'Human Observation'}
-                </span>
-              </div>
-
-              {observation.scientificName?.trim() && (
-                <div className="text-sm">
-                  <span className="text-xs text-[#7B9586] block">Scientific Name:</span>
-                  <span className="italic font-bold text-[#A6F16A]">
-                    {observation.scientificName.trim()}
-                  </span>
-                </div>
-              )}
-
-              {observation.localName?.trim() && (
-                <div className="text-sm">
-                  <span className="text-xs text-[#7B9586] block">Local / Regional Name:</span>
-                  <span className="font-semibold text-white">
-                    {observation.localName.trim()}
-                  </span>
-                </div>
-              )}
-
-              {displaySpeciesGroup?.trim() && (
-                <div className="text-sm flex items-center gap-1.5 text-[#F0F5EF]">
-                  <Leaf className="h-3.5 w-3.5 text-[#A6F16A]" />
-                  <span className="text-xs text-[#7B9586]">Group:</span>
-                  <span className="font-semibold text-white">{displaySpeciesGroup}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Temporal info */}
-            <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs text-[#B2C8BA]">
-              {observation.observationAt && (
-                <DetailRow
-                  icon={Calendar}
-                  iconColor="text-[#A6F16A]"
-                  label="Observation Time"
-                  value={formatDateTime(observation.observationAt)}
-                />
-              )}
-
-              {recordedTimestamp && (
-                <DetailRow
-                  icon={Clock}
-                  iconColor="text-[#20D6A0]"
-                  label="Recorded Time"
-                  value={formatDateTime(recordedTimestamp)}
-                />
-              )}
-            </div>
-
-            {/* Geolocation & GPS Metadata */}
-            <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2.5 text-xs">
-              <DetailRow
-                icon={MapPin}
-                iconColor="text-[#A6F16A]"
-                label="GPS Coordinates"
-                value={hasCoordinates ? `${latStr}, ${lngStr}` : 'Not recorded'}
-                valueClass="font-mono font-medium text-[#A6F16A]"
-              />
-
-              {observation.location_source && (
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[#7B9586]">
-                    <Crosshair className="h-3.5 w-3.5 text-[#20D6A0]" />
-                    <span>Location Source:</span>
-                  </span>
-                  <span
-                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
-                      observation.location_source === 'EXIF'
-                        ? 'bg-cyan-950/60 border-cyan-800/60 text-cyan-300'
-                        : observation.location_source === 'GPS'
-                        ? 'bg-[#133D2F] border-[#1C4D3C] text-[#A6F16A]'
-                        : 'bg-amber-950/60 border-amber-800/60 text-amber-300'
-                    }`}
-                  >
-                    {observation.location_source}
-                  </span>
-                </div>
-              )}
-
-              {observation.location_source !== 'EXIF' &&
-                observation.accuracyMeters !== null &&
-                observation.accuracyMeters !== undefined && (
-                  <DetailRow
-                    icon={Crosshair}
-                    iconColor="text-[#A6F16A]"
-                    label="GPS Accuracy"
-                    value={`±${Math.round(observation.accuracyMeters)} metres`}
-                  />
-                )}
-
-              <div className="flex items-center justify-between pt-1 border-t border-[#1C4D3C]">
-                <span className="flex items-center gap-1.5 text-[#7B9586]">
-                  <Compass className="h-3.5 w-3.5 text-[#20D6A0]" />
-                  <span>Administrative Ward:</span>
-                </span>
-                <span className="font-semibold text-white text-right">
-                  {observation.wardName || (observation.wardId ? `Ward ID: ${observation.wardId}` : 'Not identified')}
-                </span>
-              </div>
-
-              {/* Location Visibility preference */}
-              {observation.locationVisibility && (
-                <div className="flex items-start justify-between gap-2 pt-1 border-t border-[#1C4D3C]">
-                  <span className="flex items-center gap-1.5 text-[#7B9586] shrink-0">
-                    {observation.locationVisibility === 'Open' ? (
-                      <Eye className="h-3.5 w-3.5 text-[#A6F16A]" />
-                    ) : (
-                      <EyeOff className="h-3.5 w-3.5 text-amber-400" />
-                    )}
-                    <span>Location Visibility:</span>
-                  </span>
-                  <div className="text-right">
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase ${
-                        observation.locationVisibility === 'Open'
-                          ? 'bg-[#133D2F] border-[#1C4D3C] text-[#A6F16A]'
-                          : observation.locationVisibility === 'Obscured'
-                          ? 'bg-amber-950/60 border-amber-800/60 text-amber-300'
-                          : 'bg-rose-950/60 border-rose-800/60 text-rose-300'
-                      }`}
-                    >
-                      {observation.locationVisibility}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Habitat & Ecology (only if data exists) */}
-            {(displayMicroHabitat || observation.individualCount !== undefined || observation.lifeStage) && (
-              <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#7B9586] block">
-                  Ecology & Count
-                </span>
-
-                {observation.individualCount !== undefined && (
-                  <DetailRow
-                    icon={Hash}
-                    iconColor="text-[#A6F16A]"
-                    label="Individual Count"
-                    value={observation.individualCount}
-                  />
-                )}
-
-                {observation.lifeStage && (
-                  <DetailRow
-                    label="Life Stage"
-                    value={observation.lifeStage}
-                  />
-                )}
-
-                {displayMicroHabitat && (
-                  <DetailRow
-                    icon={Layers}
-                    iconColor="text-[#20D6A0]"
-                    label="Micro-Habitat"
-                    value={displayMicroHabitat}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Classification Tags */}
-            {observation.tags && observation.tags.length > 0 && (
-              <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase text-[#7B9586]">
-                    <TagIcon className="h-3.5 w-3.5 text-[#A6F16A]" />
-                    <span>Classification Tags ({observation.tags.length})</span>
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {observation.tags.map((tagId) => {
-                    const tag = getTagById(tagId)
-                    const label = tag ? tag.label : tagId.startsWith('#') ? tagId.slice(1) : tagId
-                    return (
-                      <span
-                        key={tagId}
-                        className="inline-flex items-center gap-1 rounded-full border border-[#1C4D3C] bg-[#0D2D22] px-2.5 py-1 text-[11px] font-medium text-white shadow-2xs"
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#A6F16A]" />
-                        <span>#{label}</span>
-                        {tag && tag.category !== 'General' && (
-                          <span className="text-[9px] uppercase tracking-wider text-[#7B9586] border-l border-[#1C4D3C] pl-1 ml-0.5 font-normal">
-                            {tag.category}
-                          </span>
-                        )}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Traditional Knowledge */}
-            {observation.hasTraditionalKnowledge === 'Yes' && (
-              <div className="rounded-2xl border border-amber-800/60 bg-amber-950/40 p-4 text-xs text-amber-200 space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-amber-300 uppercase tracking-wider">
-                  <BookOpen className="h-4 w-4" />
-                  <span>Traditional Knowledge Documented</span>
-                </div>
-                {displayTKSource && (
-                  <p className="text-[#B2C8BA] pt-1">
-                    <span className="font-medium text-white">Source:</span> {displayTKSource}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Field Notes */}
-            {observation.notes?.trim() && (
-              <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 text-xs">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-[#7B9586] block mb-1">
-                  Field Notes
-                </span>
-                <p className="whitespace-pre-wrap leading-relaxed text-[#F0F5EF] text-sm">
-                  {observation.notes}
-                </p>
-              </div>
-            )}
-
-            {/* Verification Status */}
-            {observation.verificationStatus && (
-              <div className="rounded-2xl border border-[#1C4D3C] bg-[#061812] p-4 text-xs flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[#7B9586]">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[#20D6A0]" />
-                  <span>Expert Verification:</span>
-                </span>
-                <span className="font-medium text-white">{observation.verificationStatus}</span>
-              </div>
-            )}
-
-            {/* Footer Actions */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
-              {observation.id && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDetailOpen(false)
-                    navigate(`/observations/${observation.id}/edit`)
-                  }}
-                  className="flex-1 inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-bold px-5 py-2.5 text-xs tracking-wider uppercase transition-all shadow-md active:scale-95"
-                >
-                  <Pencil className="h-4 w-4 text-[#061812]" />
-                  <span>Edit Observation</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsDetailOpen(false)}
-                className="inline-flex min-h-[46px] items-center justify-center rounded-2xl border border-[#1C4D3C] bg-[#061812] px-5 py-2.5 text-xs font-semibold tracking-wider uppercase text-[#B2C8BA] hover:text-white hover:bg-[#133D2F] transition-all active:scale-95"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      {/* 2. Clean species name header (No secondary metadata, coordinates, dates, or badges) */}
+      <div className="p-2 sm:p-2.5 md:p-3 flex-1 flex flex-col justify-center">
+        <h3 className="text-xs sm:text-sm md:text-base font-bold tracking-tight text-white line-clamp-1 group-hover:text-[#A6F16A] transition-colors leading-snug">
+          {displayTitle}
+        </h3>
+        {observation.scientificName?.trim() && (
+          <p className="text-[10px] sm:text-[11px] md:text-xs italic text-[#20D6A0] line-clamp-1 leading-tight mt-0.5">
+            {observation.scientificName.trim()}
+          </p>
+        )}
+      </div>
+    </article>
   )
 }
 

@@ -18,7 +18,7 @@ export default function ObservationsPage() {
   } = useObservations()
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-5 sm:px-6 space-y-5 text-[#F0F5EF]">
+    <div className="mx-auto max-w-lg md:max-w-6xl px-2 sm:px-4 md:px-6 py-3.5 sm:py-5 space-y-4 sm:space-y-5 text-[#F0F5EF]">
       {/* Editorial Header */}
       <div className="flex items-center justify-between border-b border-[#1C4D3C] pb-4">
         <div>
@@ -123,7 +123,7 @@ export default function ObservationsPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
           {filteredObservations.map((obs) => (
             <ObservationCard
               key={obs.id}

@@ -4,13 +4,14 @@ import { useProfile } from '@/context/ProfileContext'
 import AvatarDisplay from '@/components/AvatarDisplay'
 
 export default function TopBar() {
-  const { profile } = useProfile()
+  const { profile, isGuest } = useProfile()
 
-  // Extract logged-in user's first name
-  const firstName =
-    (profile?.displayName?.trim() ? profile.displayName.trim().split(/\s+/)[0] : '') ||
-    (profile?.fullName?.trim() ? profile.fullName.trim().split(/\s+/)[0] : '') ||
-    'Profile'
+  // Extract logged-in user's first name, or 'Guest' for guest users
+  const firstName = isGuest
+    ? 'Guest'
+    : (profile?.displayName?.trim() ? profile.displayName.trim().split(/\s+/)[0] : '') ||
+      (profile?.fullName?.trim() ? profile.fullName.trim().split(/\s+/)[0] : '') ||
+      'Profile'
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#1C4D3C] bg-[#08221A]/95 backdrop-blur-md">

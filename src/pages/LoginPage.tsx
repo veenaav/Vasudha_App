@@ -17,8 +17,10 @@ import {
 import BrandName from '@/components/BrandName'
 import BrandLockup from '@/components/BrandLockup'
 import { apiLogin } from '@/lib/profileService'
+import { useProfile } from '@/context/ProfileContext'
 
 export default function LoginPage() {
+  const { setGuestSession } = useProfile()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -61,6 +63,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
     try {
       await apiLogin(email, password)
+      setGuestSession(false)
       navigate('/home')
     } catch (err: any) {
       setServerError(err.message || 'Login failed. Please check credentials or backend connection.')
@@ -230,7 +233,10 @@ export default function LoginPage() {
             {/* Continue as Guest Button (Consistent with Welcome Screen) */}
             <button
               type="button"
-              onClick={() => navigate('/home')}
+              onClick={() => {
+                setGuestSession(true)
+                navigate('/home')
+              }}
               className="w-full flex h-11 sm:h-12 min-h-[44px] sm:min-h-[48px] items-center justify-center gap-2 px-4 rounded-xl sm:rounded-2xl border border-[#1C4D3C] bg-[#061812] text-[#A6F16A] hover:bg-[#133D2F] hover:text-[#F0F5EF] text-xs sm:text-sm md:text-base font-extrabold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
               <Compass className="w-4.5 h-4.5 text-[#A6F16A] shrink-0" />
@@ -296,7 +302,10 @@ export default function LoginPage() {
             <div className="flex flex-col gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => navigate('/home')}
+                onClick={() => {
+                setGuestSession(true)
+                navigate('/home')
+              }}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#A6F16A] to-[#20D6A0] text-[#061812] font-bold text-xs shadow-md transition-all active:scale-[0.98]"
               >
                 <span>Continue to Home Dashboard (Offline Field Mode)</span>
