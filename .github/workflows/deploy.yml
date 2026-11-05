@@ -26,7 +26,7 @@ jobs:
       - name: Build project
         env:
           VITE_BASE_URL: '/'
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://bliffe-api.duckdns.org' }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://bliffe-api.ap-southeast-2.elasticbeanstalk.com' }}
           VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }}
         run: npm run build
 

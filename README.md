@@ -13,11 +13,12 @@ An offline-first progressive web application for biodiversity field surveys, eco
 
 ## 🌐 Live Deployments
 
-* 🚀 **Production (AWS S3 + CloudFront CDN):** [https://d2msowv3rhnqjt.cloudfront.net](https://d2msowv3rhnqjt.cloudfront.net)
-  * **Distribution ID:** `E22IM021D3GUIA`
-  * **Domain:** `d2msowv3rhnqjt.cloudfront.net`
+* 🚀 **Frontend (AWS S3 + CloudFront CDN):** [https://d2msowv3rhnqjt.cloudfront.net](https://d2msowv3rhnqjt.cloudfront.net)
+  * **CloudFront Distribution ID:** `E22IM021D3GUIA`
   * **S3 Bucket:** `bliffe-frontend-dev`
-* 🧪 **GitHub Pages (Preview / Fallback):** [https://veenaav.github.io/Vasudha_App/](https://veenaav.github.io/Vasudha_App/)
+* 🔌 **Backend (AWS Elastic Beanstalk):** `http://bliffe-api.ap-southeast-2.elasticbeanstalk.com`
+  * **Interactive API Documentation:** `http://bliffe-api.ap-southeast-2.elasticbeanstalk.com/docs`
+  * **Health Check Endpoint:** `http://bliffe-api.ap-southeast-2.elasticbeanstalk.com/health`
 
 ---
 
@@ -49,7 +50,7 @@ npm install
 
 # 3. Configure environment variables
 cp .env.example .env
-# Open .env and customize API URL or Mapbox token if required
+# Customize VITE_API_URL or Mapbox token in .env if needed
 
 # 4. Run local server
 npm run dev
@@ -59,10 +60,10 @@ npm run dev
 
 ## ☁️ Continuous Deployment (CI/CD)
 
-The frontend is continuously built and deployed to **AWS S3** and served through **Amazon CloudFront** using GitHub Actions on every push to the `main` branch.
+The frontend is continuously built and deployed to **AWS S3** and distributed globally via **Amazon CloudFront** through GitHub Actions on every push to `main`.
 
 ### Deployment Flow:
 1. Triggered on push to `main` branch.
-2. Installs dependencies and builds the Vite production bundle.
+2. Installs dependencies and runs `npm run build` using `VITE_BASE_URL="/"`.
 3. Syncs build output (`dist/`) directly to private S3 bucket (`bliffe-frontend-dev`).
-4. Performs automatic cache invalidation (`/*`) on CloudFront Distribution (`E22IM021D3GUIA`).
+4. Automatically invalidates the CloudFront cache (`/*`) on distribution `E22IM021D3GUIA`.
